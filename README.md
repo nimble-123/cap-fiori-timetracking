@@ -1,6 +1,6 @@
 # 🕐 CAP Fiori Time Tracking Application
 
-Eine moderne Zeiterfassungsanwendung basierend auf SAP CAP (Cloud Application Programming Model) mit Fiori UI5 Frontend. Das Projekt demonstriert Clean Code Prinzipien, moderne Design Patterns und eine saubere Architektur.
+Eine moderne Zeiterfassungsanwendung basierend auf SAP CAP (Cloud Application Programming Model) mit Fiori UI5 Frontend. Das Projekt demonstriert Clean Code Prinzipien, moderne Design Patterns, TypeScript-Integration und eine saubere Architektur.
 
 ## 🏗️ Solution Architecture
 
@@ -14,9 +14,9 @@ graph TB
     end
 
     subgraph "⚙️ Business Logic Layer"
-        SRV[CAP Service Layer<br/>track-service.js]
+        SRV[CAP Service Layer<br/>track-service.ts]
 
-        subgraph "Design Patterns"
+        subgraph "Design Patterns (TypeScript)"
             CMD[Commands]
             FAC[Factory]
             STR[Strategy]
@@ -51,15 +51,22 @@ cap-fiori-timetracking/
 ├── 💾 db/                  # Data Model & Test Data
 │ ├── data-model.cds        # Domain Entities
 │ └── data/                 # CSV Test Data
-├── ⚙️ srv/                 # Backend Services
+├── ⚙️ srv/                 # Backend Services (TypeScript)
 │ ├── track-service.cds     # OData Service Definition
-│ ├── track-service.js      # Service Implementation (Orchestrator)
+│ ├── track-service.ts      # Service Implementation (Orchestrator)
 │ ├── services/             # 🔧 Business Logic Services
+│ │ ├── TimeCalculationService.ts
+│ │ └── UserService.ts
 │ ├── repositories/         # 💾 Data Access Layer
+│ │ └── TimeEntryRepository.ts
 │ ├── validators/           # ✅ Validation Logic
+│ │ └── TimeEntryValidator.ts
 │ ├── factories/            # 🏭 Object Creation
+│ │ └── TimeEntryFactory.ts
 │ ├── strategies/           # 📋 Algorithm Strategies
+│ │ └── MonthlyGenerationStrategy.ts
 │ ├── commands/             # 🎯 Command Pattern
+│ │ └── TimeEntryCommands.ts
 │ └── annotations/          # 📝 UI Annotations
 └── package.json
 ```
@@ -232,7 +239,7 @@ erDiagram
 - **Übersichtsdashboard** mit KPIs
 - **Custom Controls** für spezielle UX
 - **Chart Integration** für Visualisierungen
-- **TypeScript** für Type Safety
+- **TypeScript** für Frontend Type Safety
 
 ## 🚀 Getting Started
 
@@ -250,6 +257,9 @@ git clone <repository>
 cd cap-fiori-timetracking
 npm install
 
+# Generate CDS Types (für TypeScript)
+cds-typer "*" --outputDirectory @cds-models
+
 # Start Development Server
 cds watch
 # or via VS Code Task: Terminal > Run Task > cds watch
@@ -259,25 +269,42 @@ cds watch
 # Service Endpoints: http://localhost:4004/$metadata
 ```
 
-### 🧪 Testing
+### 🧪 Testing & Development
 
 ```bash
 # Run all tests
 npm test
 
+# TypeScript Compilation Check
+npm run build
+# or: tsc --noEmit
+
 # Linting & Formatting
 npm run lint
 npm run format
+
+# Update CDS Types after model changes
+cds-typer "*" --outputDirectory @cds-models
 ```
 
 ## 🔧 Technical Highlights
 
-### Modern JavaScript/TypeScript
+### Moderne TypeScript-Implementierung
 
+- **Vollständige TypeScript-Migration**: Komplettes Backend in TypeScript
+- **CDS-Typer Integration**: `@cds-models` für Compile-Time Type Safety
 - **ES6+ Features**: Classes, Destructuring, Async/Await
-- **Clean Code**: Single Responsibility, DRY, SOLID Principles
-- **Type Safety**: TypeScript in Frontend
-- **JSDoc**: Comprehensive API Documentation
+- **Clean Code**: Single Responsibility, DRY, SOLID Prinzipien
+- **Type Safety**: End-to-End TypeScript (Backend + Frontend)
+- **JSDoc**: Umfassende API-Dokumentation
+
+### TypeScript & CDS Integration
+
+- **@cds-models/**: Auto-generierte TypeScript-Typen aus CDS-Modellen
+- **Type-safe Queries**: Vollständiges IntelliSense für CDS-Entitäten
+- **Compile-time Validierung**: Fehler vor Laufzeit abfangen
+- **Verbesserte Developer Experience**: Besseres Refactoring und Code-Navigation
+- **Design Pattern Types**: Alle Patterns vollständig typisiert mit Interfaces
 
 ### CAP Best Practices
 
