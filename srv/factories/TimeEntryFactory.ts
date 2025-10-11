@@ -99,10 +99,10 @@ export class TimeEntryFactory {
       source: 'GENERATED',
       note: `Automatisch generiert für ${date.toLocaleDateString('de-DE')}`,
       // Berechnete Werte
-      durationHoursGross: 7.7,
-      durationHoursNet: 7.2,
-      overtimeHours: Math.max(0, 7.2 - expected),
-      undertimeHours: Math.max(0, expected - 7.2),
+      durationHoursGross: expected + 0.5,
+      durationHoursNet: expected,
+      overtimeHours: 0,
+      undertimeHours: 0,
       createdAt: new Date().toISOString(),
       modifiedAt: new Date().toISOString(),
     } as TimeEntry;
