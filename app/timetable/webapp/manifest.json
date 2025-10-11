@@ -1,0 +1,214 @@
+{
+  "_version": "1.76.0",
+  "sap.app": {
+    "id": "io.nimble.timetable",
+    "type": "application",
+    "i18n": "i18n/i18n.properties",
+    "applicationVersion": {
+      "version": "0.0.1"
+    },
+    "title": "{{appTitle}}",
+    "description": "{{appDescription}}",
+    "resources": "resources.json",
+    "sourceTemplate": {
+      "id": "@sap/generator-fiori:lrop",
+      "version": "1.19.0",
+      "toolsId": "7c1c4f23-ea07-47d2-99d7-e286b0c81e1e"
+    },
+    "dataSources": {
+      "mainService": {
+        "uri": "/odata/v4/track/",
+        "type": "OData",
+        "settings": {
+          "annotations": [],
+          "odataVersion": "4.0"
+        }
+      }
+    },
+    "crossNavigation": {
+      "inbounds": {
+        "TimeTable-manage": {
+          "semanticObject": "TimeTable",
+          "action": "manage",
+          "title": "{{TimeTable-manage.flpTitle}}",
+          "signature": {
+            "parameters": {},
+            "additionalParameters": "allowed"
+          }
+        }
+      }
+    }
+  },
+  "sap.ui": {
+    "technology": "UI5",
+    "icons": {
+      "icon": "",
+      "favIcon": "",
+      "phone": "",
+      "phone@2": "",
+      "tablet": "",
+      "tablet@2": ""
+    },
+    "deviceTypes": {
+      "desktop": true,
+      "tablet": true,
+      "phone": true
+    }
+  },
+  "sap.ui5": {
+    "flexEnabled": false,
+    "dependencies": {
+      "minUI5Version": "1.141.1",
+      "libs": {
+        "sap.m": {},
+        "sap.ui.core": {},
+        "sap.fe.templates": {},
+        "sap.f": {}
+      }
+    },
+    "contentDensities": {
+      "compact": true,
+      "cozy": true
+    },
+    "models": {
+      "i18n": {
+        "type": "sap.ui.model.resource.ResourceModel",
+        "settings": {
+          "bundleName": "io.nimble.timetable.i18n.i18n"
+        }
+      },
+      "": {
+        "dataSource": "mainService",
+        "preload": true,
+        "settings": {
+          "operationMode": "Server",
+          "autoExpandSelect": true,
+          "earlyRequests": true
+        }
+      },
+      "@i18n": {
+        "type": "sap.ui.model.resource.ResourceModel",
+        "uri": "i18n/i18n.properties"
+      }
+    },
+    "resources": {
+      "css": []
+    },
+    "routing": {
+      "config": {
+        "flexibleColumnLayout": {
+          "defaultTwoColumnLayoutType": "TwoColumnsBeginExpanded",
+          "defaultThreeColumnLayoutType": "ThreeColumnsMidExpanded"
+        },
+        "routerClass": "sap.f.routing.Router"
+      },
+      "routes": [
+        {
+          "pattern": ":?query:",
+          "name": "TimeEntriesList",
+          "target": ["TimeEntriesList"]
+        },
+        {
+          "pattern": "TimeEntries({key}):?query:",
+          "name": "TimeEntriesObjectPage",
+          "target": ["TimeEntriesList", "TimeEntriesObjectPage"]
+        }
+      ],
+      "targets": {
+        "TimeEntriesList": {
+          "type": "Component",
+          "id": "TimeEntriesList",
+          "name": "sap.fe.templates.ListReport",
+          "options": {
+            "settings": {
+              "contextPath": "/TimeEntries",
+              "variantManagement": "Page",
+              "navigation": {
+                "TimeEntries": {
+                  "detail": {
+                    "route": "TimeEntriesObjectPage"
+                  }
+                }
+              },
+              "liveMode": true,
+              "controlConfiguration": {
+                "@com.sap.vocabularies.UI.v1.LineItem": {
+                  "tableSettings": {
+                    "type": "ResponsiveTable",
+                    "condensedTableLayout": true,
+                    "enableMassEdit": {},
+                    "selectionMode": "Multi",
+                    "personalization": {
+                      "column": true,
+                      "sort": true,
+                      "group": true,
+                      "filter": true
+                    }
+                  },
+                  "columns": {
+                    "DataField::note": {
+                      "width": "auto"
+                    },
+                    "DataField::entryType::text": {
+                      "width": "100px"
+                    }
+                  }
+                }
+              },
+              "initialLoad": "Enabled",
+              "views": {
+                "paths": [
+                  {
+                    "primary": [
+                      {
+                        "annotationPath": "com.sap.vocabularies.UI.v1.Chart#alpChart"
+                      }
+                    ],
+                    "secondary": [
+                      {
+                        "annotationPath": "com.sap.vocabularies.UI.v1.SelectionPresentationVariant"
+                      }
+                    ],
+                    "defaultPath": "both"
+                  }
+                ]
+              }
+            }
+          },
+          "controlAggregation": "beginColumnPages",
+          "contextPattern": ""
+        },
+        "TimeEntriesObjectPage": {
+          "type": "Component",
+          "id": "TimeEntriesObjectPage",
+          "name": "sap.fe.templates.ObjectPage",
+          "options": {
+            "settings": {
+              "editableHeaderContent": false,
+              "contextPath": "/TimeEntries"
+            }
+          },
+          "controlAggregation": "midColumnPages",
+          "contextPattern": "/TimeEntries({key})"
+        }
+      }
+    },
+    "rootView": {
+      "viewName": "sap.fe.templates.RootContainer.view.Fcl",
+      "type": "XML",
+      "async": true,
+      "id": "appRootView"
+    }
+  },
+  "sap.fiori": {
+    "registrationIds": [],
+    "archeType": "transactional"
+  },
+  "sap.fe": {
+    "macros": {
+      "table": {
+        "defaultCreationMode": "InlineCreationRows"
+      }
+    }
+  }
+}
