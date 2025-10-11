@@ -25,6 +25,7 @@
   "scripts": {
     "start": "cds-serve",
     "watch": "cds-tsx w",
+    "build": "cds build",
     "format": "prettier --write \"{src,app,srv,db,test}/**/*.{js,ts,json,md,yaml,yml,html}\""
   },
   "workspaces": [
