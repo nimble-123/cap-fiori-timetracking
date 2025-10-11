@@ -186,7 +186,7 @@ export default class TrackService extends ApplicationService {
       console.log(`📊 getMonthlyBalance aufgerufen: Jahr=${year}, Monat=${month}`);
 
       const { userID } = await this.userService.resolveUserForGeneration(req);
-      const tx = cds.transaction(req);
+      const tx = cds.transaction(req) as any;
 
       const balance = await this.balanceService.getMonthBalance(tx, userID, year, month);
 
@@ -204,7 +204,7 @@ export default class TrackService extends ApplicationService {
       console.log('📊 getCurrentBalance aufgerufen');
 
       const { userID } = await this.userService.resolveUserForGeneration(req);
-      const tx = cds.transaction(req);
+      const tx = cds.transaction(req) as any;
 
       const balance = await this.balanceService.getCurrentCumulativeBalance(tx, userID);
 
@@ -222,7 +222,7 @@ export default class TrackService extends ApplicationService {
       console.log('📊 READ MonthlyBalances aufgerufen');
 
       const { userID } = await this.userService.resolveUserForGeneration(req);
-      const tx = cds.transaction(req);
+      const tx = cds.transaction(req) as any;
 
       // Letzte 6 Monate abrufen
       const balances = await this.balanceService.getRecentMonthsBalance(tx, userID, 6);

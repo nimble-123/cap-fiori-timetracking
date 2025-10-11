@@ -49,7 +49,7 @@ annotate service.MonthlyBalances with @(
     Value                    : balanceHours,
     Title                    : '{i18n>balance.balance}',
     Criticality              : balanceCriticality,
-    CriticalityRepresentation: #WithColor
+    CriticalityRepresentation: #WithIcon
   },
 
   UI.PresentationVariant    : {
