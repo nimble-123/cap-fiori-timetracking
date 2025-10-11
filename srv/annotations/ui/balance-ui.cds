@@ -1,11 +1,15 @@
 using TrackService as service from '../../track-service';
 
 ////////////////////////////////////////////////////////////////////////////
-//
 //	MonthlyBalances List Page
-//
+////////////////////////////////////////////////////////////////////////////
 annotate service.MonthlyBalances with @(
-  UI.LineItem               : [
+  UI.SelectionFields    : [
+    year,
+    monthNumber
+  ],
+
+  UI.LineItem           : [
     {Value: month},
     {Value: workingDays},
     {Value: totalOvertimeHours},
@@ -17,58 +21,27 @@ annotate service.MonthlyBalances with @(
     }
   ],
 
-  UI.SelectionFields        : [
-    year,
-    monthNumber
-  ],
+  UI.PresentationVariant: {
+    Visualizations: ['@UI.LineItem'],
+    SortOrder     : [{
+      Property  : month,
+      Descending: true
+    }]
+  },
 
-  UI.HeaderInfo             : {
+  UI.HeaderInfo         : {
     TypeName      : '{i18n>balance.monthlyBalance}',
     TypeNamePlural: '{i18n>balance.monthlyBalances}',
     Title         : {Value: month},
     Description   : {Value: balanceHours}
   },
 
-  UI.Chart                  : {
-    Title              : '{i18n>balance.chart.title}',
-    ChartType          : #Column,
-    Dimensions         : [month],
-    Measures           : [balanceHours],
-    MeasureAttributes  : [{
-      Measure  : balanceHours,
-      Role     : #Axis1,
-      DataPoint: '@UI.DataPoint#BalanceChart'
-    }],
-    DimensionAttributes: [{
-      Dimension: month,
-      Role     : #Category
-    }]
-  },
+  UI.Facets             : [{
+    $Type : 'UI.ReferenceFacet',
+    Label : '{i18n>balance.details}',
+    Target: '@UI.FieldGroup#Details'
+  }],
 
-  UI.DataPoint #BalanceChart: {
-    Value                    : balanceHours,
-    Title                    : '{i18n>balance.balance}',
-    Criticality              : balanceCriticality,
-    CriticalityRepresentation: #WithIcon
-  },
-
-  UI.PresentationVariant    : {
-    Visualizations: [
-      '@UI.Chart',
-      '@UI.LineItem'
-    ],
-    SortOrder     : [{
-      Property  : month,
-      Descending: true
-    }]
-  }
-);
-
-////////////////////////////////////////////////////////////////////////////
-//
-//	MonthlyBalances Object Page
-//
-annotate service.MonthlyBalances with @(
   UI.FieldGroup #Details: {Data: [
     {Value: year},
     {Value: monthNumber},
@@ -80,11 +53,29 @@ annotate service.MonthlyBalances with @(
       Criticality              : balanceCriticality,
       CriticalityRepresentation: #WithIcon
     }
-  ]},
+  ]}
 
-  UI.Facets             : [{
-    $Type : 'UI.ReferenceFacet',
-    Label : '{i18n>balance.details}',
-    Target: '@UI.FieldGroup#Details'
-  }]
+// UI.Chart                  : {
+//   Title              : '{i18n>balance.chart.title}',
+//   ChartType          : #Column,
+//   Dimensions         : [month],
+//   Measures           : [balanceHours],
+//   MeasureAttributes  : [{
+//     Measure  : balanceHours,
+//     Role     : #Axis1,
+//     DataPoint: '@UI.DataPoint#BalanceChart'
+//   }],
+//   DimensionAttributes: [{
+//     Dimension: month,
+//     Role     : #Category
+//   }]
+// },
+
+// UI.DataPoint #BalanceChart: {
+//   Value                    : balanceHours,
+//   Title                    : '{i18n>balance.balance}',
+//   Criticality              : balanceCriticality,
+//   CriticalityRepresentation: #WithIcon
+// },
+
 );
