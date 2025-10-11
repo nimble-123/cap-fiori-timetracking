@@ -141,10 +141,41 @@ annotate service.TimeEntries with {
 };
 
 
-annotate service.generateYearlyTimeEntries with(
-     year @title       : '{i18n>title.generateYearlyTimeEntries.year}' @Common.Label: '{i18n>generateYearlyTimeEntries.year}',
-     stateCode @title  : '{i18n>title.generateYearlyTimeEntries.stateCode}' @Common.Label: '{i18n>generateYearlyTimeEntries.stateCode}'
+annotate service.generateYearlyTimeEntries with(year  @title: '{i18n>title.generateYearlyTimeEntries.year}'       @Common.Label: '{i18n>generateYearlyTimeEntries.year}',
+stateCode                                             @title: '{i18n>title.generateYearlyTimeEntries.stateCode}'  @Common.Label: '{i18n>generateYearlyTimeEntries.stateCode}'
 );
+
+////////////////////////////////////////////////////////////////////////////
+//  MonthlyBalances Entity - Labels & TextArrangements
+////////////////////////////////////////////////////////////////////////////
+annotate service.MonthlyBalances with {
+     month               @title        : '{i18n>title.balance.month}'
+                         @Common.Label : '{i18n>balance.month}';
+
+     year                @title        : '{i18n>title.balance.year}'
+                         @Common.Label : '{i18n>balance.year}';
+
+     monthNumber         @title        : '{i18n>title.balance.monthNumber}'
+                         @Common.Label : '{i18n>balance.monthNumber}';
+
+     totalOvertimeHours  @title        : '{i18n>title.balance.overtime}'
+                         @Common.Label : '{i18n>balance.overtime}'
+                         @Measures.Unit: 'h';
+
+     totalUndertimeHours @title        : '{i18n>title.balance.undertime}'
+                         @Common.Label : '{i18n>balance.undertime}'
+                         @Measures.Unit: 'h';
+
+     balanceHours        @title        : '{i18n>title.balance.balance}'
+                         @Common.Label : '{i18n>balance.balance}'
+                         @Measures.Unit: 'h';
+
+     workingDays         @title        : '{i18n>title.balance.workingDays}'
+                         @Common.Label : '{i18n>balance.workingDays}';
+
+     balanceCriticality  @title        : '{i18n>title.balance.criticality}'
+                         @Common.Label : '{i18n>balance.criticality}';
+};
 
 ////////////////////////////////////////////////////////////////////////////
 //  Entity Labels (Common.Label)
@@ -154,6 +185,7 @@ annotate service.Projects with @(Common.Label: '{i18n>entity.Projects}');
 annotate service.ActivityTypes with @(Common.Label: '{i18n>entity.ActivityTypes}');
 annotate service.EntryTypes with @(Common.Label: '{i18n>entity.EntryTypes}');
 annotate service.TimeEntries with @(Common.Label: '{i18n>entity.TimeEntries}');
+annotate service.MonthlyBalances with @(Common.Label: '{i18n>entity.MonthlyBalances}');
 
 ////////////////////////////////////////////////////////////////////////////
 //  Hinweise zu TextArrangement:

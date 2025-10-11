@@ -17,6 +17,7 @@ using from './annotations/ui/users-ui'; // Users UI Layout
 using from './annotations/ui/projects-ui'; // Projects UI Layout
 using from './annotations/ui/activities-ui'; // ActivityTypes UI Layout
 using from './annotations/ui/timeentries-ui'; // TimeEntries UI Layout
+using from './annotations/ui/balance-ui'; // MonthlyBalances UI Layout
 
 ////////////////////////////////////////////////////////////////////////////
 //  Hinweis zur Struktur:

@@ -9,6 +9,7 @@ import { TimeEntryFactory } from './factories/TimeEntryFactory';
 import { MonthlyGenerationStrategy } from './strategies/MonthlyGenerationStrategy';
 import { YearlyGenerationStrategy } from './strategies/YearlyGenerationStrategy';
 import { HolidayService } from './services/HolidayService';
+import { TimeBalanceService } from './services/TimeBalanceService';
 import { CreateTimeEntryCommand, UpdateTimeEntryCommand } from './commands/TimeEntryCommands';
 
 export default class TrackService extends ApplicationService {
@@ -18,6 +19,7 @@ export default class TrackService extends ApplicationService {
   private monthlyStrategy!: MonthlyGenerationStrategy;
   private yearlyStrategy!: YearlyGenerationStrategy;
   private holidayService!: HolidayService;
+  private balanceService!: TimeBalanceService;
   private createCommand!: CreateTimeEntryCommand;
   private updateCommand!: UpdateTimeEntryCommand;
 
@@ -29,6 +31,7 @@ export default class TrackService extends ApplicationService {
     this.holidayService = new HolidayService();
     this.monthlyStrategy = new MonthlyGenerationStrategy();
     this.yearlyStrategy = new YearlyGenerationStrategy(this.holidayService);
+    this.balanceService = new TimeBalanceService(this.repository);
 
     const dependencies = {
       userService: this.userService,
@@ -46,6 +49,11 @@ export default class TrackService extends ApplicationService {
     this.before('DELETE', TimeEntries, this.handleDeleteTimeEntry.bind(this));
     this.on('generateMonthlyTimeEntries', this.handleGenerateMonthlyEntries.bind(this));
     this.on('generateYearlyTimeEntries', this.handleGenerateYearlyEntries.bind(this));
+
+    // Balance Handler
+    this.on('getMonthlyBalance', this.handleGetMonthlyBalance.bind(this));
+    this.on('getCurrentBalance', this.handleGetCurrentBalance.bind(this));
+    this.on('READ', 'MonthlyBalances', this.handleReadMonthlyBalances.bind(this));
 
     await super.init();
   }
@@ -165,6 +173,64 @@ export default class TrackService extends ApplicationService {
       return allYearEntries;
     } catch (error: any) {
       console.error('❌ Fehler in generateYearlyTimeEntries:', error);
+      req.reject(500, `Fehler: ${error.message}`);
+      return [];
+    }
+  }
+
+  private async handleGetMonthlyBalance(req: any): Promise<any> {
+    try {
+      const year = req.data.year || new Date().getFullYear();
+      const month = req.data.month || new Date().getMonth() + 1;
+
+      console.log(`📊 getMonthlyBalance aufgerufen: Jahr=${year}, Monat=${month}`);
+
+      const { userID } = await this.userService.resolveUserForGeneration(req);
+      const tx = cds.transaction(req);
+
+      const balance = await this.balanceService.getMonthBalance(tx, userID, year, month);
+
+      console.log(`✅ Saldo berechnet: ${balance.balanceHours}h (${balance.workingDays} Arbeitstage)`);
+      return balance;
+    } catch (error: any) {
+      console.error('❌ Fehler in getMonthlyBalance:', error);
+      req.reject(500, `Fehler: ${error.message}`);
+      return null;
+    }
+  }
+
+  private async handleGetCurrentBalance(req: any): Promise<number> {
+    try {
+      console.log('📊 getCurrentBalance aufgerufen');
+
+      const { userID } = await this.userService.resolveUserForGeneration(req);
+      const tx = cds.transaction(req);
+
+      const balance = await this.balanceService.getCurrentCumulativeBalance(tx, userID);
+
+      console.log(`✅ Aktueller Gesamtsaldo: ${balance}h`);
+      return balance;
+    } catch (error: any) {
+      console.error('❌ Fehler in getCurrentBalance:', error);
+      req.reject(500, `Fehler: ${error.message}`);
+      return 0;
+    }
+  }
+
+  private async handleReadMonthlyBalances(req: any): Promise<any[]> {
+    try {
+      console.log('📊 READ MonthlyBalances aufgerufen');
+
+      const { userID } = await this.userService.resolveUserForGeneration(req);
+      const tx = cds.transaction(req);
+
+      // Letzte 6 Monate abrufen
+      const balances = await this.balanceService.getRecentMonthsBalance(tx, userID, 6);
+
+      console.log(`✅ ${balances.length} Monats-Salden abgerufen`);
+      return balances;
+    } catch (error: any) {
+      console.error('❌ Fehler in handleReadMonthlyBalances:', error);
       req.reject(500, `Fehler: ${error.message}`);
       return [];
     }

@@ -106,6 +106,64 @@ export class TimeEntryRepository {
     await INSERT.into(this.TimeEntries).entries(entries);
     console.log(`✅ ${entries.length} TimeEntries erfolgreich gespeichert`);
   }
+
+  /**
+   * Lädt alle TimeEntries für User in einem Monat (für Balance-Berechnung)
+   * @param tx - Transaction Objekt
+   * @param userId - User ID
+   * @param year - Jahr
+   * @param month - Monat (1-12)
+   * @returns TimeEntries im Monat
+   */
+  async getEntriesForMonth(tx: Transaction, userId: string, year: number, month: number): Promise<TimeEntry[]> {
+    const monthStart = new Date(year, month - 1, 1);
+    const monthEnd = new Date(year, month, 0);
+    const monthStartStr = monthStart.toISOString().split('T')[0];
+    const monthEndStr = monthEnd.toISOString().split('T')[0];
+
+    const entries = await tx.run(
+      SELECT.from(this.TimeEntries)
+        .where({ user_ID: userId })
+        .and(`workDate >= '${monthStartStr}'`)
+        .and(`workDate <= '${monthEndStr}'`)
+        .orderBy('workDate'),
+    );
+
+    return entries;
+  }
+
+  /**
+   * Lädt alle TimeEntries für User (für Gesamtsaldo)
+   * @param tx - Transaction Objekt
+   * @param userId - User ID
+   * @returns Alle TimeEntries des Users
+   */
+  async getAllEntriesForUser(tx: Transaction, userId: string): Promise<TimeEntry[]> {
+    const entries = await tx.run(SELECT.from(this.TimeEntries).where({ user_ID: userId }).orderBy('workDate'));
+
+    return entries;
+  }
+
+  /**
+   * Berechnet Summen für TimeEntries
+   * @param entries - TimeEntry Array
+   * @returns Aggregierte Summen
+   */
+  calculateSums(entries: TimeEntry[]): {
+    totalOvertime: number;
+    totalUndertime: number;
+    workingDays: number;
+  } {
+    const totalOvertime = entries.reduce((sum: number, e: any) => sum + (Number(e.overtimeHours) || 0), 0);
+    const totalUndertime = entries.reduce((sum: number, e: any) => sum + (Number(e.undertimeHours) || 0), 0);
+    const workingDays = entries.filter((e: any) => e.entryType_code === 'W').length;
+
+    return {
+      totalOvertime: Math.round(totalOvertime * 100) / 100,
+      totalUndertime: Math.round(totalUndertime * 100) / 100,
+      workingDays,
+    };
+  }
 }
 
 export default TimeEntryRepository;
