@@ -1,0 +1,39 @@
+locale;name;descr;code;text
+de;User Research;Erforschung und Sammlung von Benutzerbedürfnissen und -daten (UX);URCH;User Research
+en;User Research;Research and collection of user needs and data (UX);URCH;User Research
+de;Design Thinking/Ideation;Kreative Ideenfindung und Problemlösung;DSGN;Design/Ideation
+en;Design Thinking/Ideation;Creative idea generation and problem solving;DSGN;Design/Ideation
+de;Concept & Wireframing;Erstellung von Konzepten, User Flows und Wireframes (UX);CONC;Konzept/Wireframing
+en;Concept & Wireframing;Creation of concepts, user flows, and wireframes (UX);CONC;Concept/Wireframing
+de;Solution Architecture;Entwurf der gesamtheitlichen technischen Lösung;ARCH;Solution Arch.
+en;Solution Architecture;Design of the overall technical solution;ARCH;Solution Arch.
+de;API/Backend Development;Implementierung der Geschäftslogik, Datenbank und APIs;BDEV;Backend/API Dev
+en;API/Backend Development;Implementation of business logic, database, and APIs;BDEV;Backend/API Dev
+de;Frontend Development;Implementierung der Benutzeroberfläche (UI);FDEV;Frontend Dev
+en;Frontend Development;Implementation of the user interface (UI);FDEV;Frontend Dev
+de;SAP Customizing/Config;Konfiguration und Customizing spezifischer SAP-Module;SCON;SAP Customizing
+en;SAP Customizing/Config;Configuration and customizing of specific SAP modules;SCON;SAP Customizing
+de;SAP ABAP/Fiori Development;Entwicklung von kundenspezifischen SAP-Lösungen (ABAP, Fiori);SDEV;SAP Entwicklung
+en;SAP ABAP/Fiori Development;Development of custom SAP solutions (ABAP, Fiori);SDEV;SAP Development
+de;Continuous Integration;Automatisierte Integration und Bauen der Software;CINT;Cont. Integration
+en;Continuous Integration;Automated integration and building of software;CINT;Cont. Integration
+de;Deployment/Release;Automatisierte Bereitstellung auf Test- oder Produktivsystemen;DEPL;Deployment
+en;Deployment/Release;Automated deployment to test or production systems;DEPL;Deployment
+de;Infrastructure/Cloud;Einrichtung und Wartung der Cloud/SAP-Infrastruktur;INFR;Infrastruktur
+en;Infrastructure/Cloud;Setup and maintenance of Cloud/SAP infrastructure;INFR;Infrastructure
+de;Monitoring/Logging;Überwachung der Anwendung und Analyse von Logs;MONI;Monitoring
+en;Monitoring/Logging;Application monitoring and log analysis;MONI;Monitoring
+de;Testing/QA;Qualitätssicherung, Testen von Funktionalitäten und Regressionstests;TEST;Testing & QA
+en;Testing/QA;Quality assurance, functional and regression testing;TEST;Testing & QA
+de;Documentation/Knowledge;Erstellung von technischer und Anwender-Dokumentation;DOKU;Dokumentation
+en;Documentation/Knowledge;Creation of technical and user documentation;DOKU;Documentation
+de;Sprint Planning;Planung der Aufgaben für den nächsten Sprint (Agile);PLAN;Planung
+en;Sprint Planning;Planning tasks for the next sprint (Agile);PLAN;Planning
+de;Daily Standup;Kurzes, tägliches Team-Meeting zur Abstimmung;DAIL;Daily
+en;Daily Standup;Short, daily team meeting for synchronization;DAIL;Daily
+de;Refinement/Grooming;Detaillierung und Schätzung von Backlog-Items;REFI;Refinement
+en;Refinement/Grooming;Detailing and estimation of backlog items;REFI;Refinement
+de;Retrospective/Lessons;Rückblick auf den abgeschlossenen Sprint oder Projekte;RETR;Retrospective
+en;Retrospective/Lessons;Review of the completed sprint or projects;RETR;Retrospective
+de;Process Analysis (Lean);Analyse und Optimierung bestehender Geschäftsprozesse;ANAL;Prozessanalyse
+en;Process Analysis (Lean);Analysis and optimization of existing business processes;ANAL;Process Analysis

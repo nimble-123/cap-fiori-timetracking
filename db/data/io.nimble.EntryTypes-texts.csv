@@ -1,0 +1,11 @@
+code,locale,text
+W,en,Work
+W,de,Arbeit
+V,en,Vacation
+V,de,Urlaub
+S,en,Sick Leave
+S,de,Krankheit
+H,en,Holiday
+H,de,Feiertag
+O,en,Day Off
+O,de,Frei

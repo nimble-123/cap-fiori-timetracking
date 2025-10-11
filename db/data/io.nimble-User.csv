@@ -1,0 +1,3 @@
+createdAt;createdBy;modifiedAt;modifiedBy;name;ID;active;workingDaysPerWeek;weeklyHoursDec;expectedDailyHoursDec
+2024-10-08T10:00:00.000Z;TestSetup;2024-10-08T10:00:00.000Z;TestSetup;Max Mustermann;max.mustermann@test.de;true;5;36;7.2
+2024-10-08T10:05:00.000Z;TestSetup;2024-10-08T10:05:00.000Z;TestSetup;Erika Musterfrau;erika.musterfrau@test.de;true;4;36;9.0
