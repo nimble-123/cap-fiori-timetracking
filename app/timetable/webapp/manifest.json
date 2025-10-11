@@ -132,6 +132,19 @@
               },
               "liveMode": true,
               "controlConfiguration": {
+                "@com.sap.vocabularies.UI.v1.SelectionFields": {
+                  "filterFields": {
+                    "workDate": {
+                      "settings": {
+                        "defaultValues": [
+                          {
+                            "operator": "THISMONTH"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                },
                 "@com.sap.vocabularies.UI.v1.LineItem": {
                   "tableSettings": {
                     "type": "ResponsiveTable",
