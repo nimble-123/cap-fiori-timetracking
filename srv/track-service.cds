@@ -3,10 +3,10 @@ using {io.nimble as db} from '../db/data-model';
 
 service TrackService {
     @readonly
-    entity Users         as projection on db.User;
+    entity Users         as projection on db.Users;
 
     @readonly
-    entity Projects      as projection on db.Project;
+    entity Projects      as projection on db.Projects;
 
     @readonly
     entity ActivityTypes as projection on db.ActivityTypes;
@@ -16,7 +16,7 @@ service TrackService {
 
     @odata.draft.enabled
     entity TimeEntries   as
-        projection on db.TimeEntry {
+        projection on db.TimeEntries {
             *,
             case
                 when overtimeHours > 0
