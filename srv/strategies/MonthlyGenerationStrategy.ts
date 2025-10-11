@@ -1,15 +1,24 @@
-const TimeEntryFactory = require('../factories/TimeEntryFactory');
+import { TimeEntry, User } from '#cds-models/TrackService';
+import { TimeEntryFactory } from '../factories/TimeEntryFactory';
+
+interface MonthData {
+  year: number;
+  month: number;
+  daysInMonth: number;
+  monthStartStr: string;
+  monthEndStr: string;
+}
 
 /**
- * Strategy für monatliche TimeEntry Generierung
+ * Strategy für monatliche TimeEntries Generierung
  * Verwaltet die Logik zur automatischen Erstellung von monatlichen Einträgen
  */
-class MonthlyGenerationStrategy {
+export class MonthlyGenerationStrategy {
   /**
    * Bestimmt die Daten für den aktuellen Monat
-   * @returns {Object} Monatsdaten mit Start/End Strings und Metadaten
+   * @returns Monatsdaten mit Start/End Strings und Metadaten
    */
-  getCurrentMonthData() {
+  getCurrentMonthData(): MonthData {
     const now = new Date();
     const year = now.getFullYear();
     const month = now.getMonth(); // 0-basiert
@@ -27,11 +36,11 @@ class MonthlyGenerationStrategy {
 
   /**
    * Prüft, ob ein Tag ein Arbeitstag ist
-   * @param {Date} date - Das zu prüfende Datum
-   * @param {number} workingDaysPerWeek - Anzahl Arbeitstage pro Woche
-   * @returns {boolean} True wenn Arbeitstag
+   * @param date - Das zu prüfende Datum
+   * @param workingDaysPerWeek - Anzahl Arbeitstage pro Woche
+   * @returns True wenn Arbeitstag
    */
-  isWorkingDay(date, workingDaysPerWeek = 5) {
+  isWorkingDay(date: Date, workingDaysPerWeek: number = 5): boolean {
     const dayOfWeek = date.getDay(); // 0=Sonntag, 1=Montag, ...
 
     return workingDaysPerWeek === 5
@@ -41,16 +50,16 @@ class MonthlyGenerationStrategy {
 
   /**
    * Generiert fehlende TimeEntries für einen Monat
-   * @param {string} userID - User ID
-   * @param {Object} user - User Objekt
-   * @param {Object} monthData - Monatsdaten
-   * @param {Set<string>} existingDates - Bereits existierende Daten
-   * @returns {Array<Object>} Array von neuen TimeEntries
+   * @param userID - User ID
+   * @param user - User Objekt
+   * @param monthData - Monatsdaten
+   * @param existingDates - Bereits existierende Daten
+   * @returns Array von neuen TimeEntries
    */
-  generateMissingEntries(userID, user, monthData, existingDates) {
+  generateMissingEntries(userID: string, user: User, monthData: MonthData, existingDates: Set<string>): TimeEntry[] {
     const { year, month, daysInMonth } = monthData;
     const workingDaysPerWeek = user.workingDaysPerWeek || 5;
-    const newEntries = [];
+    const newEntries: TimeEntry[] = [];
 
     for (let day = 1; day <= daysInMonth; day++) {
       const currentDate = new Date(year, month, day);
@@ -74,4 +83,4 @@ class MonthlyGenerationStrategy {
   }
 }
 
-module.exports = MonthlyGenerationStrategy;
+export default MonthlyGenerationStrategy;

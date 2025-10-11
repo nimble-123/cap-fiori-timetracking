@@ -1,9 +1,29 @@
+import { Transaction } from '@sap/cds';
+import { TimeEntry } from '#cds-models/TrackService';
+import { UserService } from '../services/UserService';
+import { TimeEntryValidator } from '../validators/TimeEntryValidator';
+import { TimeEntryRepository } from '../repositories/TimeEntryRepository';
+import { TimeEntryFactory } from '../factories/TimeEntryFactory';
+
+// Type definitions
+interface Dependencies {
+  userService: UserService;
+  validator: TimeEntryValidator;
+  repository: TimeEntryRepository;
+  factory: typeof TimeEntryFactory;
+}
+
 /**
  * Command für TimeEntry CREATE Operation
  * Kapselt die gesamte Logik für das Erstellen neuer TimeEntries
  */
-class CreateTimeEntryCommand {
-  constructor(dependencies) {
+export class CreateTimeEntryCommand {
+  private userService: UserService;
+  private validator: TimeEntryValidator;
+  private repository: TimeEntryRepository;
+  private factory: typeof TimeEntryFactory;
+
+  constructor(dependencies: Dependencies) {
     this.userService = dependencies.userService;
     this.validator = dependencies.validator;
     this.repository = dependencies.repository;
@@ -12,17 +32,17 @@ class CreateTimeEntryCommand {
 
   /**
    * Führt CREATE Operation aus
-   * @param {Object} tx - Transaction Objekt
-   * @param {Object} entryData - TimeEntry Daten
-   * @returns {Promise<Object>} Berechnete Daten für den Entry
+   * @param tx - Transaction Objekt
+   * @param entryData - TimeEntry Daten
+   * @returns Berechnete Daten für den Entry
    */
-  async execute(tx, entryData) {
+  async execute(tx: Transaction, entryData: Partial<TimeEntry>): Promise<any> {
     // Validierung der Pflichtfelder
     const entryType = this.validator.validateRequiredFieldsForCreate(entryData);
     const { user_ID, workDate, startTime, endTime } = entryData;
 
     // Eindeutigkeit pro Tag prüfen
-    await this.repository.validateUniqueEntryPerDay(tx, user_ID, workDate);
+    await this.repository.validateUniqueEntryPerDay(tx, user_ID!, workDate!);
 
     // Referenzen validieren
     await this.validator.validateReferences(tx, entryData);
@@ -33,13 +53,13 @@ class CreateTimeEntryCommand {
       durationData = await this.factory.createWorkTimeData(
         this.userService,
         tx,
-        user_ID,
+        user_ID!,
         startTime,
         endTime,
-        entryData.breakMin,
+        entryData.breakMin || 0,
       );
     } else {
-      durationData = await this.factory.createNonWorkTimeData(this.userService, tx, user_ID);
+      durationData = await this.factory.createNonWorkTimeData(this.userService, tx, user_ID!);
     }
 
     return {
@@ -53,8 +73,13 @@ class CreateTimeEntryCommand {
  * Command für TimeEntry UPDATE Operation
  * Kapselt die gesamte Logik für das Aktualisieren von TimeEntries
  */
-class UpdateTimeEntryCommand {
-  constructor(dependencies) {
+export class UpdateTimeEntryCommand {
+  private userService: UserService;
+  private validator: TimeEntryValidator;
+  private repository: TimeEntryRepository;
+  private factory: typeof TimeEntryFactory;
+
+  constructor(dependencies: Dependencies) {
     this.userService = dependencies.userService;
     this.validator = dependencies.validator;
     this.repository = dependencies.repository;
@@ -63,12 +88,12 @@ class UpdateTimeEntryCommand {
 
   /**
    * Führt UPDATE Operation aus
-   * @param {Object} tx - Transaction Objekt
-   * @param {string} entryId - TimeEntry ID
-   * @param {Object} updateData - Update-Daten
-   * @returns {Promise<Object>} Berechnete Daten oder leeres Objekt
+   * @param tx - Transaction Objekt
+   * @param entryId - TimeEntry ID
+   * @param updateData - Update-Daten
+   * @returns Berechnete Daten oder leeres Objekt
    */
-  async execute(tx, entryId, updateData) {
+  async execute(tx: Transaction, entryId: string, updateData: Partial<TimeEntry>): Promise<any> {
     // Existierenden Entry laden
     const existingEntry = await this.repository.getById(tx, entryId);
 
@@ -109,12 +134,17 @@ class UpdateTimeEntryCommand {
 
   /**
    * Validiert Eindeutigkeit bei User/Datum-Änderungen
-   * @param {Object} tx - Transaction Objekt
-   * @param {Object} updateData - Update-Daten
-   * @param {Object} existingEntry - Bestehender Entry
-   * @param {string} entryId - Entry ID
+   * @param tx - Transaction Objekt
+   * @param updateData - Update-Daten
+   * @param existingEntry - Bestehender Entry
+   * @param entryId - Entry ID
    */
-  async validateUniquenessForUpdate(tx, updateData, existingEntry, entryId) {
+  private async validateUniquenessForUpdate(
+    tx: Transaction,
+    updateData: Partial<TimeEntry>,
+    existingEntry: TimeEntry,
+    entryId: string,
+  ): Promise<void> {
     // Nur prüfen wenn User oder Datum geändert werden
     if (!updateData.user_ID && !updateData.workDate) {
       return;
@@ -123,16 +153,16 @@ class UpdateTimeEntryCommand {
     const userId = updateData.user_ID ?? existingEntry.user_ID;
     const workDate = updateData.workDate ?? existingEntry.workDate;
 
-    await this.repository.validateUniqueEntryPerDay(tx, userId, workDate, entryId);
+    await this.repository.validateUniqueEntryPerDay(tx, userId!, workDate!, entryId);
   }
 
   /**
    * Erstellt zusammengeführte Entry-Daten für Update-Berechnung
-   * @param {Object} updateData - Update-Daten
-   * @param {Object} existingEntry - Bestehender Entry
-   * @returns {Object} Zusammengeführte Daten
+   * @param updateData - Update-Daten
+   * @param existingEntry - Bestehender Entry
+   * @returns Zusammengeführte Daten
    */
-  mergeEntryData(updateData, existingEntry) {
+  private mergeEntryData(updateData: Partial<TimeEntry>, existingEntry: TimeEntry): any {
     return {
       startTime: updateData.startTime ?? existingEntry.startTime,
       endTime: updateData.endTime ?? existingEntry.endTime,
@@ -142,5 +172,3 @@ class UpdateTimeEntryCommand {
     };
   }
 }
-
-module.exports = { CreateTimeEntryCommand, UpdateTimeEntryCommand };

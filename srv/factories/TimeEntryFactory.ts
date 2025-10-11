@@ -1,22 +1,41 @@
-const { randomUUID } = require('crypto');
-const TimeCalculationService = require('../services/TimeCalculationService');
+import { randomUUID } from 'crypto';
+import { Transaction } from '@sap/cds';
+import { TimeEntry, User } from '#cds-models/TrackService';
+import { TimeCalculationService } from '../services/TimeCalculationService';
+import { UserService } from '../services/UserService';
+
+// Type definitions
+interface WorkTimeData {
+  breakMin: number;
+  durationHoursGross: number;
+  durationHoursNet: number;
+  overtimeHours: number;
+  undertimeHours: number;
+}
 
 /**
  * Factory für TimeEntry Erstellung
  * Zentrale Stelle für die Erzeugung von TimeEntry-Objekten
  */
-class TimeEntryFactory {
+export class TimeEntryFactory {
   /**
    * Erstellt Work-Time Entry Daten
-   * @param {Object} userService - UserService Instanz
-   * @param {Object} tx - Transaction Objekt
-   * @param {string} userId - User ID
-   * @param {string} startTime - Startzeit
-   * @param {string} endTime - Endzeit
-   * @param {number} breakMinutes - Pausenzeit
-   * @returns {Promise<Object>} Berechnete Zeitdaten
+   * @param userService - UserService Instanz
+   * @param tx - Transaction Objekt
+   * @param userId - User ID
+   * @param startTime - Startzeit
+   * @param endTime - Endzeit
+   * @param breakMinutes - Pausenzeit
+   * @returns Berechnete Zeitdaten
    */
-  static async createWorkTimeData(userService, tx, userId, startTime, endTime, breakMinutes) {
+  static async createWorkTimeData(
+    userService: UserService,
+    tx: Transaction,
+    userId: string,
+    startTime: string,
+    endTime: string,
+    breakMinutes: number,
+  ): Promise<WorkTimeData> {
     const workingHours = TimeCalculationService.calculateWorkingHours(startTime, endTime, breakMinutes);
 
     if (workingHours.error) {
@@ -25,14 +44,14 @@ class TimeEntryFactory {
 
     const expectedDaily = await userService.getExpectedDailyHours(tx, userId);
     const { overtime, undertime } = TimeCalculationService.calculateOvertimeAndUndertime(
-      workingHours.netHours,
+      workingHours.netHours!,
       expectedDaily,
     );
 
     return {
-      breakMin: workingHours.breakMinutes,
-      durationHoursGross: TimeCalculationService.roundToTwoDecimals(workingHours.grossMinutes / 60),
-      durationHoursNet: workingHours.netHours,
+      breakMin: workingHours.breakMinutes!,
+      durationHoursGross: TimeCalculationService.roundToTwoDecimals(workingHours.grossMinutes! / 60),
+      durationHoursNet: workingHours.netHours!,
       overtimeHours: overtime,
       undertimeHours: undertime,
     };
@@ -40,12 +59,12 @@ class TimeEntryFactory {
 
   /**
    * Erstellt Non-Work-Time Entry Daten (Urlaub/Krankheit)
-   * @param {Object} userService - UserService Instanz
-   * @param {Object} tx - Transaction Objekt
-   * @param {string} userId - User ID
-   * @returns {Promise<Object>} Standard-Zeitdaten
+   * @param userService - UserService Instanz
+   * @param tx - Transaction Objekt
+   * @param userId - User ID
+   * @returns Standard-Zeitdaten
    */
-  static async createNonWorkTimeData(userService, tx, userId) {
+  static async createNonWorkTimeData(userService: UserService, tx: Transaction, userId: string): Promise<WorkTimeData> {
     const expectedDaily = await userService.getExpectedDailyHours(tx, userId);
 
     return {
@@ -59,12 +78,12 @@ class TimeEntryFactory {
 
   /**
    * Erstellt Standard-TimeEntry für automatische Generierung
-   * @param {string} userID - User ID
-   * @param {Date} date - Datum für den Eintrag
-   * @param {Object} user - User Objekt mit Konfiguration
-   * @returns {Object} Vollständiges TimeEntry Objekt
+   * @param userID - User ID
+   * @param date - Datum für den Eintrag
+   * @param user - User Objekt mit Konfiguration
+   * @returns Vollständiges TimeEntry Objekt
    */
-  static createDefaultEntry(userID, date, user) {
+  static createDefaultEntry(userID: string, date: Date, user: User): TimeEntry {
     const dateString = date.toISOString().split('T')[0];
     const workingDaysPerWeek = user.workingDaysPerWeek || 5;
     const expected = user.expectedDailyHoursDec || (user.weeklyHoursDec || 36) / workingDaysPerWeek;
@@ -86,8 +105,8 @@ class TimeEntryFactory {
       undertimeHours: Math.max(0, expected - 7.2),
       createdAt: new Date().toISOString(),
       modifiedAt: new Date().toISOString(),
-    };
+    } as TimeEntry;
   }
 }
 
-module.exports = TimeEntryFactory;
+export default TimeEntryFactory;

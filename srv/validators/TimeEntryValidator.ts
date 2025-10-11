@@ -1,19 +1,25 @@
+import { Transaction } from '@sap/cds';
+import { TimeEntry } from '#cds-models/TrackService';
+
 /**
  * Validator für TimeEntry Operationen
  * Verwaltet alle Validierungslogik für TimeEntries
  */
-class TimeEntryValidator {
-  constructor(entities) {
-    this.Project = entities.Project;
+export class TimeEntryValidator {
+  private Projects: any;
+  private ActivityTypes: any;
+
+  constructor(entities: any) {
+    this.Projects = entities.Projects;
     this.ActivityTypes = entities.ActivityTypes;
   }
 
   /**
    * Validiert Pflichtfelder für TimeEntry CREATE
-   * @param {Object} entryData - TimeEntry Daten
-   * @returns {string} Entry Type
+   * @param entryData - TimeEntry Daten
+   * @returns Entry Type
    */
-  validateRequiredFieldsForCreate(entryData) {
+  validateRequiredFieldsForCreate(entryData: Partial<TimeEntry>): string {
     const { user_ID, workDate, startTime, endTime, entryType } = entryData;
 
     if (!user_ID) {
@@ -31,15 +37,15 @@ class TimeEntryValidator {
       throw new Error('startTime und endTime sind bei Arbeitszeit erforderlich.');
     }
 
-    return type;
+    return String(type);
   }
 
   /**
    * Validiert Felder für TimeEntry UPDATE
-   * @param {Object} entryData - TimeEntry Daten
-   * @param {Object} existingEntry - Bestehender TimeEntry
+   * @param entryData - TimeEntry Daten
+   * @param existingEntry - Bestehender TimeEntry
    */
-  validateFieldsForUpdate(entryData, existingEntry) {
+  validateFieldsForUpdate(entryData: Partial<TimeEntry>, existingEntry: TimeEntry): void {
     const startTime = entryData.startTime ?? existingEntry.startTime;
     const endTime = entryData.endTime ?? existingEntry.endTime;
     const entryType = entryData.entryType ?? existingEntry.entryType ?? 'WORK';
@@ -52,14 +58,14 @@ class TimeEntryValidator {
 
   /**
    * Validiert Referenzen zu Projekt und Activity
-   * @param {Object} tx - Transaction Objekt
-   * @param {Object} entryData - TimeEntry Daten
+   * @param tx - Transaction Objekt
+   * @param entryData - TimeEntry Daten
    */
-  async validateReferences(tx, entryData) {
+  async validateReferences(tx: Transaction, entryData: Partial<TimeEntry>): Promise<void> {
     // Projekt-Validierung (nur aktive Projekte)
     if (entryData.project_ID) {
       const project = await tx.run(
-        SELECT.one.from(this.Project).where({
+        SELECT.one.from(this.Projects).where({
           ID: entryData.project_ID,
           active: true,
         }),
@@ -86,14 +92,21 @@ class TimeEntryValidator {
 
   /**
    * Prüft ob zeitrelevante Felder geändert wurden
-   * @param {Object} updateData - Update-Daten
-   * @returns {boolean} True wenn Neuberechnung erforderlich
+   * @param updateData - Update-Daten
+   * @returns True wenn Neuberechnung erforderlich
    */
-  requiresTimeRecalculation(updateData) {
-    const timeRelevantFields = ['startTime', 'endTime', 'breakMin', 'user_ID', 'entryType'];
+  requiresTimeRecalculation(updateData: Partial<TimeEntry>): boolean {
+    const timeRelevantFields: (keyof TimeEntry)[] = [
+      'startTime',
+      'endTime',
+      'breakMin',
+      'user_ID',
+      'entryType_code',
+      'note',
+    ];
 
     return timeRelevantFields.some((field) => field in updateData);
   }
 }
 
-module.exports = TimeEntryValidator;
+export default TimeEntryValidator;

@@ -2,13 +2,27 @@
  * Service für Zeitberechnungen
  * Alle zeitbezogenen Berechnungen und Konvertierungen
  */
-class TimeCalculationService {
+
+interface WorkingHoursResult {
+  grossMinutes?: number;
+  breakMinutes?: number;
+  netMinutes?: number;
+  netHours?: number;
+  error?: string;
+}
+
+interface OvertimeUndertimeResult {
+  overtime: number;
+  undertime: number;
+}
+
+export class TimeCalculationService {
   /**
    * Konvertiert Zeitstring (HH:MM:SS) in Minuten
-   * @param {string} timeString - Zeit im Format "HH:MM:SS" oder "HH:MM"
-   * @returns {number} Minuten als Zahl
+   * @param timeString - Zeit im Format "HH:MM:SS" oder "HH:MM"
+   * @returns Minuten als Zahl
    */
-  static timeToMinutes(timeString) {
+  static timeToMinutes(timeString: string | null | undefined): number {
     if (!timeString) return 0;
     const [hours, minutes, seconds = '0'] = String(timeString).split(':');
     return Number(hours) * 60 + Number(minutes) + Math.floor(Number(seconds) / 60);
@@ -16,21 +30,21 @@ class TimeCalculationService {
 
   /**
    * Rundet auf 2 Dezimalstellen
-   * @param {number} value - Zu rundender Wert
-   * @returns {number} Gerundeter Wert
+   * @param value - Zu rundender Wert
+   * @returns Gerundeter Wert
    */
-  static roundToTwoDecimals(value) {
+  static roundToTwoDecimals(value: number): number {
     return Math.round(value * 100) / 100;
   }
 
   /**
    * Berechnet Arbeitszeiten basierend auf Start-/Endzeit und Pause
-   * @param {string} startTime - Startzeit
-   * @param {string} endTime - Endzeit
-   * @param {number} breakMinutes - Pausenzeit in Minuten
-   * @returns {Object} Berechnungsergebnis mit Zeiten oder Fehler
+   * @param startTime - Startzeit
+   * @param endTime - Endzeit
+   * @param breakMinutes - Pausenzeit in Minuten
+   * @returns Berechnungsergebnis mit Zeiten oder Fehler
    */
-  static calculateWorkingHours(startTime, endTime, breakMinutes = 0) {
+  static calculateWorkingHours(startTime: string, endTime: string, breakMinutes: number = 0): WorkingHoursResult {
     const grossMinutes = this.timeToMinutes(endTime) - this.timeToMinutes(startTime);
 
     if (grossMinutes <= 0) {
@@ -60,11 +74,11 @@ class TimeCalculationService {
 
   /**
    * Berechnet Über- und Unterstunden basierend auf Ist- und Soll-Arbeitszeit
-   * @param {number} actualHours - Tatsächlich gearbeitete Stunden
-   * @param {number} expectedHours - Erwartete Arbeitszeit
-   * @returns {Object} Über- und Unterstunden
+   * @param actualHours - Tatsächlich gearbeitete Stunden
+   * @param expectedHours - Erwartete Arbeitszeit
+   * @returns Über- und Unterstunden
    */
-  static calculateOvertimeAndUndertime(actualHours, expectedHours) {
+  static calculateOvertimeAndUndertime(actualHours: number, expectedHours: number): OvertimeUndertimeResult {
     const overtime = Math.max(0, this.roundToTwoDecimals(actualHours - expectedHours));
     const undertime = Math.max(0, this.roundToTwoDecimals(expectedHours - actualHours));
 
@@ -72,4 +86,4 @@ class TimeCalculationService {
   }
 }
 
-module.exports = TimeCalculationService;
+export default TimeCalculationService;
