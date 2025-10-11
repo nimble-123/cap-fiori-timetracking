@@ -6,7 +6,7 @@ using {
   sap.common.CodeList as CodeList
 } from '@sap/cds/common';
 
-entity User : managed {
+entity Users : managed {
   key ID                    : String(255);
       name                  : String(111);
       active                : Boolean default true;
@@ -18,7 +18,7 @@ entity User : managed {
       expectedDailyHoursDec : Decimal(4, 2);
 }
 
-entity Project : managed, cuid {
+entity Projects : managed, cuid {
   number   : String(40);
   name     : String(111);
   active   : Boolean default true;
@@ -35,13 +35,13 @@ entity EntryTypes : CodeList {
       text : localized String(80);
 }
 
-entity TimeEntry : managed, cuid {
-  user               : Association to User not null;
+entity TimeEntries : managed, cuid {
+  user               : Association to Users not null;
   workDate           : Date not null;
   entryType          : Association to EntryTypes not null;
 
-  // Optional: Zuordnung (nullable)
-  project            : Association to Project;
+  // Optional: Zuordnung
+  project            : Association to Projects;
   activity           : Association to ActivityTypes;
 
   startTime          : Time not null;
