@@ -26,7 +26,6 @@ annotate service.TimeEntries with @Aggregation.ApplySupported: {
     'concat',
     'groupby',
     'filter',
-    'expand',
     'search'
   ],
   Rollup                : #None,
