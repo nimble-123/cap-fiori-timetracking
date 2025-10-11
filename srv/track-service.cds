@@ -14,6 +14,9 @@ service TrackService {
     @readonly
     entity EntryTypes    as projection on db.EntryTypes;
 
+    @readonly
+    entity GermanStates  as projection on db.GermanStates;
+
     @odata.draft.enabled
     entity TimeEntries   as
         projection on db.TimeEntries {
@@ -36,12 +39,16 @@ service TrackService {
                      startTime: Time,
                      endTime: Time,
                      breakMin: Integer,
-                     note: String)                      returns TimeEntries;
+                     note: String)                                     returns TimeEntries;
 
     // Optional: Nur Pause ändern
-    action setBreak(entryID: String, breakMin: Integer) returns TimeEntries;
+    action setBreak(entryID: String, breakMin: Integer)                returns TimeEntries;
 
     // Unbound Action: Generiere leere TimeEntries für aktuellen Monat (für aktuellen User)
     @Common.SideEffects: {TargetEntities: ['/TrackService.EntityContainer/TimeEntries']}
-    action generateMonthlyTimeEntries()                 returns array of TimeEntries;
+    action generateMonthlyTimeEntries()                                returns array of TimeEntries;
+
+    // Unbound Action: Generiere TimeEntries für ein ganzes Jahr inkl. Wochenenden und Feiertage
+    @Common.SideEffects: {TargetEntities: ['/TrackService.EntityContainer/TimeEntries']}
+    action generateYearlyTimeEntries(year: Integer, stateCode: GermanStates:code) returns array of TimeEntries;
 }

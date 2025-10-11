@@ -140,6 +140,12 @@ annotate service.TimeEntries with {
                         @Common.Label          : '{i18n>timeEntry.source}';
 };
 
+
+annotate service.generateYearlyTimeEntries with(
+     year @title       : '{i18n>title.generateYearlyTimeEntries.year}' @Common.Label: '{i18n>generateYearlyTimeEntries.year}',
+     stateCode @title  : '{i18n>title.generateYearlyTimeEntries.stateCode}' @Common.Label: '{i18n>generateYearlyTimeEntries.stateCode}'
+);
+
 ////////////////////////////////////////////////////////////////////////////
 //  Entity Labels (Common.Label)
 ////////////////////////////////////////////////////////////////////////////

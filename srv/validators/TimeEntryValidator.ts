@@ -33,6 +33,7 @@ export class TimeEntryValidator {
     const type = entryType || 'WORK';
 
     // Bei Arbeitszeit sind Start-/Endzeit erforderlich
+    // Wochenenden (O) und Feiertage (H) dürfen 0-Zeiten haben
     if (type === 'WORK' && (!startTime || !endTime)) {
       throw new Error('startTime und endTime sind bei Arbeitszeit erforderlich.');
     }
@@ -51,6 +52,7 @@ export class TimeEntryValidator {
     const entryType = entryData.entryType ?? existingEntry.entryType ?? 'WORK';
 
     // Bei Arbeitszeit sind Start-/Endzeit erforderlich
+    // Wochenenden (O) und Feiertage (H) dürfen 0-Zeiten haben
     if (entryType === 'WORK' && (!startTime || !endTime)) {
       throw new Error('startTime und endTime sind bei Arbeitszeit erforderlich.');
     }

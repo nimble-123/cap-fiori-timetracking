@@ -7,13 +7,17 @@ import { TimeEntryRepository } from './repositories/TimeEntryRepository';
 import { TimeEntryValidator } from './validators/TimeEntryValidator';
 import { TimeEntryFactory } from './factories/TimeEntryFactory';
 import { MonthlyGenerationStrategy } from './strategies/MonthlyGenerationStrategy';
+import { YearlyGenerationStrategy } from './strategies/YearlyGenerationStrategy';
+import { HolidayService } from './services/HolidayService';
 import { CreateTimeEntryCommand, UpdateTimeEntryCommand } from './commands/TimeEntryCommands';
 
 export default class TrackService extends ApplicationService {
   private userService!: UserService;
   private repository!: TimeEntryRepository;
   private validator!: TimeEntryValidator;
-  private generationStrategy!: MonthlyGenerationStrategy;
+  private monthlyStrategy!: MonthlyGenerationStrategy;
+  private yearlyStrategy!: YearlyGenerationStrategy;
+  private holidayService!: HolidayService;
   private createCommand!: CreateTimeEntryCommand;
   private updateCommand!: UpdateTimeEntryCommand;
 
@@ -22,7 +26,9 @@ export default class TrackService extends ApplicationService {
     this.userService = new UserService(this.entities);
     this.repository = new TimeEntryRepository(this.entities);
     this.validator = new TimeEntryValidator(this.entities);
-    this.generationStrategy = new MonthlyGenerationStrategy();
+    this.holidayService = new HolidayService();
+    this.monthlyStrategy = new MonthlyGenerationStrategy();
+    this.yearlyStrategy = new YearlyGenerationStrategy(this.holidayService);
 
     const dependencies = {
       userService: this.userService,
@@ -39,6 +45,7 @@ export default class TrackService extends ApplicationService {
     this.before('UPDATE', TimeEntries, this.handleUpdateTimeEntry.bind(this));
     this.before('DELETE', TimeEntries, this.handleDeleteTimeEntry.bind(this));
     this.on('generateMonthlyTimeEntries', this.handleGenerateMonthlyEntries.bind(this));
+    this.on('generateYearlyTimeEntries', this.handleGenerateYearlyEntries.bind(this));
 
     await super.init();
   }
@@ -84,14 +91,14 @@ export default class TrackService extends ApplicationService {
         return [];
       }
 
-      const monthData = this.generationStrategy.getCurrentMonthData();
+      const monthData = this.monthlyStrategy.getCurrentMonthData();
       const existingDates = await this.repository.getExistingDatesInRange(
         userID,
         monthData.monthStartStr,
         monthData.monthEndStr,
       );
 
-      const newEntries = this.generationStrategy.generateMissingEntries(userID, user, monthData, existingDates);
+      const newEntries = this.monthlyStrategy.generateMissingEntries(userID, user, monthData, existingDates);
       await this.repository.insertBatch(newEntries);
 
       const allMonthEntries = await this.repository.getEntriesInRange(
@@ -104,6 +111,60 @@ export default class TrackService extends ApplicationService {
       return allMonthEntries;
     } catch (error: any) {
       console.error('❌ Fehler in generateMonthlyTimeEntries:', error);
+      req.reject(500, `Fehler: ${error.message}`);
+      return [];
+    }
+  }
+
+  private async handleGenerateYearlyEntries(req: any): Promise<TimeEntry[]> {
+    try {
+      console.log('🚀 Action generateYearlyTimeEntries aufgerufen');
+
+      // Parameter auslesen
+      const year = req.data.year || new Date().getFullYear();
+      const stateCode = req.data.stateCode;
+
+      if (!stateCode) {
+        req.reject(400, 'Bundesland (stateCode) ist erforderlich.');
+        return [];
+      }
+
+      console.log(`📅 Generiere Jahreseinträge für ${year}, Bundesland: ${stateCode}`);
+
+      const { userID, user } = await this.userService.resolveUserForGeneration(req);
+      if (!user) {
+        console.error(`❌ User ${userID} nicht verfügbar`);
+        req.reject(404, 'User nicht verfügbar.');
+        return [];
+      }
+
+      const yearData = this.yearlyStrategy.getYearData(year);
+      const existingDates = await this.repository.getExistingDatesInRange(
+        userID,
+        yearData.yearStartStr,
+        yearData.yearEndStr,
+      );
+
+      const newEntries = await this.yearlyStrategy.generateMissingEntries(
+        userID,
+        user,
+        yearData,
+        stateCode,
+        existingDates,
+      );
+
+      await this.repository.insertBatch(newEntries);
+
+      const allYearEntries = await this.repository.getEntriesInRange(
+        userID,
+        yearData.yearStartStr,
+        yearData.yearEndStr,
+      );
+
+      console.log(`✅ ${newEntries.length} neue Einträge erstellt (Arbeitstage, Wochenenden, Feiertage)`);
+      return allYearEntries;
+    } catch (error: any) {
+      console.error('❌ Fehler in generateYearlyTimeEntries:', error);
       req.reject(500, `Fehler: ${error.message}`);
       return [];
     }

@@ -94,6 +94,29 @@ annotate service.TimeEntries with {
 };
 
 ////////////////////////////////////////////////////////////////////////////
+//  Action Parameter - Value Helps
+////////////////////////////////////////////////////////////////////////////
+
+// generateYearlyTimeEntries Action - Parameter Annotations
+annotate service.generateYearlyTimeEntries with(stateCode @(
+  Common.ValueList               : {
+    CollectionPath: 'GermanStates',
+    Parameters    : [
+      {
+        $Type            : 'Common.ValueListParameterInOut',
+        LocalDataProperty: stateCode,
+        ValueListProperty: 'code'
+      },
+      {
+        $Type            : 'Common.ValueListParameterDisplayOnly',
+        ValueListProperty: 'name'
+      }
+    ]
+  },
+  Common.ValueListWithFixedValues: true
+) );
+
+////////////////////////////////////////////////////////////////////////////
 //  Weitere Value Helps können hier hinzugefügt werden
 ////////////////////////////////////////////////////////////////////////////
 // Beispiele:

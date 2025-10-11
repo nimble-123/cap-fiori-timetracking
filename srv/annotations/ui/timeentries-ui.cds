@@ -22,6 +22,14 @@ annotate service.TimeEntries with @(
       ![@UI.Importance]: #High,
       Inline           : false
     },
+    // Action Button für Jahresgenerierung
+    {
+      $Type            : 'UI.DataFieldForAction',
+      Action           : 'TrackService.EntityContainer/generateYearlyTimeEntries',
+      Label            : '{i18n>action.generateYearlyTimeEntries}',
+      ![@UI.Importance]: #High,
+      Inline           : false
+    },
     {
       Value: workDate,
       $Type: 'UI.DataField'

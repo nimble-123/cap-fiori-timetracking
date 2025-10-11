@@ -35,6 +35,11 @@ entity EntryTypes : CodeList {
       text : localized String(80);
 }
 
+entity GermanStates : CodeList {
+  key code : String(2);
+      text : localized String(80);
+}
+
 entity TimeEntries : managed, cuid {
   user               : Association to Users not null;
   workDate           : Date not null;

@@ -39,13 +39,28 @@ export class CreateTimeEntryCommand {
   async execute(tx: Transaction, entryData: Partial<TimeEntry>): Promise<any> {
     // Validierung der Pflichtfelder
     const entryType = this.validator.validateRequiredFieldsForCreate(entryData);
-    const { user_ID, workDate, startTime, endTime } = entryData;
+    const { user_ID, workDate, startTime, endTime, entryType_code } = entryData;
 
     // Eindeutigkeit pro Tag prüfen
     await this.repository.validateUniqueEntryPerDay(tx, user_ID!, workDate!);
 
     // Referenzen validieren
     await this.validator.validateReferences(tx, entryData);
+
+    // Für generierte Einträge (Wochenenden/Feiertage): Bereits berechnete Werte übernehmen
+    const isGeneratedNonWork = entryData.source === 'GENERATED' && (entryType_code === 'O' || entryType_code === 'H');
+
+    if (isGeneratedNonWork && entryData.durationHoursGross !== undefined) {
+      // Bereits berechnete Werte aus der Strategie übernehmen
+      return {
+        breakMin: entryData.breakMin,
+        durationHoursGross: entryData.durationHoursGross,
+        durationHoursNet: entryData.durationHoursNet,
+        overtimeHours: entryData.overtimeHours,
+        undertimeHours: entryData.undertimeHours,
+        source: entryData.source,
+      };
+    }
 
     // Zeitdaten berechnen
     let durationData;
