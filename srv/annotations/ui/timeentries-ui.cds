@@ -30,6 +30,22 @@ annotate service.TimeEntries with @(
       ![@UI.Importance]: #High,
       Inline           : false
     },
+    // Action Button für Monatssaldo
+    {
+      $Type            : 'UI.DataFieldForAction',
+      Action           : 'TrackService.EntityContainer/getMonthlyBalance',
+      Label            : '{i18n>action.getMonthlyBalance}',
+      ![@UI.Importance]: #Medium,
+      Inline           : false
+    },
+    // Action Button für aktuellen Gesamtsaldo
+    {
+      $Type            : 'UI.DataFieldForAction',
+      Action           : 'TrackService.EntityContainer/getCurrentBalance',
+      Label            : '{i18n>action.getCurrentBalance}',
+      ![@UI.Importance]: #Medium,
+      Inline           : false
+    },
     {
       Value: workDate,
       $Type: 'UI.DataField'
@@ -218,7 +234,7 @@ annotate service.TimeEntries with @(UI.Chart #HoursPerDayChart: {
 annotate service.TimeEntries with @(UI.Chart #alpChart: {
   $Type          : 'UI.ChartDefinitionType',
   ChartType      : #Column,
-  Dimensions     : [workDate, ],
+  Dimensions     : [workDate],
   DynamicMeasures: ['@Analytics.AggregatedProperty#durationHoursNet_sum',
   ]
 });

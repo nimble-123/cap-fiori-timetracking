@@ -44,9 +44,8 @@ annotate service.TimeEntries with @(Analytics.AggregatedProperty #durationHoursN
   Name                : 'durationHoursNet_sum',
   AggregatableProperty: durationHoursNet,
   AggregationMethod   : 'sum',
-  @Common.Label       : 'durationHoursNet (Sum)',
+  @Common.Label       : '{i18n>analytics.durationHoursNet.sum}',
 });
-
 
 ////////////////////////////////////////////////////////////////////////////
 //  Users - Capabilities (Read-only)

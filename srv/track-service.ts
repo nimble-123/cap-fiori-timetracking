@@ -178,6 +178,26 @@ export default class TrackService extends ApplicationService {
     }
   }
 
+  private getBalanceStatus(balanceValue: number): { emoji: string; status: string; formattedBalance: string } {
+    let emoji = '🔵';
+    let status = 'Neutral';
+
+    if (balanceValue > 0) {
+      emoji = '💚';
+      status = 'Positiv';
+    } else if (balanceValue < -5) {
+      emoji = '🔴';
+      status = 'Kritisch';
+    } else if (balanceValue < 0) {
+      emoji = '🟡';
+      status = 'Negativ';
+    }
+
+    const formattedBalance = balanceValue > 0 ? `+${balanceValue}h` : `${balanceValue}h`;
+
+    return { emoji, status, formattedBalance };
+  }
+
   private async handleGetMonthlyBalance(req: any): Promise<any> {
     try {
       const year = req.data.year || new Date().getFullYear();
@@ -189,6 +209,13 @@ export default class TrackService extends ApplicationService {
       const tx = cds.transaction(req) as any;
 
       const balance = await this.balanceService.getMonthBalance(tx, userID, year, month);
+
+      const balanceValue = balance.balanceHours ?? 0;
+      const { emoji, status, formattedBalance } = this.getBalanceStatus(balanceValue);
+
+      req.info(
+        `${emoji} Monatssaldo ${year}-${String(month).padStart(2, '0')}: ${formattedBalance} bei ${balance.workingDays ?? 0} Arbeitstagen (Status: ${status})`,
+      );
 
       console.log(`✅ Saldo berechnet: ${balance.balanceHours}h (${balance.workingDays} Arbeitstage)`);
       return balance;
@@ -207,6 +234,10 @@ export default class TrackService extends ApplicationService {
       const tx = cds.transaction(req) as any;
 
       const balance = await this.balanceService.getCurrentCumulativeBalance(tx, userID);
+
+      const { emoji, status, formattedBalance } = this.getBalanceStatus(balance);
+
+      req.info(`${emoji} Ihr aktueller Gesamtsaldo beträgt ${formattedBalance} (Status: ${status})`);
 
       console.log(`✅ Aktueller Gesamtsaldo: ${balance}h`);
       return balance;

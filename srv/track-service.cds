@@ -34,23 +34,23 @@ service TrackService {
         };
 
     // Upsert für einen Tag (UI füllt ein Formular)
-    action   upsertDay(userEmail: String,
-                       workDate: Date,
-                       startTime: Time,
-                       endTime: Time,
-                       breakMin: Integer,
-                       note: String)                                                returns TimeEntries;
+    action upsertDay(userEmail: String,
+                     workDate: Date,
+                     startTime: Time,
+                     endTime: Time,
+                     breakMin: Integer,
+                     note: String)                                                returns TimeEntries;
 
     // Optional: Nur Pause ändern
-    action   setBreak(entryID: String, breakMin: Integer)                           returns TimeEntries;
+    action setBreak(entryID: String, breakMin: Integer)                           returns TimeEntries;
 
     // Unbound Action: Generiere leere TimeEntries für aktuellen Monat (für aktuellen User)
     @Common.SideEffects: {TargetEntities: ['/TrackService.EntityContainer/TimeEntries']}
-    action   generateMonthlyTimeEntries()                                           returns array of TimeEntries;
+    action generateMonthlyTimeEntries()                                           returns array of TimeEntries;
 
     // Unbound Action: Generiere TimeEntries für ein ganzes Jahr inkl. Wochenenden und Feiertage
     @Common.SideEffects: {TargetEntities: ['/TrackService.EntityContainer/TimeEntries']}
-    action   generateYearlyTimeEntries(year: Integer, stateCode: GermanStates:code) returns array of TimeEntries;
+    action generateYearlyTimeEntries(year: Integer, stateCode: GermanStates:code) returns array of TimeEntries;
 
     // ========================================
     // Monatssaldo-Funktionalität
@@ -73,14 +73,14 @@ service TrackService {
     }
 
     /**
-     * Function: Saldo für einen bestimmten Monat abrufen
+     * Action: Saldo für einen bestimmten Monat abrufen
      * @param year - Jahr (z.B. 2025)
      * @param month - Monat (1-12)
      */
-    function getMonthlyBalance(year: Integer, month: Integer)                       returns MonthlyBalances;
+    action getMonthlyBalance(year: Integer, month: Integer)                       returns MonthlyBalances;
 
     /**
-     * Function: Aktueller kumulierter Gesamtsaldo
+     * Action: Aktueller kumulierter Gesamtsaldo
      */
-    function getCurrentBalance()                                                    returns Decimal(9, 2);
+    action getCurrentBalance()                                                    returns Decimal(9, 2);
 }

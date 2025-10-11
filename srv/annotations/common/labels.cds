@@ -140,11 +140,6 @@ annotate service.TimeEntries with {
                         @Common.Label          : '{i18n>timeEntry.source}';
 };
 
-
-annotate service.generateYearlyTimeEntries with(year  @title: '{i18n>title.generateYearlyTimeEntries.year}'       @Common.Label: '{i18n>generateYearlyTimeEntries.year}',
-stateCode                                             @title: '{i18n>title.generateYearlyTimeEntries.stateCode}'  @Common.Label: '{i18n>generateYearlyTimeEntries.stateCode}'
-);
-
 ////////////////////////////////////////////////////////////////////////////
 //  MonthlyBalances Entity - Labels & TextArrangements
 ////////////////////////////////////////////////////////////////////////////
@@ -178,7 +173,18 @@ annotate service.MonthlyBalances with {
 };
 
 ////////////////////////////////////////////////////////////////////////////
-//  Entity Labels (Common.Label)
+//  Unbound Actions - Labels & TextArrangements
+////////////////////////////////////////////////////////////////////////////
+annotate service.generateYearlyTimeEntries with(year  @title: '{i18n>title.generateYearlyTimeEntries.year}'       @Common.Label: '{i18n>generateYearlyTimeEntries.year}',
+stateCode                                             @title: '{i18n>title.generateYearlyTimeEntries.stateCode}'  @Common.Label: '{i18n>generateYearlyTimeEntries.stateCode}'
+);
+
+annotate service.getMonthlyBalance with(year  @title: '{i18n>title.parameter.year}'   @Common.Label: '{i18n>parameter.year}',
+month                                         @title: '{i18n>title.parameter.month}'  @Common.Label: '{i18n>parameter.month}'
+);
+
+////////////////////////////////////////////////////////////////////////////
+//  Entity and Action Labels (Common.Label)
 ////////////////////////////////////////////////////////////////////////////
 annotate service.Users with @(Common.Label: '{i18n>entity.Users}');
 annotate service.Projects with @(Common.Label: '{i18n>entity.Projects}');
@@ -186,6 +192,10 @@ annotate service.ActivityTypes with @(Common.Label: '{i18n>entity.ActivityTypes}
 annotate service.EntryTypes with @(Common.Label: '{i18n>entity.EntryTypes}');
 annotate service.TimeEntries with @(Common.Label: '{i18n>entity.TimeEntries}');
 annotate service.MonthlyBalances with @(Common.Label: '{i18n>entity.MonthlyBalances}');
+annotate service.getMonthlyBalance with @(Common.Label: '{i18n>action.getMonthlyBalance}');
+annotate service.getCurrentBalance with @(Common.Label: '{i18n>action.getCurrentBalance}');
+annotate service.generateYearlyTimeEntries with @(Common.Label: '{i18n>action.generateYearlyTimeEntries}');
+annotate service.generateMonthlyTimeEntries with @(Common.Label: '{i18n>action.generateMonthlyTimeEntries}');
 
 ////////////////////////////////////////////////////////////////////////////
 //  Hinweise zu TextArrangement:
