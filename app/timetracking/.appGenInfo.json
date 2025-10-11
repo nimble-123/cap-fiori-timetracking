@@ -1,0 +1,24 @@
+{
+  "generationParameters": {
+    "generationDate": "Tue Oct 07 2025 22:17:44 GMT+0200 (Mitteleuropäische Sommerzeit)",
+    "generatorPlatform": "Visual Studio Code",
+    "serviceType": "Local CAP",
+    "metadataFilename": "",
+    "serviceUrl": "http://localhost:4004/odata/v4/catalog/",
+    "appName": "timetracking",
+    "appTitle": "Time Tracking",
+    "appDescription": "An SAP Fiori application.",
+    "appNamespace": "io.nimble",
+    "ui5Theme": "sap_horizon",
+    "ui5Version": "1.141.0",
+    "enableCodeAssist": true,
+    "enableEslint": false,
+    "enableTypeScript": true,
+    "showMockDataInfo": false,
+    "generatorVersion": "1.19.0",
+    "template": "Basic V4",
+    "generatorName": "SAP Fiori Application Generator",
+    "entityRelatedConfig": [],
+    "launchText": "To launch the generated app, start your CAP project:  and navigate to the following location in your browser:\n\nhttp://localhost:4004/io.nimble.timetracking/index.html"
+  }
+}
