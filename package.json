@@ -1,0 +1,60 @@
+{
+  "name": "cap-fiori-timetracking",
+  "version": "1.0.0",
+  "description": "A simple CAP project.",
+  "repository": "<Add your repository here>",
+  "license": "UNLICENSED",
+  "private": true,
+  "dependencies": {
+    "@sap/cds": "^9",
+    "@sap/eslint-plugin-ui5-jsdocs": "^2.0.5",
+    "@sapui5/ts-types": "^1.141.1",
+    "eslint": "^9.37.0",
+    "express": "^4"
+  },
+  "devDependencies": {
+    "@cap-js/cds-types": "^0.15.0",
+    "@cap-js/sqlite": "^2",
+    "@sap/ux-ui5-tooling": "^1.19.1",
+    "cds-plugin-ui5": "^0.13.0",
+    "prettier": "3.6.2",
+    "@types/node": "^24.7.1",
+    "typescript": "^5",
+    "@cap-js/cds-typer": ">=0.38"
+  },
+  "scripts": {
+    "start": "cds-serve",
+    "watch": "cds-tsx w",
+    "format": "prettier --write \"{src,app,srv,db,test}/**/*.{js,ts,json,md,yaml,yml,html}\""
+  },
+  "workspaces": [
+    "app/*"
+  ],
+  "cds": {
+    "requires": {
+      "auth": {
+        "kind": "mocked",
+        "users": {
+          "max.mustermann@test.de": {
+            "password": "max",
+            "roles": [
+              "authenticated-user"
+            ]
+          },
+          "erika.musterfrau@test.de": {
+            "password": "erika",
+            "roles": [
+              "authenticated-user"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "sapux": [
+    "app/timetable"
+  ],
+  "imports": {
+    "#cds-models/*": "./@cds-models/*/index.js"
+  }
+}
