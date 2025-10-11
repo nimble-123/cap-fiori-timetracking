@@ -1,20 +1,29 @@
 import cds, { ApplicationService } from '@sap/cds';
 import { TimeEntries, TimeEntry } from '#cds-models/TrackService';
 
-// Import Design Pattern Classes
-import { UserService } from './services/UserService';
+// Import Repositories
 import { TimeEntryRepository } from './repositories/TimeEntryRepository';
+import { UserRepository } from './repositories/UserRepository';
+import { ProjectRepository } from './repositories/ProjectRepository';
+import { ActivityTypeRepository } from './repositories/ActivityTypeRepository';
+
+// Import Services
+import { UserService } from './services/UserService';
+import { HolidayService } from './services/HolidayService';
+import { TimeBalanceService } from './services/TimeBalanceService';
+
+// Import Validators
 import { TimeEntryValidator } from './validators/TimeEntryValidator';
+
+// Import Commands, Factories & Strategies
 import { TimeEntryFactory } from './factories/TimeEntryFactory';
 import { MonthlyGenerationStrategy } from './strategies/MonthlyGenerationStrategy';
 import { YearlyGenerationStrategy } from './strategies/YearlyGenerationStrategy';
-import { HolidayService } from './services/HolidayService';
-import { TimeBalanceService } from './services/TimeBalanceService';
 import { CreateTimeEntryCommand, UpdateTimeEntryCommand } from './commands/TimeEntryCommands';
 
 export default class TrackService extends ApplicationService {
   private userService!: UserService;
-  private repository!: TimeEntryRepository;
+  private timeEntryRepository!: TimeEntryRepository;
   private validator!: TimeEntryValidator;
   private monthlyStrategy!: MonthlyGenerationStrategy;
   private yearlyStrategy!: YearlyGenerationStrategy;
@@ -22,21 +31,34 @@ export default class TrackService extends ApplicationService {
   private balanceService!: TimeBalanceService;
   private createCommand!: CreateTimeEntryCommand;
   private updateCommand!: UpdateTimeEntryCommand;
+  private userRepository!: UserRepository;
+  private projectRepository!: ProjectRepository;
+  private activityTypeRepository!: ActivityTypeRepository;
 
   async init(): Promise<void> {
-    // Dependency Injection Setup
-    this.userService = new UserService(this.entities);
-    this.repository = new TimeEntryRepository(this.entities);
-    this.validator = new TimeEntryValidator(this.entities);
+    // Dependency Injection Setup - Repositories zuerst
+    this.userRepository = new UserRepository(this.entities);
+    this.projectRepository = new ProjectRepository(this.entities);
+    this.activityTypeRepository = new ActivityTypeRepository(this.entities);
+    this.timeEntryRepository = new TimeEntryRepository(this.entities);
+
+    // Services mit Repositories
+    this.userService = new UserService(this.userRepository);
     this.holidayService = new HolidayService();
+    this.balanceService = new TimeBalanceService(this.timeEntryRepository);
+
+    // Validator mit Repositories
+    this.validator = new TimeEntryValidator(this.projectRepository, this.activityTypeRepository);
+
+    // Strategies
     this.monthlyStrategy = new MonthlyGenerationStrategy();
     this.yearlyStrategy = new YearlyGenerationStrategy(this.holidayService);
-    this.balanceService = new TimeBalanceService(this.repository);
 
+    // Commands mit Dependencies
     const dependencies = {
       userService: this.userService,
       validator: this.validator,
-      repository: this.repository,
+      repository: this.timeEntryRepository,
       factory: TimeEntryFactory,
     };
 
@@ -100,16 +122,16 @@ export default class TrackService extends ApplicationService {
       }
 
       const monthData = this.monthlyStrategy.getCurrentMonthData();
-      const existingDates = await this.repository.getExistingDatesInRange(
+      const existingDates = await this.timeEntryRepository.getExistingDatesInRange(
         userID,
         monthData.monthStartStr,
         monthData.monthEndStr,
       );
 
       const newEntries = this.monthlyStrategy.generateMissingEntries(userID, user, monthData, existingDates);
-      await this.repository.insertBatch(newEntries);
+      await this.timeEntryRepository.insertBatch(newEntries);
 
-      const allMonthEntries = await this.repository.getEntriesInRange(
+      const allMonthEntries = await this.timeEntryRepository.getEntriesInRange(
         userID,
         monthData.monthStartStr,
         monthData.monthEndStr,
@@ -147,7 +169,7 @@ export default class TrackService extends ApplicationService {
       }
 
       const yearData = this.yearlyStrategy.getYearData(year);
-      const existingDates = await this.repository.getExistingDatesInRange(
+      const existingDates = await this.timeEntryRepository.getExistingDatesInRange(
         userID,
         yearData.yearStartStr,
         yearData.yearEndStr,
@@ -161,9 +183,9 @@ export default class TrackService extends ApplicationService {
         existingDates,
       );
 
-      await this.repository.insertBatch(newEntries);
+      await this.timeEntryRepository.insertBatch(newEntries);
 
-      const allYearEntries = await this.repository.getEntriesInRange(
+      const allYearEntries = await this.timeEntryRepository.getEntriesInRange(
         userID,
         yearData.yearStartStr,
         yearData.yearEndStr,

@@ -1,6 +1,7 @@
 import { Request, Transaction } from '@sap/cds';
 import { User } from '#cds-models/TrackService';
 import { TimeCalculationService } from './TimeCalculationService';
+import { UserRepository } from '../repositories/UserRepository';
 
 // Type definitions
 interface UserResolveResult {
@@ -13,10 +14,10 @@ interface UserResolveResult {
  * Verwaltet User-Daten und berechnet erwartete Arbeitszeiten
  */
 export class UserService {
-  private Users: any;
+  private userRepository: UserRepository;
 
-  constructor(entities: any) {
-    this.Users = entities.Users;
+  constructor(userRepository: UserRepository) {
+    this.userRepository = userRepository;
   }
 
   /**
@@ -26,11 +27,7 @@ export class UserService {
    * @returns Erwartete Tagesstunden
    */
   async getExpectedDailyHours(tx: Transaction, userId: string): Promise<number> {
-    const user = await tx.run(SELECT.one.from(this.Users).where({ ID: userId, active: true }));
-
-    if (!user) {
-      throw new Error('User not found or inactive');
-    }
+    const user = await this.userRepository.findByIdActiveOrThrow(tx, userId);
 
     const weeklyHours = Number(user.weeklyHoursDec ?? 0);
     const workingDays = Math.max(1, Number(user.workingDaysPerWeek ?? 5));
@@ -38,7 +35,7 @@ export class UserService {
 
     // Update falls sich erwartete Tagesstunden geändert haben
     if (user.expectedDailyHoursDec !== expectedDaily) {
-      await tx.run(UPDATE(this.Users, user.ID).set({ expectedDailyHoursDec: expectedDaily }));
+      await this.userRepository.updateExpectedDailyHours(tx, String(user.ID), expectedDaily);
     }
 
     return expectedDaily;
@@ -66,12 +63,12 @@ export class UserService {
 
     if (!userID) {
       // Development Fallback: Suche nach Test-Usern
-      for (const testId of TEST_USER_IDS) {
-        const foundUser = await SELECT.one.from(this.Users).where({ ID: testId });
-        if (foundUser) {
-          console.log(`💡 Development-Fallback: Gefunden ${testId} (${foundUser.name || 'Unbekannt'})`);
-          return { userID: testId, user: foundUser };
-        }
+      const testUserResult = await this.userRepository.findFirstTestUser(TEST_USER_IDS);
+      if (testUserResult) {
+        console.log(
+          `💡 Development-Fallback: Gefunden ${testUserResult.id} (${testUserResult.user.name || 'Unbekannt'})`,
+        );
+        return { userID: testUserResult.id, user: testUserResult.user };
       }
 
       console.log('⚠️ Fallback auf Demo-User');
@@ -81,7 +78,7 @@ export class UserService {
     console.log(`✅ Authentifizierter User: ${userID}`);
 
     try {
-      const user = await SELECT.one.from(this.Users).where({ ID: userID });
+      const user = await this.userRepository.findByIdWithoutTx(userID);
       if (!user) {
         console.log(`⚠️ Authentifizierter User ${userID} nicht in DB, verwende Demo-User`);
         return { userID: DEMO_USER_ID, user: DEMO_USER };

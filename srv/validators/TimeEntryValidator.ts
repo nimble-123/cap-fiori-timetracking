@@ -1,17 +1,19 @@
 import { Transaction } from '@sap/cds';
 import { TimeEntry } from '#cds-models/TrackService';
+import { ProjectRepository } from '../repositories/ProjectRepository';
+import { ActivityTypeRepository } from '../repositories/ActivityTypeRepository';
 
 /**
  * Validator für TimeEntry Operationen
  * Verwaltet alle Validierungslogik für TimeEntries
  */
 export class TimeEntryValidator {
-  private Projects: any;
-  private ActivityTypes: any;
+  private projectRepository: ProjectRepository;
+  private activityTypeRepository: ActivityTypeRepository;
 
-  constructor(entities: any) {
-    this.Projects = entities.Projects;
-    this.ActivityTypes = entities.ActivityTypes;
+  constructor(projectRepository: ProjectRepository, activityTypeRepository: ActivityTypeRepository) {
+    this.projectRepository = projectRepository;
+    this.activityTypeRepository = activityTypeRepository;
   }
 
   /**
@@ -66,29 +68,12 @@ export class TimeEntryValidator {
   async validateReferences(tx: Transaction, entryData: Partial<TimeEntry>): Promise<void> {
     // Projekt-Validierung (nur aktive Projekte)
     if (entryData.project_ID) {
-      const project = await tx.run(
-        SELECT.one.from(this.Projects).where({
-          ID: entryData.project_ID,
-          active: true,
-        }),
-      );
-
-      if (!project) {
-        throw new Error('Projekt ist ungültig oder inaktiv.');
-      }
+      await this.projectRepository.validateActive(tx, entryData.project_ID);
     }
 
     // Activity-Validierung
     if (entryData.activity_code) {
-      const activity = await tx.run(
-        SELECT.one.from(this.ActivityTypes).where({
-          code: entryData.activity_code,
-        }),
-      );
-
-      if (!activity) {
-        throw new Error('Ungültiger Activity Code.');
-      }
+      await this.activityTypeRepository.validateExists(tx, entryData.activity_code);
     }
   }
 
