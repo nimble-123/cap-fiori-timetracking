@@ -149,7 +149,7 @@
                   "tableSettings": {
                     "type": "ResponsiveTable",
                     "condensedTableLayout": true,
-                    "enableMassEdit": {},
+                    "enableMassEdit": true,
                     "selectionMode": "Multi",
                     "personalization": {
                       "column": true,
