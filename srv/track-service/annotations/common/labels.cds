@@ -79,64 +79,74 @@ annotate service.EntryTypes with {
 //  TimeEntries Entity - Labels & TextArrangements
 ////////////////////////////////////////////////////////////////////////////
 annotate service.TimeEntries with {
-     ID                 @title                 : '{i18n>title.timeEntry.ID}'
-                        @Common.Label          : '{i18n>timeEntry.ID}';
+     ID                   @title                 : '{i18n>title.timeEntry.ID}'
+                          @Common.Label          : '{i18n>timeEntry.ID}';
 
-     user               @title                 : '{i18n>title.timeEntry.user}'
-                        @Common.Label          : '{i18n>timeEntry.user}'
-                        @Common.Text           : user.name
-                        @Common.TextArrangement: #TextOnly;
+     user                 @title                 : '{i18n>title.timeEntry.user}'
+                          @Common.Label          : '{i18n>timeEntry.user}'
+                          @Common.Text           : user.name
+                          @Common.TextArrangement: #TextOnly;
 
-     workDate           @title                 : '{i18n>title.timeEntry.workDate}'
-                        @Common.Label          : '{i18n>timeEntry.workDate}';
+     workDate             @title                 : '{i18n>title.timeEntry.workDate}'
+                          @Common.Label          : '{i18n>timeEntry.workDate}';
 
-     entryType          @title                 : '{i18n>title.timeEntry.entryType}'
-                        @Common.Label          : '{i18n>timeEntry.entryType}'
-                        @Common.Text           : entryType.text
-                        @Common.TextArrangement: #TextLast;
+     entryType            @title                 : '{i18n>title.timeEntry.entryType}'
+                          @Common.Label          : '{i18n>timeEntry.entryType}'
+                          @Common.Text           : entryType.text
+                          @Common.TextArrangement: #TextLast;
 
-     project            @title                 : '{i18n>title.timeEntry.project}'
-                        @Common.Label          : '{i18n>timeEntry.project}'
-                        @Common.Text           : project.number
-                        @Common.TextArrangement: #TextOnly;
+     project              @title                 : '{i18n>title.timeEntry.project}'
+                          @Common.Label          : '{i18n>timeEntry.project}'
+                          @Common.Text           : project.number
+                          @Common.TextArrangement: #TextOnly;
 
-     activity           @title                 : '{i18n>title.timeEntry.activity}'
-                        @Common.Label          : '{i18n>timeEntry.activity}'
-                        @Common.Text           : activity.text
-                        @Common.TextArrangement: #TextOnly;
+     activity             @title                 : '{i18n>title.timeEntry.activity}'
+                          @Common.Label          : '{i18n>timeEntry.activity}'
+                          @Common.Text           : activity.text
+                          @Common.TextArrangement: #TextOnly;
 
-     startTime          @title                 : '{i18n>title.timeEntry.startTime}'
-                        @Common.Label          : '{i18n>timeEntry.startTime}';
+     startTime            @title                 : '{i18n>title.timeEntry.startTime}'
+                          @Common.Label          : '{i18n>timeEntry.startTime}';
 
-     endTime            @title                 : '{i18n>title.timeEntry.endTime}'
-                        @Common.Label          : '{i18n>timeEntry.endTime}';
+     endTime              @title                 : '{i18n>title.timeEntry.endTime}'
+                          @Common.Label          : '{i18n>timeEntry.endTime}';
 
-     breakMin           @title                 : '{i18n>title.timeEntry.breakMin}'
-                        @Common.Label          : '{i18n>timeEntry.breakMin}'
-                        @Measures.Unit         : 'min';
+     breakMin             @title                 : '{i18n>title.timeEntry.breakMin}'
+                          @Common.Label          : '{i18n>timeEntry.breakMin}'
+                          @Measures.Unit         : 'min';
 
-     durationHoursGross @title                 : '{i18n>title.timeEntry.durationHoursGross}'
-                        @Common.Label          : '{i18n>timeEntry.durationHoursGross}'
-                        @Measures.Unit         : 'h';
+     durationHoursGross   @title                 : '{i18n>title.timeEntry.durationHoursGross}'
+                          @Common.Label          : '{i18n>timeEntry.durationHoursGross}'
+                          @Measures.Unit         : 'h';
 
-     durationHoursNet   @title                 : '{i18n>title.timeEntry.durationHoursNet}'
-                        @Common.Label          : '{i18n>timeEntry.durationHoursNet}'
-                        @Measures.Unit         : 'h';
+     durationHoursNet     @title                 : '{i18n>title.timeEntry.durationHoursNet}'
+                          @Common.Label          : '{i18n>timeEntry.durationHoursNet}'
+                          @Measures.Unit         : 'h';
 
-     overtimeHours      @title                 : '{i18n>title.timeEntry.overtimeHours}'
-                        @Common.Label          : '{i18n>timeEntry.overtimeHours}'
-                        @Measures.Unit         : 'h';
+     overtimeHours        @title                 : '{i18n>title.timeEntry.overtimeHours}'
+                          @Common.Label          : '{i18n>timeEntry.overtimeHours}'
+                          @Measures.Unit         : 'h';
 
-     undertimeHours     @title                 : '{i18n>title.timeEntry.undertimeHours}'
-                        @Common.Label          : '{i18n>timeEntry.undertimeHours}'
-                        @Measures.Unit         : 'h';
+     undertimeHours       @title                 : '{i18n>title.timeEntry.undertimeHours}'
+                          @Common.Label          : '{i18n>timeEntry.undertimeHours}'
+                          @Measures.Unit         : 'h';
 
-     note               @title                 : '{i18n>title.timeEntry.note}'
-                        @Common.Label          : '{i18n>timeEntry.note}'
-                        @UI.MultiLineText;
+     note                 @title                 : '{i18n>title.timeEntry.note}'
+                          @Common.Label          : '{i18n>timeEntry.note}'
+                          @UI.MultiLineText;
 
-     source             @title                 : '{i18n>title.timeEntry.source}'
-                        @Common.Label          : '{i18n>timeEntry.source}';
+     source               @title                 : '{i18n>title.timeEntry.source}'
+                          @Common.Label          : '{i18n>timeEntry.source}';
+
+     // Virtual/Calculated Fields
+     entryTypeCriticality @title                 : '{i18n>title.timeEntry.entryTypeCriticality}'
+                          @Common.Label          : '{i18n>timeEntry.entryTypeCriticality}';
+
+     overtimeCriticality  @title                 : '{i18n>title.timeEntry.overtimeCriticality}'
+                          @Common.Label          : '{i18n>timeEntry.overtimeCriticality}';
+
+     undertimeCriticality @title                 : '{i18n>title.timeEntry.undertimeCriticality}'
+                          @Common.Label          : '{i18n>timeEntry.undertimeCriticality}';
 };
 
 ////////////////////////////////////////////////////////////////////////////
