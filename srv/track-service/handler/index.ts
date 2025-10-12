@@ -18,6 +18,9 @@ export { MonthlyGenerationStrategy, YearlyGenerationStrategy } from './strategie
 // Factories
 export { TimeEntryFactory, HandlerFactory } from './factories';
 
+// Utils
+export { DateUtils } from './utils/DateUtils';
+
 // Commands (Type-only exports for external use)
 export type {
   CreateTimeEntryCommand,

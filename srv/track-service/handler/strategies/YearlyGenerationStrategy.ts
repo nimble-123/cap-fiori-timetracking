@@ -1,6 +1,7 @@
 import { TimeEntry, User } from '#cds-models/TrackService';
 import { TimeEntryFactory } from '../factories/TimeEntryFactory';
 import { HolidayService } from '../services/HolidayService';
+import { DateUtils } from '../utils/DateUtils';
 
 interface YearData {
   year: number;
@@ -32,8 +33,8 @@ export class YearlyGenerationStrategy {
     const yearEnd = new Date(targetYear, 11, 31);
     const daysInYear = this.isLeapYear(targetYear) ? 366 : 365;
 
-    const yearStartStr = yearStart.toISOString().split('T')[0];
-    const yearEndStr = yearEnd.toISOString().split('T')[0];
+    const yearStartStr = DateUtils.toLocalDateString(yearStart);
+    const yearEndStr = DateUtils.toLocalDateString(yearEnd);
 
     console.log(`📅 Generiere für Jahr ${targetYear} (${daysInYear} Tage)`);
 
@@ -86,7 +87,7 @@ export class YearlyGenerationStrategy {
       const currentDate = new Date(year, 0, 1);
       currentDate.setDate(currentDate.getDate() + dayOfYear);
 
-      const dateString = currentDate.toISOString().split('T')[0];
+      const dateString = DateUtils.toLocalDateString(currentDate);
 
       if (existingDates.has(dateString)) {
         console.log(`⏭️  Überspringe ${dateString} - Eintrag existiert bereits`);

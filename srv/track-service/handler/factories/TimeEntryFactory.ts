@@ -3,6 +3,7 @@ import { Transaction } from '@sap/cds';
 import { TimeEntry, User } from '#cds-models/TrackService';
 import { TimeCalculationService } from '../services/TimeCalculationService';
 import { UserService } from '../services/UserService';
+import { DateUtils } from '../utils/DateUtils';
 
 // Type definitions
 interface WorkTimeData {
@@ -84,7 +85,7 @@ export class TimeEntryFactory {
    * @returns Vollständiges TimeEntry Objekt
    */
   static createDefaultEntry(userID: string, date: Date, user: User): TimeEntry {
-    const dateString = date.toISOString().split('T')[0];
+    const dateString = DateUtils.toLocalDateString(date);
     const workingDaysPerWeek = user.workingDaysPerWeek || 5;
     const expected = user.expectedDailyHoursDec || (user.weeklyHoursDec || 36) / workingDaysPerWeek;
 
@@ -115,7 +116,7 @@ export class TimeEntryFactory {
    * @returns TimeEntry für Wochenende
    */
   static createWeekendEntry(userID: string, date: Date): TimeEntry {
-    const dateString = date.toISOString().split('T')[0];
+    const dateString = DateUtils.toLocalDateString(date);
     const dayName = date.toLocaleDateString('de-DE', { weekday: 'long' });
 
     return {
@@ -143,7 +144,7 @@ export class TimeEntryFactory {
    * @returns TimeEntry für Feiertag
    */
   static createHolidayEntry(userID: string, date: Date, holidayName: string): TimeEntry {
-    const dateString = date.toISOString().split('T')[0];
+    const dateString = DateUtils.toLocalDateString(date);
 
     return {
       ID: randomUUID(),

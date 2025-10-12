@@ -1,5 +1,6 @@
 import { TimeEntry, User } from '#cds-models/TrackService';
 import { TimeEntryFactory } from '../factories/TimeEntryFactory';
+import { DateUtils } from '../utils/DateUtils';
 
 interface MonthData {
   year: number;
@@ -26,8 +27,8 @@ export class MonthlyGenerationStrategy {
 
     const monthStart = new Date(year, month, 1);
     const monthEnd = new Date(year, month + 1, 0);
-    const monthStartStr = monthStart.toISOString().split('T')[0];
-    const monthEndStr = monthEnd.toISOString().split('T')[0];
+    const monthStartStr = DateUtils.toLocalDateString(monthStart);
+    const monthEndStr = DateUtils.toLocalDateString(monthEnd);
 
     console.log(`📅 Generiere für ${year}-${(month + 1).toString().padStart(2, '0')} (${daysInMonth} Tage)`);
 
@@ -68,7 +69,7 @@ export class MonthlyGenerationStrategy {
         continue;
       }
 
-      const dateString = currentDate.toISOString().split('T')[0];
+      const dateString = DateUtils.toLocalDateString(currentDate);
 
       if (existingDates.has(dateString)) {
         console.log(`⏭️  Überspringe ${dateString} - Eintrag existiert bereits`);
