@@ -98,4 +98,18 @@ service TrackService {
      * Action: Aktueller kumulierter Gesamtsaldo
      */
     action getCurrentBalance()                                                    returns Decimal(9, 2);
+
+    /**
+     * Function: Liefert Default-Werte für generateYearlyTimeEntries Action
+     * Wird automatisch vom UI aufgerufen wenn die Action-Dialog geöffnet wird
+     */
+    function getDefaultParamsForGenerateYearly()                                  returns DefaultParamsForGenerateYearly;
+}
+
+/**
+ * Type: Default-Parameter für generateYearlyTimeEntries Action
+ */
+type DefaultParamsForGenerateYearly {
+    year      : Integer;
+    stateCode : String(2);
 }

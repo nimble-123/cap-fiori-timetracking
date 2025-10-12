@@ -5,6 +5,7 @@ import type {
   UpdateTimeEntryCommand,
   GenerateMonthlyCommand,
   GenerateYearlyCommand,
+  GetDefaultParamsCommand,
   GetMonthlyBalanceCommand,
   GetCurrentBalanceCommand,
   GetRecentBalancesCommand,
@@ -34,6 +35,7 @@ export class HandlerFactory {
     return new GenerationHandlers(
       this.container.getCommand<GenerateMonthlyCommand>('generateMonthly'),
       this.container.getCommand<GenerateYearlyCommand>('generateYearly'),
+      this.container.getCommand<GetDefaultParamsCommand>('getDefaultParams'),
     );
   }
 

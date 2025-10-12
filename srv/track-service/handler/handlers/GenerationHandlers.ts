@@ -1,5 +1,5 @@
 import { TimeEntry } from '#cds-models/TrackService';
-import { GenerateMonthlyCommand, GenerateYearlyCommand } from '../commands';
+import { GenerateMonthlyCommand, GenerateYearlyCommand, GetDefaultParamsCommand } from '../commands';
 import { logger } from '../utils';
 
 /**
@@ -11,6 +11,7 @@ export class GenerationHandlers {
   constructor(
     private generateMonthlyCommand: GenerateMonthlyCommand,
     private generateYearlyCommand: GenerateYearlyCommand,
+    private getDefaultParamsCommand: GetDefaultParamsCommand,
   ) {}
 
   /**
@@ -66,6 +67,34 @@ export class GenerationHandlers {
       logger.error('Error in generateYearly handler', error, { action: 'generateYearly', data: req.data });
       req.reject(500, `Fehler: ${error.message}`);
       return [];
+    }
+  }
+
+  /**
+   * Handler: Liefert Default-Parameter für generateYearlyTimeEntries
+   *
+   * Diese Function wird automatisch vom UI aufgerufen wenn der
+   * Action-Dialog geöffnet wird, um die Felder vorzufüllen.
+   */
+  async handleGetDefaultParams(req: any): Promise<{ year: number; stateCode: string | null }> {
+    try {
+      logger.handlerInvoked('Generation', 'getDefaultParams', {});
+
+      const result = await this.getDefaultParamsCommand.execute(req);
+
+      logger.handlerCompleted('Generation', 'getDefaultParams', result);
+
+      return result;
+    } catch (error: any) {
+      logger.error('Error in getDefaultParams handler', error, {
+        function: 'getDefaultParamsForGenerateYearly',
+      });
+
+      // Fallback: Aktuelles Jahr zurückgeben
+      const fallbackYear = new Date().getFullYear();
+      logger.warn('Using fallback year', { fallbackYear });
+
+      return { year: fallbackYear, stateCode: null };
     }
   }
 }

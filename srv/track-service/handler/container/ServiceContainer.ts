@@ -25,6 +25,7 @@ import {
   UpdateTimeEntryCommand,
   GenerateMonthlyCommand,
   GenerateYearlyCommand,
+  GetDefaultParamsCommand,
   GetMonthlyBalanceCommand,
   GetCurrentBalanceCommand,
   GetRecentBalancesCommand,
@@ -180,6 +181,7 @@ export class ServiceContainer {
     };
     this.commands.set('generateMonthly', new GenerateMonthlyCommand(generationDeps));
     this.commands.set('generateYearly', new GenerateYearlyCommand(generationDeps));
+    this.commands.set('getDefaultParams', new GetDefaultParamsCommand(this.getService<UserService>('user')));
 
     // Balance Commands
     const balanceDeps = {

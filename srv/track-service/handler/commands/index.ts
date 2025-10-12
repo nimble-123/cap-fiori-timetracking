@@ -13,6 +13,7 @@ export { GetRecentBalancesCommand } from './balance/GetRecentBalancesCommand';
 // Generation Commands
 export { GenerateMonthlyCommand } from './generation/GenerateMonthlyCommand';
 export { GenerateYearlyCommand } from './generation/GenerateYearlyCommand';
+export { GetDefaultParamsCommand } from './generation/GetDefaultParamsCommand';
 
 // TimeEntry Commands
 export { CreateTimeEntryCommand } from './time-entry/CreateTimeEntryCommand';

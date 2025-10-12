@@ -27,6 +27,7 @@ export {
   UpdateTimeEntryCommand,
   GenerateMonthlyCommand,
   GenerateYearlyCommand,
+  GetDefaultParamsCommand,
   GetMonthlyBalanceCommand,
   GetCurrentBalanceCommand,
   GetRecentBalancesCommand,

@@ -55,6 +55,14 @@ export class HandlerRegistrar {
       handler: handlers.handleGenerateYearly.bind(handlers),
       description: 'Generate yearly time entries with holidays',
     });
+
+    // DefaultValues Function für generateYearlyTimeEntries
+    this.registry.register({
+      type: 'on',
+      event: 'getDefaultParamsForGenerateYearly',
+      handler: handlers.handleGetDefaultParams.bind(handlers),
+      description: 'Returns default parameters for generateYearly action',
+    });
   }
 
   /**
