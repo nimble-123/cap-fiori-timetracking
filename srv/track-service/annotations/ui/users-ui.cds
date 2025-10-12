@@ -29,6 +29,10 @@ annotate service.Users with @(
     {
       Value: expectedDailyHoursDec,
       $Type: 'UI.DataField'
+    },
+    {
+      Value: preferredState_code,
+      $Type: 'UI.DataField'
     }
   ],
 

@@ -16,6 +16,9 @@ entity Users : managed {
 
       // Server berechnet/aktualisiert in Service-Logic
       expectedDailyHoursDec : Decimal(4, 2);
+
+      // Bevorzugtes Bundesland für Feiertage
+      preferredState        : Association to GermanStates;
 }
 
 entity Projects : managed, cuid {

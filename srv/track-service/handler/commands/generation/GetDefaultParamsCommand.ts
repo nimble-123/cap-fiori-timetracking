@@ -7,10 +7,8 @@ import { DateUtils, logger } from '../../utils';
  *
  * Business Logic:
  * - Aktuelles Jahr als Default für 'year' (via DateUtils)
- * - stateCode wird auf null gesetzt (User muss Bundesland explizit wählen)
- *
- * Optional (zukünftig):
- * - stateCode könnte aus User-Profil geladen werden
+ * - stateCode aus User-Profil (preferredState)
+ * - Fallback: null wenn User kein preferredState hat
  */
 export class GetDefaultParamsCommand {
   constructor(private userService: UserService) {}
@@ -29,20 +27,25 @@ export class GetDefaultParamsCommand {
       const yearData = DateUtils.getYearData();
       const currentYear = yearData.year;
 
-      logger.debug('Default year calculated', {
+      // User laden mit preferredState
+      const userResult = await this.userService.resolveUserForGeneration(req);
+      const user = userResult.user;
+
+      // PreferredState aus User-Profil extrahieren
+      const preferredStateCode = this.extractPreferredState(user);
+
+      logger.debug('Default params calculated', {
         command: 'GetDefaultParamsCommand',
         year: currentYear,
+        stateCode: preferredStateCode,
+        userId: userResult.userID,
         isLeapYear: DateUtils.isLeapYear(currentYear),
         daysInYear: yearData.daysInYear,
       });
 
-      // TODO: Optional - stateCode aus User-Profil laden
-      // const userResult = await this.userService.resolveUserForGeneration(req);
-      // const preferredStateCode = userResult.user.preferredState ?? null;
-
       const result = {
         year: currentYear,
-        stateCode: null, // User muss Bundesland explizit wählen
+        stateCode: preferredStateCode,
       };
 
       logger.commandEnd('GetDefaultParamsCommand', result);
@@ -53,7 +56,7 @@ export class GetDefaultParamsCommand {
         command: 'GetDefaultParamsCommand',
       });
 
-      // Fallback: Aktuelles Jahr ohne UserService
+      // Fallback: Aktuelles Jahr ohne StateCode
       const fallbackYear = new Date().getFullYear();
       logger.warn('Falling back to basic year calculation', {
         fallbackYear,
@@ -64,5 +67,30 @@ export class GetDefaultParamsCommand {
         stateCode: null,
       };
     }
+  }
+
+  /**
+   * Extrahiert preferredState Code aus User-Objekt
+   * Unterstützt verschiedene Strukturen (expanded/collapsed)
+   *
+   * @param user - User-Objekt
+   * @returns State Code oder null
+   */
+  private extractPreferredState(user: any): string | null {
+    // Fall 1: preferredState ist expanded (mit vollständigem Objekt)
+    if (user.preferredState && typeof user.preferredState === 'object') {
+      return user.preferredState.code ?? null;
+    }
+
+    // Fall 2: preferredState_code ist direkt gesetzt
+    if (user.preferredState_code) {
+      return user.preferredState_code;
+    }
+
+    // Fall 3: Kein preferredState gesetzt
+    logger.debug('No preferredState found for user', {
+      userId: user.ID,
+    });
+    return null;
   }
 }

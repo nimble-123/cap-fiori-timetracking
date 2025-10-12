@@ -25,6 +25,11 @@ annotate service.Users with {
      expectedDailyHoursDec @title                 : '{i18n>title.user.expectedDailyHoursDec}'
                            @Common.Label          : '{i18n>user.expectedDailyHoursDec}'
                            @Measures.Unit         : 'h';
+
+     preferredState        @title                 : '{i18n>title.user.preferredState}'
+                           @Common.Label          : '{i18n>user.preferredState}'
+                           @Common.Text           : preferredState.text
+                           @Common.TextArrangement: #TextOnly;
 };
 
 ////////////////////////////////////////////////////////////////////////////
