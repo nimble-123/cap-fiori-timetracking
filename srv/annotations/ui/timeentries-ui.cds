@@ -12,86 +12,93 @@ annotate service.TimeEntries with @(
     activity_code
   ],
 
-  UI.LineItem                  : [
-    // Action Button für Monatsgenerierung
-    {
-      $Type            : 'UI.DataFieldForAction',
-      Action           : 'TrackService.EntityContainer/generateMonthlyTimeEntries',
-      Label            : '{i18n>action.generateMonthlyTimeEntries}',
-      ![@UI.Importance]: #High,
-      Inline           : false
-    },
-    // Action Button für Jahresgenerierung
-    {
-      $Type            : 'UI.DataFieldForAction',
-      Action           : 'TrackService.EntityContainer/generateYearlyTimeEntries',
-      Label            : '{i18n>action.generateYearlyTimeEntries}',
-      ![@UI.Importance]: #High,
-      Inline           : false
-    },
-    // Action Button für Monatssaldo
-    {
-      $Type            : 'UI.DataFieldForAction',
-      Action           : 'TrackService.EntityContainer/getMonthlyBalance',
-      Label            : '{i18n>action.getMonthlyBalance}',
-      ![@UI.Importance]: #Medium,
-      Inline           : false
-    },
-    // Action Button für aktuellen Gesamtsaldo
-    {
-      $Type            : 'UI.DataFieldForAction',
-      Action           : 'TrackService.EntityContainer/getCurrentBalance',
-      Label            : '{i18n>action.getCurrentBalance}',
-      ![@UI.Importance]: #Medium,
-      Inline           : false
-    },
-    {
-      Value: workDate,
-      $Type: 'UI.DataField'
-    },
-    {
-      Value: entryType.text,
-      $Type: 'UI.DataField'
-    },
-    {
-      Value: project.name,
-      $Type: 'UI.DataField'
-    },
-    {
-      Value: activity.text,
-      $Type: 'UI.DataField'
-    },
-    {
-      Value: startTime,
-      $Type: 'UI.DataField'
-    },
-    {
-      Value: endTime,
-      $Type: 'UI.DataField'
-    },
-    {
-      Value: breakMin,
-      $Type: 'UI.DataField'
-    },
-    {
-      Value: durationHoursNet,
-      $Type: 'UI.DataField'
-    },
-    {
-      Value      : overtimeHours,
-      $Type      : 'UI.DataField',
-      Criticality: overtimeCriticality
-    },
-    {
-      Value      : undertimeHours,
-      $Type      : 'UI.DataField',
-      Criticality: undertimeCriticality,
-    },
-    {
-      Value: note,
-      $Type: 'UI.DataField'
-    }
-  ],
+  UI.LineItem                  : {
+    $value            : [
+      // Action Button für Monatsgenerierung
+      {
+        $Type            : 'UI.DataFieldForAction',
+        Action           : 'TrackService.EntityContainer/generateMonthlyTimeEntries',
+        Label            : '{i18n>action.generateMonthlyTimeEntries}',
+        ![@UI.Importance]: #High,
+        Inline           : false
+      },
+      // Action Button für Jahresgenerierung
+      {
+        $Type            : 'UI.DataFieldForAction',
+        Action           : 'TrackService.EntityContainer/generateYearlyTimeEntries',
+        Label            : '{i18n>action.generateYearlyTimeEntries}',
+        ![@UI.Importance]: #High,
+        Inline           : false
+      },
+      // Action Button für Monatssaldo
+      {
+        $Type            : 'UI.DataFieldForAction',
+        Action           : 'TrackService.EntityContainer/getMonthlyBalance',
+        Label            : '{i18n>action.getMonthlyBalance}',
+        ![@UI.Importance]: #Medium,
+        Inline           : false
+      },
+      // Action Button für aktuellen Gesamtsaldo
+      {
+        $Type            : 'UI.DataFieldForAction',
+        Action           : 'TrackService.EntityContainer/getCurrentBalance',
+        Label            : '{i18n>action.getCurrentBalance}',
+        ![@UI.Importance]: #Medium,
+        Inline           : false
+      },
+      {
+        Value: workDate,
+        $Type: 'UI.DataField'
+      },
+      {
+        Value: entryType.text,
+        $Type: 'UI.DataField'
+      },
+      {
+        Value: project.name,
+        $Type: 'UI.DataField'
+      },
+      {
+        Value: activity.text,
+        $Type: 'UI.DataField'
+      },
+      {
+        Value: startTime,
+        $Type: 'UI.DataField'
+      },
+      {
+        Value: endTime,
+        $Type: 'UI.DataField'
+      },
+      {
+        Value: breakMin,
+        $Type: 'UI.DataField'
+      },
+      {
+        Value: durationHoursNet,
+        $Type: 'UI.DataField'
+      },
+      {
+        Value      : overtimeHours,
+        $Type      : 'UI.DataField',
+        Criticality: overtimeCriticality
+      },
+      {
+        Value      : undertimeHours,
+        $Type      : 'UI.DataField',
+        Criticality: undertimeCriticality,
+      },
+      {
+        Value: source,
+        $Type: 'UI.DataField'
+      },
+      {
+        Value: note,
+        $Type: 'UI.DataField'
+      }
+    ],
+    ![@UI.Criticality]: entryTypeCriticality
+  },
 
   UI.PresentationVariant       : {
     SortOrder     : [
@@ -244,12 +251,10 @@ annotate service.TimeEntries with @(UI.Chart #alpChart: {
 ////////////////////////////////////////////////////////////////////////////
 
 // getMonthlyBalance - Zeige Ergebnis als Object Page Dialog
-annotate service.getMonthlyBalance with @(
-  Common.ResultContext   : {
-    $Type : 'UI.RecommendationStateType',
-    $Value: #Positive
-  }
-);
+annotate service.getMonthlyBalance with @(Common.ResultContext: {
+  $Type : 'UI.RecommendationStateType',
+  $Value: #Positive
+});
 
 // Parameter Field Controls für getMonthlyBalance
 //annotate service.getMonthlyBalance with(year @(Common.FieldControl: #Mandatory), month @(Common.FieldControl: #Mandatory));
