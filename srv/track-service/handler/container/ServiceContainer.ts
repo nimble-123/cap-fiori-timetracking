@@ -5,7 +5,13 @@ import { UserRepository, ProjectRepository, ActivityTypeRepository, TimeEntryRep
 import { UserService, HolidayService, TimeBalanceService } from '../services';
 
 // Validators
-import { TimeEntryValidator, GenerationValidator, BalanceValidator } from '../validators';
+import {
+  TimeEntryValidator,
+  GenerationValidator,
+  BalanceValidator,
+  ProjectValidator,
+  ActivityTypeValidator,
+} from '../validators';
 
 // Strategies
 import { MonthlyGenerationStrategy, YearlyGenerationStrategy } from '../strategies';
@@ -127,11 +133,16 @@ export class ServiceContainer {
   }
 
   private buildValidators(): void {
+    // Zuerst Project und ActivityType Validators erstellen
+    this.validators.set('project', new ProjectValidator(this.getRepository('project')));
+    this.validators.set('activityType', new ActivityTypeValidator(this.getRepository('activityType')));
+
+    // TimeEntryValidator mit den neuen Validators
     this.validators.set(
       'timeEntry',
       new TimeEntryValidator(
-        this.getRepository('project'),
-        this.getRepository('activityType'),
+        this.getValidator('project'),
+        this.getValidator('activityType'),
         this.getRepository('timeEntry'),
       ),
     );

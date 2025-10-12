@@ -21,12 +21,21 @@ export class ProjectRepository {
    * @returns Project oder null
    */
   async findById(tx: Transaction, projectId: string, activeOnly: boolean = false): Promise<Project | null> {
+    logger.repositoryQuery('Project', 'Finding project by ID', { projectId, activeOnly });
+
     const whereClause: any = { ID: projectId };
     if (activeOnly) {
       whereClause.active = true;
     }
 
-    return await tx.run(SELECT.one.from(this.Projects).where(whereClause));
+    const project = await tx.run(SELECT.one.from(this.Projects).where(whereClause));
+
+    logger.repositoryResult('Project', project ? 'Project found' : 'Project not found', {
+      projectId,
+      found: !!project,
+    });
+
+    return project;
   }
 
   /**
@@ -40,41 +49,15 @@ export class ProjectRepository {
   }
 
   /**
-   * Prüft ob Projekt existiert und aktiv ist
-   * @param tx - Transaction Objekt
-   * @param projectId - Project ID
-   * @returns True wenn Projekt aktiv ist
-   */
-  async isActive(tx: Transaction, projectId: string): Promise<boolean> {
-    const project = await this.findByIdActive(tx, projectId);
-    return project !== null;
-  }
-
-  /**
-   * Validiert ob Projekt existiert und aktiv ist, wirft Fehler falls nicht
-   * @param tx - Transaction Objekt
-   * @param projectId - Project ID
-   * @throws Error wenn Projekt ungültig oder inaktiv
-   */
-  async validateActive(tx: Transaction, projectId: string): Promise<void> {
-    logger.repositoryQuery('Project', 'Validating active project', { projectId });
-    const project = await this.findByIdActive(tx, projectId);
-
-    if (!project) {
-      logger.repositoryResult('Project', 'Project invalid or inactive', { projectId });
-      throw new Error('Projekt ist ungültig oder inaktiv.');
-    }
-
-    logger.repositoryResult('Project', 'Project validated', { projectId, name: project.name });
-  }
-
-  /**
    * Lädt alle aktiven Projekte
    * @param tx - Transaction Objekt
    * @returns Array von Projects
    */
   async findAllActive(tx: Transaction): Promise<Project[]> {
-    return await tx.run(SELECT.from(this.Projects).where({ active: true }));
+    logger.repositoryQuery('Project', 'Finding all active projects', {});
+    const projects = await tx.run(SELECT.from(this.Projects).where({ active: true }));
+    logger.repositoryResult('Project', 'Active projects loaded', { count: projects.length });
+    return projects;
   }
 
   /**
@@ -83,7 +66,10 @@ export class ProjectRepository {
    * @returns Array von Projects
    */
   async findAll(tx: Transaction): Promise<Project[]> {
-    return await tx.run(SELECT.from(this.Projects));
+    logger.repositoryQuery('Project', 'Finding all projects', {});
+    const projects = await tx.run(SELECT.from(this.Projects));
+    logger.repositoryResult('Project', 'All projects loaded', { count: projects.length });
+    return projects;
   }
 }
 

@@ -1,6 +1,8 @@
 import { Transaction } from '@sap/cds';
 import { TimeEntry } from '#cds-models/TrackService';
-import { ProjectRepository, ActivityTypeRepository, TimeEntryRepository } from '../repositories';
+import { TimeEntryRepository } from '../repositories';
+import { ProjectValidator } from './ProjectValidator';
+import { ActivityTypeValidator } from './ActivityTypeValidator';
 import { logger } from '../utils';
 
 /**
@@ -8,17 +10,17 @@ import { logger } from '../utils';
  * Verwaltet alle Validierungslogik für TimeEntries
  */
 export class TimeEntryValidator {
-  private projectRepository: ProjectRepository;
-  private activityTypeRepository: ActivityTypeRepository;
+  private projectValidator: ProjectValidator;
+  private activityTypeValidator: ActivityTypeValidator;
   private timeEntryRepository: TimeEntryRepository;
 
   constructor(
-    projectRepository: ProjectRepository,
-    activityTypeRepository: ActivityTypeRepository,
+    projectValidator: ProjectValidator,
+    activityTypeValidator: ActivityTypeValidator,
     timeEntryRepository: TimeEntryRepository,
   ) {
-    this.projectRepository = projectRepository;
-    this.activityTypeRepository = activityTypeRepository;
+    this.projectValidator = projectValidator;
+    this.activityTypeValidator = activityTypeValidator;
     this.timeEntryRepository = timeEntryRepository;
   }
 
@@ -78,16 +80,16 @@ export class TimeEntryValidator {
    * @param entryData - TimeEntry Daten
    */
   async validateReferences(tx: Transaction, entryData: Partial<TimeEntry>): Promise<void> {
-    // Projekt-Validierung (nur aktive Projekte)
+    // Projekt validieren (falls gesetzt)
     if (entryData.project_ID) {
-      await this.projectRepository.validateActive(tx, entryData.project_ID);
-      logger.validationSuccess('TimeEntry', 'Project reference validated', { projectId: entryData.project_ID });
+      await this.projectValidator.validateActive(tx, entryData.project_ID);
+      logger.validationSuccess('TimeEntry', 'Project reference valid', { projectId: entryData.project_ID });
     }
 
-    // Activity-Validierung
+    // Activity validieren (falls gesetzt)
     if (entryData.activity_code) {
-      await this.activityTypeRepository.validateExists(tx, entryData.activity_code);
-      logger.validationSuccess('TimeEntry', 'Activity reference validated', { activityCode: entryData.activity_code });
+      await this.activityTypeValidator.validateExists(tx, entryData.activity_code);
+      logger.validationSuccess('TimeEntry', 'Activity reference valid', { activityCode: entryData.activity_code });
     }
   }
 

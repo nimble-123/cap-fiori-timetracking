@@ -20,36 +20,13 @@ export class ActivityTypeRepository {
    * @returns ActivityType oder null
    */
   async findByCode(tx: Transaction, code: string): Promise<ActivityType | null> {
-    return await tx.run(SELECT.one.from(this.ActivityTypes).where({ code }));
-  }
-
-  /**
-   * Prüft ob ActivityType mit Code existiert
-   * @param tx - Transaction Objekt
-   * @param code - Activity Code
-   * @returns True wenn ActivityType existiert
-   */
-  async exists(tx: Transaction, code: string): Promise<boolean> {
-    const activity = await this.findByCode(tx, code);
-    return activity !== null;
-  }
-
-  /**
-   * Validiert ob ActivityType existiert, wirft Fehler falls nicht
-   * @param tx - Transaction Objekt
-   * @param code - Activity Code
-   * @throws Error wenn Activity Code ungültig
-   */
-  async validateExists(tx: Transaction, code: string): Promise<void> {
-    logger.repositoryQuery('ActivityType', 'Validating activity code', { code });
-    const activity = await this.findByCode(tx, code);
-
-    if (!activity) {
-      logger.repositoryResult('ActivityType', 'Activity code invalid', { code });
-      throw new Error('Ungültiger Activity Code.');
-    }
-
-    logger.repositoryResult('ActivityType', 'Activity code validated', { code, name: activity.name });
+    logger.repositoryQuery('ActivityType', 'Finding activity by code', { code });
+    const activity = await tx.run(SELECT.one.from(this.ActivityTypes).where({ code }));
+    logger.repositoryResult('ActivityType', activity ? 'Activity found' : 'Activity not found', {
+      code,
+      found: !!activity,
+    });
+    return activity;
   }
 
   /**
@@ -58,7 +35,10 @@ export class ActivityTypeRepository {
    * @returns Array von ActivityTypes
    */
   async findAll(tx: Transaction): Promise<ActivityType[]> {
-    return await tx.run(SELECT.from(this.ActivityTypes));
+    logger.repositoryQuery('ActivityType', 'Finding all activities', {});
+    const activities = await tx.run(SELECT.from(this.ActivityTypes));
+    logger.repositoryResult('ActivityType', 'All activities loaded', { count: activities.length });
+    return activities;
   }
 
   /**
@@ -68,7 +48,13 @@ export class ActivityTypeRepository {
    * @returns ActivityType oder null
    */
   async findById(tx: Transaction, id: string): Promise<ActivityType | null> {
-    return await tx.run(SELECT.one.from(this.ActivityTypes).where({ ID: id }));
+    logger.repositoryQuery('ActivityType', 'Finding activity by ID', { id });
+    const activity = await tx.run(SELECT.one.from(this.ActivityTypes).where({ ID: id }));
+    logger.repositoryResult('ActivityType', activity ? 'Activity found' : 'Activity not found', {
+      id,
+      found: !!activity,
+    });
+    return activity;
   }
 }
 

@@ -216,10 +216,12 @@ cap-fiori-timetracking/
 │           │   ├── ActivityTypeRepository.ts
 │           │   └── index.ts
 │           │
-│           ├── validators/          # ✅ Validation (3 Validators)
+│           ├── validators/          # ✅ Validation (5 Validators)
 │           │   ├── TimeEntryValidator.ts
 │           │   ├── GenerationValidator.ts
 │           │   ├── BalanceValidator.ts
+│           │   ├── ProjectValidator.ts
+│           │   ├── ActivityTypeValidator.ts
 │           │   └── index.ts
 │           │
 │           ├── strategies/          # 📋 Strategy Pattern
@@ -452,23 +454,37 @@ classDiagram
         <<interface>>
         +validate(tx, data)
     }
-    class TimeEntryValidator {
+    class ProjectValidator {
         -projectRepo: ProjectRepository
+        +validateActive(tx, projectId)
+        +isActive(tx, projectId)
+    }
+    class ActivityTypeValidator {
         -activityRepo: ActivityTypeRepository
+        +validateExists(tx, code)
+        +exists(tx, code)
+    }
+    class TimeEntryValidator {
+        -projectValidator: ProjectValidator
+        -activityValidator: ActivityTypeValidator
         -timeEntryRepo: TimeEntryRepository
-        +validate(tx, data)
+        +validateRequiredFieldsForCreate(data)
+        +validateFieldsForUpdate(updateData, existingEntry)
+        +validateReferences(tx, data)
         +validateUniqueEntryPerDay(tx, userId, date, excludeId?)
-        +hasRelevantChanges(old, new)
+        +requiresTimeRecalculation(updateData)
     }
     class GenerationValidator {
         -userRepo: UserRepository
         +validateUser(tx, userId)
         +validateStateCode(stateCode)
         +validateYear(year)
+        +validateGeneratedEntries(entries)
     }
     class BalanceValidator {
-        +validateYearMonth(year, month)
-        +validateMonthCount(count)
+        +validateYear(year)
+        +validateMonth(month)
+        +validateMonthsCount(count)
     }
     class StrategyPattern {
         <<interface>>
@@ -557,14 +573,18 @@ classDiagram
     RepositoryPattern <|.. TimeEntryRepository : implements
     RepositoryPattern <|.. UserRepository : implements
     ValidatorPattern <|.. TimeEntryValidator : implements
+    ValidatorPattern <|.. ProjectValidator : implements
+    ValidatorPattern <|.. ActivityTypeValidator : implements
     ValidatorPattern <|.. GenerationValidator : implements
     ValidatorPattern <|.. BalanceValidator : implements
     StrategyPattern <|.. MonthlyGenerationStrategy : implements
     StrategyPattern <|.. YearlyGenerationStrategy : implements
     FactoryPattern <|.. TimeEntryFactory : implements
-    TimeEntryValidator --> ProjectRepository : uses
-    TimeEntryValidator --> ActivityTypeRepository : uses
+    TimeEntryValidator --> ProjectValidator : uses
+    TimeEntryValidator --> ActivityTypeValidator : uses
     TimeEntryValidator --> TimeEntryRepository : uses
+    ProjectValidator --> ProjectRepository : uses
+    ActivityTypeValidator --> ActivityTypeRepository : uses
     GenerationValidator --> UserRepository : uses
     TimeEntryFactory --> TimeCalculationService : uses
     UserService --> UserRepository : uses
@@ -866,54 +886,58 @@ export class TimeEntryRepository {
 - `ProjectRepository` - Validierung aktiver Projekte
 - `ActivityTypeRepository` - Validierung von Activity Codes
 
-### ✅ 9. Validator Pattern (3 Validators)
+### ✅ 9. Validator Pattern (5 Validators)
 
 **Dateien:** `srv/handler/validators/*.ts`
 
-Das **Validator Pattern** kapselt komplexe Validierungslogik in wiederverwendbare Klassen. Jeder Validator fokussiert sich auf eine spezifische Domäne:
+Das **Validator Pattern** kapselt komplexe Validierungslogik in wiederverwendbare Klassen. Jeder Validator fokussiert sich auf eine spezifische Domäne und folgt dem **Single Responsibility Principle**:
 
 ```typescript
 /**
- * TimeEntryValidator - Validierung für TimeEntry-Operationen
+ * ProjectValidator - Validiert Project-Referenzen
+ */
+export class ProjectValidator {
+  constructor(private projectRepository: ProjectRepository) {}
+
+  async validateActive(tx: Transaction, projectId: string): Promise<void> {
+    const project = await this.projectRepository.findByIdActive(tx, projectId);
+    if (!project) {
+      throw new Error('Projekt ist ungültig oder inaktiv.');
+    }
+  }
+}
+
+/**
+ * ActivityTypeValidator - Validiert Activity-Codes
+ */
+export class ActivityTypeValidator {
+  constructor(private activityTypeRepository: ActivityTypeRepository) {}
+
+  async validateExists(tx: Transaction, code: string): Promise<void> {
+    const activity = await this.activityTypeRepository.findByCode(tx, code);
+    if (!activity) {
+      throw new Error('Ungültiger Activity Code.');
+    }
+  }
+}
+
+/**
+ * TimeEntryValidator - Orchestriert Entry-Validierung
  */
 export class TimeEntryValidator {
   constructor(
-    private projectRepository: ProjectRepository,
-    private activityTypeRepository: ActivityTypeRepository,
+    private projectValidator: ProjectValidator,
+    private activityTypeValidator: ActivityTypeValidator,
     private timeEntryRepository: TimeEntryRepository,
   ) {}
 
-  /**
-   * Validiert Pflichtfelder für CREATE
-   */
-  validateRequiredFieldsForCreate(entryData: Partial<TimeEntry>): string {
-    const { user_ID, workDate, startTime, endTime, entryType } = entryData;
-
-    if (!user_ID) throw new Error('user ist erforderlich.');
-    if (!workDate) throw new Error('workDate ist erforderlich.');
-
-    const type = entryType || 'WORK';
-
-    // Bei Arbeitszeit sind Start-/Endzeit erforderlich
-    if (type === 'WORK' && (!startTime || !endTime)) {
-      throw new Error('startTime und endTime sind bei Arbeitszeit erforderlich.');
-    }
-
-    return type;
-  }
-
-  /**
-   * Validiert Referenzen (Projekt, Activity)
-   */
   async validateReferences(tx: Transaction, entryData: Partial<TimeEntry>): Promise<void> {
-    // Projekt-Validierung nur wenn angegeben
+    // Delegiert an spezialisierte Validators
     if (entryData.project_ID) {
-      await this.projectRepository.validateProjectExists(tx, entryData.project_ID);
+      await this.projectValidator.validateActive(tx, entryData.project_ID);
     }
-
-    // Activity-Validierung nur wenn angegeben
     if (entryData.activity_code) {
-      await this.activityTypeRepository.validateActivityExists(tx, entryData.activity_code);
+      await this.activityTypeValidator.validateExists(tx, entryData.activity_code);
     }
   }
 }
@@ -921,15 +945,17 @@ export class TimeEntryValidator {
 
 **Features:**
 
-- ✅ Zentralisierte Validierungslogik
-- 🎯 Domain-spezifische Rules (TimeEntry vs. Generation vs. Balance)
-- 🔗 Nutzt Repositories für DB-basierte Validierung
-- 🛡️ Konsistente Error Messages
-- 🧪 Isoliert testbar ohne CAP Framework
+- ✅ **Separation of Concerns** - Jeder Validator eine Verantwortung
+- 🎯 **Domain-spezifische Rules** - TimeEntry, Project, ActivityType, Generation, Balance
+- 🔗 **Validator Composition** - TimeEntryValidator nutzt Project & ActivityType Validators
+- 🛡️ **Konsistente Error Messages** mit Logging
+- 🧪 **Isoliert testbar** - Reine Business Logic ohne CAP Dependencies
 
-**Unsere 3 Validators:**
+**Unsere 5 Validators:**
 
-- `TimeEntryValidator` - Entry-Validierung + Change Detection
+- `ProjectValidator` - Project-Aktivitäts-Validierung
+- `ActivityTypeValidator` - Activity-Code-Validierung
+- `TimeEntryValidator` - Entry-Validierung + Change Detection (nutzt Project & ActivityType)
 - `GenerationValidator` - User, StateCode, Year Validierung
 - `BalanceValidator` - Year/Month Plausibilitätsprüfung
 
@@ -1062,18 +1088,35 @@ sequenceDiagram
     Note over CMD,VAL: ✅ Validation Phase
     CMD->>VAL: validateRequiredFieldsForCreate(entryData)
     VAL-->>CMD: entryType
+
     CMD->>VAL: validateUniqueEntryPerDay(tx, userID, workDate)
     VAL->>REPO: getEntryByUserAndDate(tx, userID, workDate)
     REPO->>DB: SELECT WHERE user+date
     DB-->>REPO: null (no entry)
     REPO-->>VAL: null
     VAL-->>CMD: ✅ unique
+
     CMD->>VAL: validateReferences(tx, entryData)
-    VAL->>REPO: check project, activity
-    REPO->>DB: SELECT project, activity
-    DB-->>REPO: valid references
-    REPO-->>VAL: ✅ valid
-    VAL-->>CMD: ✅ validated
+
+    alt project_ID provided
+        VAL->>VAL: projectValidator.validateActive(tx, projectId)
+        VAL->>REPO: projectRepository.findByIdActive(tx, projectId)
+        REPO->>DB: SELECT Project WHERE ID+active
+        DB-->>REPO: Project record
+        REPO-->>VAL: Project
+        VAL-->>VAL: ✅ project active
+    end
+
+    alt activity_code provided
+        VAL->>VAL: activityValidator.validateExists(tx, code)
+        VAL->>REPO: activityRepository.findByCode(tx, code)
+        REPO->>DB: SELECT ActivityType WHERE code
+        DB-->>REPO: ActivityType record
+        REPO-->>VAL: ActivityType
+        VAL-->>VAL: ✅ activity exists
+    end
+
+    VAL-->>CMD: ✅ all validations passed
     end
 
     rect rgb(240, 255, 240)
@@ -1539,7 +1582,7 @@ export default class Home extends BaseController {
 ## 📊 Projekt-Stats
 
 - 7 Commands in 3 Kategorien (Balance, Generation, TimeEntry)
-- 3 Validators (Domain-spezifisch)
+- 5 Validators (Domain-spezifisch: TimeEntry, Project, ActivityType, Generation, Balance)
 - 4 Repositories (1 pro Entity)
 - 4 Services (Domain Logic)
 - 2 Strategies (Algorithms)
