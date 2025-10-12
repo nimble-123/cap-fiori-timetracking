@@ -4,6 +4,7 @@ import { YearlyGenerationStrategy } from '../strategies/YearlyGenerationStrategy
 import { TimeEntryRepository } from '../repositories/TimeEntryRepository';
 import { UserService } from '../services/UserService';
 import { GenerationValidator } from '../validators/GenerationValidator';
+import { DateUtils } from '../utils/DateUtils';
 
 // Type definitions
 interface GenerationDependencies {
@@ -76,7 +77,7 @@ export class GenerateMonthlyCommand {
     console.log(`👤 User validiert: ${userID}`);
 
     // 2. Monatsdaten ermitteln (aktueller Monat)
-    const monthData = this.strategy.getCurrentMonthData();
+    const monthData = DateUtils.getCurrentMonthData();
     console.log(`📅 Monat: ${monthData.monthStartStr} bis ${monthData.monthEndStr}`);
 
     // 3. Existierende Einträge laden
@@ -89,7 +90,7 @@ export class GenerateMonthlyCommand {
     console.log(`📊 ${existingDates.size} existierende Einträge gefunden`);
 
     // 4. Fehlende Einträge generieren
-    const newEntries = this.strategy.generateMissingEntries(userID, user, monthData, existingDates);
+    const newEntries = this.strategy.generateMissingEntries(userID, user, existingDates);
 
     console.log(`✨ ${newEntries.length} neue Einträge zu generieren`);
 
@@ -170,7 +171,7 @@ export class GenerateYearlyCommand {
     console.log(`👤 User validiert: ${userID}`);
 
     // 3. Jahresdaten ermitteln
-    const yearData = this.strategy.getYearData(targetYear);
+    const yearData = DateUtils.getYearData(targetYear);
     console.log(`📅 Zeitraum: ${yearData.yearStartStr} bis ${yearData.yearEndStr}`);
 
     // 4. Existierende Einträge laden
@@ -183,10 +184,11 @@ export class GenerateYearlyCommand {
     console.log(`📊 ${existingDates.size} existierende Einträge gefunden`);
 
     // 5. Fehlende Einträge generieren (inkl. Feiertags-API-Call)
+    // Strategy nutzt jetzt intern DateUtils und bekommt nur year statt yearData
     const newEntries = await this.strategy.generateMissingEntries(
       userID,
       user,
-      yearData,
+      targetYear,
       validatedStateCode,
       existingDates,
     );

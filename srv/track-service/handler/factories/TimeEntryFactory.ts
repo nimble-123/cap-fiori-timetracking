@@ -86,26 +86,36 @@ export class TimeEntryFactory {
    */
   static createDefaultEntry(userID: string, date: Date, user: User): TimeEntry {
     const dateString = DateUtils.toLocalDateString(date);
+    const displayDate = DateUtils.toGermanDateString(date);
     const workingDaysPerWeek = user.workingDaysPerWeek || 5;
     const expected = user.expectedDailyHoursDec || (user.weeklyHoursDec || 36) / workingDaysPerWeek;
+
+    // Berechne Start- und Endzeit basierend auf erwarteten Stunden
+    const breakMinutes = 30;
+    const startHour = 8; // Standard-Startzeit 08:00
+    const grossMinutes = expected * 60 + breakMinutes; // Brutto-Arbeitszeit inkl. Pause
+    const grossHours = grossMinutes / 60;
+
+    const endHour = startHour + Math.floor(grossHours);
+    const endMinute = Math.round((grossHours - Math.floor(grossHours)) * 60);
+
+    const startTime = `${String(startHour).padStart(2, '0')}:00:00`;
+    const endTime = `${String(endHour).padStart(2, '0')}:${String(endMinute).padStart(2, '0')}:00`;
 
     return {
       ID: randomUUID(),
       user_ID: userID,
       workDate: dateString,
       entryType_code: 'W',
-      startTime: '08:00:00',
-      endTime: '15:42:00',
-      breakMin: 30,
-      source: 'GENERATED',
-      note: `Automatisch generiert für ${date.toLocaleDateString('de-DE')}`,
-      // Berechnete Werte
-      durationHoursGross: expected + 0.5,
+      startTime: startTime,
+      endTime: endTime,
+      breakMin: breakMinutes,
+      durationHoursGross: TimeCalculationService.roundToTwoDecimals(grossHours),
       durationHoursNet: expected,
       overtimeHours: 0,
       undertimeHours: 0,
-      createdAt: new Date().toISOString(),
-      modifiedAt: new Date().toISOString(),
+      source: 'GENERATED',
+      note: `Automatisch generiert für ${displayDate}`,
     } as TimeEntry;
   }
 
@@ -117,7 +127,7 @@ export class TimeEntryFactory {
    */
   static createWeekendEntry(userID: string, date: Date): TimeEntry {
     const dateString = DateUtils.toLocalDateString(date);
-    const dayName = date.toLocaleDateString('de-DE', { weekday: 'long' });
+    const dayName = DateUtils.getWeekdayName(date);
 
     return {
       ID: randomUUID(),
