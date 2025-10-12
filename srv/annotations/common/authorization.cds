@@ -1,5 +1,4 @@
-// srv/annotations/common/authorization.cds - Authorization & Restrictions
-using TrackService as service from '../../track-service';
+using TrackService as service from '../../service-model';
 
 ////////////////////////////////////////////////////////////////////////////
 //  TimeEntries - Authorization Restrictions

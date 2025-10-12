@@ -1,5 +1,4 @@
-// srv/annotations/ui/activities-ui.cds - UI Layout für ActivityTypes Entity
-using TrackService as service from '../../track-service';
+using TrackService as service from '../../service-model';
 
 ////////////////////////////////////////////////////////////////////////////
 //  ActivityTypes - UI Layout

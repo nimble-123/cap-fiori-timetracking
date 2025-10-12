@@ -1,5 +1,4 @@
-// srv/annotations/ui/projects-ui.cds - UI Layout für Projects Entity
-using TrackService as service from '../../track-service';
+using TrackService as service from '../../service-model';
 
 ////////////////////////////////////////////////////////////////////////////
 //  Projects - UI Layout

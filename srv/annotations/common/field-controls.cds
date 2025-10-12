@@ -1,5 +1,4 @@
-// srv/annotations/common/field-controls.cds - Field Controls (@readonly, @mandatory, @UI.Hidden)
-using TrackService as service from '../../track-service';
+using TrackService as service from '../../service-model';
 
 ////////////////////////////////////////////////////////////////////////////
 //  Berechnete Felder als readonly markieren

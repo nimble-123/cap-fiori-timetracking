@@ -1,4 +1,4 @@
-using TrackService as service from '../../track-service';
+using TrackService as service from '../../service-model';
 
 ////////////////////////////////////////////////////////////////////////////
 //	MonthlyBalances List Page

@@ -1,6 +1,7 @@
 // srv/track.cds
-using {io.nimble as db} from '../db/data-model';
+using {io.nimble as db} from '../../db/data-model';
 
+@impl: './track-service.ts'
 service TrackService {
     @readonly
     entity Users         as projection on db.Users;

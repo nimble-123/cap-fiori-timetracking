@@ -1,5 +1,4 @@
-// srv/annotations/common/capabilities.cds - Entity Capabilities
-using TrackService as service from '../../track-service';
+using TrackService as service from '../../service-model';
 
 ////////////////////////////////////////////////////////////////////////////
 //  TimeEntries - Capabilities

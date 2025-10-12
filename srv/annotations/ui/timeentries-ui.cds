@@ -1,5 +1,4 @@
-// srv/annotations/ui/timeentries-ui.cds - UI Layout für TimeEntries Entity
-using TrackService as service from '../../track-service';
+using TrackService as service from '../../service-model';
 
 ////////////////////////////////////////////////////////////////////////////
 //  TimeEntries - UI Layout
@@ -243,3 +242,14 @@ annotate service.TimeEntries with @(UI.Chart #alpChart: {
 ////////////////////////////////////////////////////////////////////////////
 //  Action Annotations
 ////////////////////////////////////////////////////////////////////////////
+
+// getMonthlyBalance - Zeige Ergebnis als Object Page Dialog
+annotate service.getMonthlyBalance with @(
+  Common.ResultContext   : {
+    $Type : 'UI.RecommendationStateType',
+    $Value: #Positive
+  }
+);
+
+// Parameter Field Controls für getMonthlyBalance
+//annotate service.getMonthlyBalance with(year @(Common.FieldControl: #Mandatory), month @(Common.FieldControl: #Mandatory));

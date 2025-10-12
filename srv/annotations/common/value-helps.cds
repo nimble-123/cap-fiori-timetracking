@@ -1,5 +1,4 @@
-// srv/annotations/common/value-helps.cds - Zentrale Value Help Definitionen
-using TrackService as service from '../../track-service';
+using TrackService as service from '../../service-model';
 
 ////////////////////////////////////////////////////////////////////////////
 //  TimeEntries - Value Help Annotations

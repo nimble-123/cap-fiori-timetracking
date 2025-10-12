@@ -1,5 +1,4 @@
-// srv/annotations/common/labels.cds - Zentrale Labels & Titles
-using TrackService as service from '../../track-service';
+using TrackService as service from '../../service-model';
 
 ////////////////////////////////////////////////////////////////////////////
 //  User Entity - Labels & TextArrangements
