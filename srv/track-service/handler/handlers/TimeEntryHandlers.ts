@@ -1,6 +1,6 @@
 import cds from '@sap/cds';
 import { TimeEntry } from '#cds-models/TrackService';
-import { CreateTimeEntryCommand, UpdateTimeEntryCommand } from '../commands/TimeEntryCommands';
+import { CreateTimeEntryCommand, UpdateTimeEntryCommand } from '../commands';
 
 /**
  * Handler für TimeEntry CRUD-Operationen

@@ -1,6 +1,6 @@
 import { Transaction } from '@sap/cds';
 import type { MonthlyBalance } from '#cds-models/TrackService';
-import { TimeEntryRepository } from '../repositories/TimeEntryRepository';
+import { TimeEntryRepository } from '../repositories';
 
 export interface YearBalance {
   year: number;

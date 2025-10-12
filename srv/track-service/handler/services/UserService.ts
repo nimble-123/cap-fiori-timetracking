@@ -1,7 +1,7 @@
 import { Request, Transaction } from '@sap/cds';
 import { User } from '#cds-models/TrackService';
 import { TimeCalculationService } from './TimeCalculationService';
-import { UserRepository } from '../repositories/UserRepository';
+import { UserRepository } from '../repositories';
 
 // Type definitions
 interface UserResolveResult {

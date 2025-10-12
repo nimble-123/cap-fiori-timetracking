@@ -1,7 +1,6 @@
 import { Transaction } from '@sap/cds';
 import { TimeEntry } from '#cds-models/TrackService';
-import { ProjectRepository } from '../repositories/ProjectRepository';
-import { ActivityTypeRepository } from '../repositories/ActivityTypeRepository';
+import { ProjectRepository, ActivityTypeRepository } from '../repositories';
 
 /**
  * Validator für TimeEntry Operationen

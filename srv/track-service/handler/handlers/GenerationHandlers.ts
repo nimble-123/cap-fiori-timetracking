@@ -1,5 +1,5 @@
 import { TimeEntry } from '#cds-models/TrackService';
-import { GenerateMonthlyCommand, GenerateYearlyCommand } from '../commands/GenerationCommands';
+import { GenerateMonthlyCommand, GenerateYearlyCommand } from '../commands';
 
 /**
  * Handler für TimeEntry-Generierung

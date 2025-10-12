@@ -1,5 +1,5 @@
 // Infrastructure
-export { ServiceContainer } from './container/ServiceContainer';
+export { ServiceContainer } from './container';
 export { HandlerRegistry, HandlerRegistrar } from './registry';
 export { HandlerSetup } from './setup';
 
@@ -19,10 +19,10 @@ export { MonthlyGenerationStrategy, YearlyGenerationStrategy } from './strategie
 export { TimeEntryFactory, HandlerFactory } from './factories';
 
 // Utils
-export { DateUtils } from './utils/DateUtils';
+export { DateUtils } from './utils';
 
-// Commands (Type-only exports for external use)
-export type {
+// Commands
+export {
   CreateTimeEntryCommand,
   UpdateTimeEntryCommand,
   GenerateMonthlyCommand,
@@ -32,16 +32,8 @@ export type {
   GetRecentBalancesCommand,
 } from './commands';
 
-// Command implementations (for internal use)
-export {
-  CreateTimeEntryCommandImpl,
-  UpdateTimeEntryCommandImpl,
-  GenerateMonthlyCommandImpl,
-  GenerateYearlyCommandImpl,
-  GetMonthlyBalanceCommandImpl,
-  GetCurrentBalanceCommandImpl,
-  GetRecentBalancesCommandImpl,
-} from './commands';
+// Command Result Types
+export type { MonthlyGenerationResult, YearlyGenerationResult } from './commands';
 
 // Handlers
 export { TimeEntryHandlers, GenerationHandlers, BalanceHandlers } from './handlers';

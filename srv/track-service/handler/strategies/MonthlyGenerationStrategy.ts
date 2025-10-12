@@ -1,6 +1,6 @@
 import { TimeEntry, User } from '#cds-models/TrackService';
-import { TimeEntryFactory } from '../factories/TimeEntryFactory';
-import { DateUtils } from '../utils/DateUtils';
+import { TimeEntryFactory } from '../factories';
+import { DateUtils } from '../utils';
 
 /**
  * Strategy für monatliche TimeEntries Generierung

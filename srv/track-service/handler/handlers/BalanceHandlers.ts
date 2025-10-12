@@ -1,9 +1,5 @@
 import cds from '@sap/cds';
-import {
-  GetMonthlyBalanceCommand,
-  GetCurrentBalanceCommand,
-  GetRecentBalancesCommand,
-} from '../commands/BalanceCommands';
+import { GetMonthlyBalanceCommand, GetCurrentBalanceCommand, GetRecentBalancesCommand } from '../commands';
 
 /**
  * Handler für Zeitkonto-Balance-Operationen

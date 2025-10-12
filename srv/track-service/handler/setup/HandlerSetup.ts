@@ -1,8 +1,7 @@
 import { ApplicationService } from '@sap/cds';
-import { ServiceContainer } from '../container/ServiceContainer';
-import { HandlerRegistry } from '../registry/HandlerRegistry';
-import { HandlerFactory } from '../factories/HandlerFactory';
-import { HandlerRegistrar } from '../registry/HandlerRegistrar';
+import { ServiceContainer } from '../container';
+import { HandlerRegistry, HandlerRegistrar } from '../registry';
+import { HandlerFactory } from '../factories';
 import { TimeEntryHandlers, GenerationHandlers, BalanceHandlers } from '../handlers';
 
 /**

@@ -1,4 +1,4 @@
-import { ServiceContainer } from '../container/ServiceContainer';
+import { ServiceContainer } from '../container';
 import { TimeEntryHandlers, GenerationHandlers, BalanceHandlers } from '../handlers';
 import type {
   CreateTimeEntryCommand,
