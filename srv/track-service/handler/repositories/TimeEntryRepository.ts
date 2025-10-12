@@ -62,7 +62,11 @@ export class TimeEntryRepository {
    * @returns Set der existierenden Daten
    */
   async getExistingDatesInRange(userID: string, startDate: string, endDate: string): Promise<Set<string>> {
-    console.log(`📅 Suche existierende Einträge von ${startDate} bis ${endDate}`);
+    logger.repositoryQuery('TimeEntry', `Searching existing entries from ${startDate} to ${endDate}`, {
+      userID,
+      startDate,
+      endDate,
+    });
 
     const existingEntries = await SELECT.from(this.TimeEntries).where({
       user_ID: userID,
@@ -72,7 +76,11 @@ export class TimeEntryRepository {
       (entry: any) => entry.workDate >= startDate && entry.workDate <= endDate,
     );
 
-    console.log(`📝 ${existingInRange.length} existierende Einträge im Zeitraum gefunden`);
+    logger.repositoryResult('TimeEntry', `Found ${existingInRange.length} existing entries in range`, {
+      count: existingInRange.length,
+      startDate,
+      endDate,
+    });
 
     return new Set(existingInRange.map((entry: any) => entry.workDate));
   }
