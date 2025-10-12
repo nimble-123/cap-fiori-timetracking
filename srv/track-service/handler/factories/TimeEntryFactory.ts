@@ -107,6 +107,60 @@ export class TimeEntryFactory {
       modifiedAt: new Date().toISOString(),
     } as TimeEntry;
   }
+
+  /**
+   * Erstellt einen Wochenend-Entry (EntryType O, Zeiten = 0)
+   * @param userID - User ID
+   * @param date - Datum
+   * @returns TimeEntry für Wochenende
+   */
+  static createWeekendEntry(userID: string, date: Date): TimeEntry {
+    const dateString = date.toISOString().split('T')[0];
+    const dayName = date.toLocaleDateString('de-DE', { weekday: 'long' });
+
+    return {
+      ID: randomUUID(),
+      user_ID: userID,
+      workDate: dateString,
+      entryType_code: 'O', // O = Frei/Wochenende
+      startTime: '00:00:00',
+      endTime: '00:00:00',
+      breakMin: 0,
+      durationHoursGross: 0,
+      durationHoursNet: 0,
+      overtimeHours: 0,
+      undertimeHours: 0,
+      source: 'GENERATED',
+      note: `${dayName}`,
+    } as TimeEntry;
+  }
+
+  /**
+   * Erstellt einen Feiertags-Entry (EntryType H, Zeiten = 0)
+   * @param userID - User ID
+   * @param date - Datum
+   * @param holidayName - Name des Feiertags
+   * @returns TimeEntry für Feiertag
+   */
+  static createHolidayEntry(userID: string, date: Date, holidayName: string): TimeEntry {
+    const dateString = date.toISOString().split('T')[0];
+
+    return {
+      ID: randomUUID(),
+      user_ID: userID,
+      workDate: dateString,
+      entryType_code: 'H', // H = Feiertag
+      startTime: '00:00:00',
+      endTime: '00:00:00',
+      breakMin: 0,
+      durationHoursGross: 0,
+      durationHoursNet: 0,
+      overtimeHours: 0,
+      undertimeHours: 0,
+      source: 'GENERATED',
+      note: holidayName,
+    } as TimeEntry;
+  }
 }
 
 export default TimeEntryFactory;

@@ -96,7 +96,7 @@ export class YearlyGenerationStrategy {
       // Prüfen ob Feiertag
       const holiday = holidays.get(dateString);
       if (holiday) {
-        const entry = this.createHolidayEntry(userID, currentDate, holiday.name);
+        const entry = TimeEntryFactory.createHolidayEntry(userID, currentDate, holiday.name);
         newEntries.push(entry);
         console.log(`🎉 Feiertag: ${dateString} - ${holiday.name}`);
         continue;
@@ -104,7 +104,7 @@ export class YearlyGenerationStrategy {
 
       // Prüfen ob Wochenende
       if (this.isWeekend(currentDate)) {
-        const entry = this.createWeekendEntry(userID, currentDate);
+        const entry = TimeEntryFactory.createWeekendEntry(userID, currentDate);
         newEntries.push(entry);
         continue;
       }
@@ -115,72 +115,6 @@ export class YearlyGenerationStrategy {
     }
 
     return newEntries;
-  }
-
-  /**
-   * Erstellt einen Wochenend-Entry (EntryType O, Zeiten = 0)
-   * @param userID - User ID
-   * @param date - Datum
-   * @returns TimeEntry für Wochenende
-   */
-  private createWeekendEntry(userID: string, date: Date): TimeEntry {
-    const dateString = date.toISOString().split('T')[0];
-    const dayName = date.toLocaleDateString('de-DE', { weekday: 'long' });
-
-    return {
-      ID: this.generateUUID(),
-      user_ID: userID,
-      workDate: dateString,
-      entryType_code: 'O', // O = Frei/Wochenende
-      startTime: '00:00:00',
-      endTime: '00:00:00',
-      breakMin: 0,
-      durationHoursGross: 0,
-      durationHoursNet: 0,
-      overtimeHours: 0,
-      undertimeHours: 0,
-      source: 'GENERATED',
-      note: `${dayName}`,
-    } as TimeEntry;
-  }
-
-  /**
-   * Erstellt einen Feiertags-Entry (EntryType H, Zeiten = 0)
-   * @param userID - User ID
-   * @param date - Datum
-   * @param holidayName - Name des Feiertags
-   * @returns TimeEntry für Feiertag
-   */
-  private createHolidayEntry(userID: string, date: Date, holidayName: string): TimeEntry {
-    const dateString = date.toISOString().split('T')[0];
-
-    return {
-      ID: this.generateUUID(),
-      user_ID: userID,
-      workDate: dateString,
-      entryType_code: 'H', // H = Feiertag
-      startTime: '00:00:00',
-      endTime: '00:00:00',
-      breakMin: 0,
-      durationHoursGross: 0,
-      durationHoursNet: 0,
-      overtimeHours: 0,
-      undertimeHours: 0,
-      source: 'GENERATED',
-      note: holidayName,
-    } as TimeEntry;
-  }
-
-  /**
-   * Generiert eine UUID (einfache Implementierung)
-   * @returns UUID String
-   */
-  private generateUUID(): string {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-      const r = (Math.random() * 16) | 0;
-      const v = c === 'x' ? r : (r & 0x3) | 0x8;
-      return v.toString(16);
-    });
   }
 }
 
