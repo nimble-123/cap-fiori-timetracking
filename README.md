@@ -138,63 +138,91 @@ cap-fiori-timetracking/
 │
 ├── ⚙️ srv/                           # Backend Service Layer (100% TypeScript!)
 │   │
-│   ├── track-service/               # Service Definition & Orchestrator
-│   │   ├── track-service.cds        # OData Service Definition
-│   │   ├── track-service.ts         # 🎬 Orchestrator (165 Zeilen!)
-│   │   ├── REFACTORING.md           # Refactoring Dokumentation
-│   │   ├── actions/                 # Action Definitions (CDS)
-│   │   └── entities/                # Entity Extensions
+│   ├── service-model.cds            # Top-Level Service Model
 │   │
-│   ├── handler/                     # 🔧 Business Logic & Infrastructure
-│   │   │
-│   │   ├── container/               # 🏗️ Dependency Injection
-│   │   │   └── ServiceContainer.ts  # DI Container (178 Zeilen)
-│   │   │       - 6 Kategorien: Repos, Services, Validators, Strategies, Commands, Factories
-│   │   │       - Type-safe Resolution mit Generics
-│   │   │       - Auto-Wiring aller Dependencies
-│   │   │
-│   │   ├── registry/                # 📋 Event Handler Registry
-│   │   │   └── HandlerRegistry.ts   # Handler-Registrierung (149 Zeilen)
-│   │   │       - Unterstützt: before, on, after
-│   │   │       - Fluent API & Logging
-│   │   │
-│   │   ├── handlers/                # 🎯 Event Handler (Separation of Concerns)
-│   │   │   ├── TimeEntryHandlers.ts     # CRUD (67 Zeilen)
-│   │   │   ├── GenerationHandlers.ts    # Bulk-Generierung (70 Zeilen)
-│   │   │   └── BalanceHandlers.ts       # Balance-Abfragen (79 Zeilen)
-│   │   │
-│   │   ├── commands/                # 🎯 Command Pattern (7 Commands!)
-│   │   │   ├── TimeEntryCommands.ts     # CREATE & UPDATE
-│   │   │   ├── GenerationCommands.ts    # Monthly & Yearly
-│   │   │   └── BalanceCommands.ts       # 3 Balance Commands
-│   │   │
-│   │   ├── services/                # 💼 Domain Services
-│   │   │   ├── TimeCalculationService.ts   # Static Utilities
-│   │   │   ├── UserService.ts              # User Management
-│   │   │   ├── HolidayService.ts           # API Integration mit Cache
-│   │   │   └── TimeBalanceService.ts       # Balance Calculations
-│   │   │
-│   │   ├── repositories/            # 💾 Data Access (4 Repositories)
-│   │   │   ├── TimeEntryRepository.ts
-│   │   │   ├── UserRepository.ts
-│   │   │   ├── ProjectRepository.ts
-│   │   │   └── ActivityTypeRepository.ts
-│   │   │
-│   │   ├── validators/              # ✅ Validation (3 Validators)
-│   │   │   ├── TimeEntryValidator.ts
-│   │   │   ├── GenerationValidator.ts
-│   │   │   └── BalanceValidator.ts
-│   │   │
-│   │   ├── strategies/              # 📋 Strategy Pattern
-│   │   │   ├── MonthlyGenerationStrategy.ts
-│   │   │   └── YearlyGenerationStrategy.ts
-│   │   │
-│   │   └── factories/               # 🏭 Factory Pattern
-│   │       └── TimeEntryFactory.ts
-│   │
-│   └── annotations/                 # 📝 UI Annotations
-│       ├── common/                  # Authorization, Capabilities, Labels
-│       └── ui/                      # UI-spezifisch pro Entity
+│   └── track-service/               # TrackService - Complete Service Module
+│       │
+│       ├── track-service.cds        # OData Service Definition
+│       ├── track-service.ts         # 🎬 Orchestrator
+│       ├── index.cds                # Service Entry Point
+│       │
+│       ├── annotations/             # 📝 UI Annotations
+│       │   ├── annotations.cds      # Main Annotations File
+│       │   ├── common/              # Common Annotations
+│       │   │   ├── authorization.cds
+│       │   │   ├── capabilities.cds
+│       │   │   ├── field-controls.cds
+│       │   │   ├── labels.cds
+│       │   │   └── value-helps.cds
+│       │   └── ui/                  # UI-spezifisch pro Entity
+│       │       ├── activities-ui.cds
+│       │       ├── balance-ui.cds
+│       │       ├── projects-ui.cds
+│       │       ├── timeentries-ui.cds
+│       │       └── users-ui.cds
+│       │
+│       └── handler/                 # 🔧 Business Logic & Infrastructure
+│           │
+│           ├── index.ts             # Handler Entry Point
+│           │
+│           ├── container/           # 🏗️ Dependency Injection
+│           │   └── ServiceContainer.ts  # DI Container
+│           │       - 6 Kategorien: Repos, Services, Validators, Strategies, Commands, Factories
+│           │       - Type-safe Resolution mit Generics
+│           │       - Auto-Wiring aller Dependencies
+│           │
+│           ├── registry/            # 📋 Event Handler Registry
+│           │   ├── HandlerRegistry.ts   # Handler-Registrierung
+│           │   │   - Unterstützt: before, on, after
+│           │   │   - Fluent API & Logging
+│           │   ├── HandlerRegistrar.ts  # Handler-Registrierung
+│           │   └── index.ts
+│           │
+│           ├── setup/               # 🏗️ Setup & Initialization
+│           │   ├── HandlerSetup.ts      # Builder Pattern für Handler Setup
+│           │   └── index.ts
+│           │
+│           ├── handlers/            # 🎯 Event Handler (Separation of Concerns)
+│           │   ├── TimeEntryHandlers.ts     # CRUD
+│           │   ├── GenerationHandlers.ts    # Bulk-Generierung
+│           │   ├── BalanceHandlers.ts       # Balance-Abfragen
+│           │   └── index.ts
+│           │
+│           ├── commands/            # 🎯 Command Pattern (7 Commands!)
+│           │   ├── TimeEntryCommands.ts     # CREATE & UPDATE
+│           │   ├── GenerationCommands.ts    # Monthly & Yearly
+│           │   ├── BalanceCommands.ts       # 3 Balance Commands
+│           │   └── index.ts
+│           │
+│           ├── services/            # 💼 Domain Services
+│           │   ├── TimeCalculationService.ts   # Static Utilities
+│           │   ├── UserService.ts              # User Management
+│           │   ├── HolidayService.ts           # API Integration mit Cache
+│           │   ├── TimeBalanceService.ts       # Balance Calculations
+│           │   └── index.ts
+│           │
+│           ├── repositories/        # 💾 Data Access (4 Repositories)
+│           │   ├── TimeEntryRepository.ts
+│           │   ├── UserRepository.ts
+│           │   ├── ProjectRepository.ts
+│           │   ├── ActivityTypeRepository.ts
+│           │   └── index.ts
+│           │
+│           ├── validators/          # ✅ Validation (3 Validators)
+│           │   ├── TimeEntryValidator.ts
+│           │   ├── GenerationValidator.ts
+│           │   ├── BalanceValidator.ts
+│           │   └── index.ts
+│           │
+│           ├── strategies/          # 📋 Strategy Pattern
+│           │   ├── MonthlyGenerationStrategy.ts
+│           │   └── YearlyGenerationStrategy.ts
+│           │   └── index.ts
+│           │
+│           └── factories/           # 🏭 Factory Pattern
+│               ├── TimeEntryFactory.ts
+│               ├── HandlerFactory.ts
+│               └── index.ts
 │
 ├── @cds-models/                     # 🎯 Auto-generierte TypeScript Types
 │   ├── TrackService/
@@ -527,7 +555,7 @@ classDiagram
 
 ### 🏗️ 1. ServiceContainer Pattern (Dependency Injection)
 
-**Datei:** `srv/handler/container/ServiceContainer.ts` (178 Zeilen)
+**Datei:** `srv/handler/container/ServiceContainer.ts`
 
 Der **ServiceContainer** ist unser DI-Container. Er verwaltet **alle** Dependencies zentral:
 
@@ -550,7 +578,7 @@ const createCommand = container.getCommand<CreateTimeEntryCommand>('createTimeEn
 
 ### 📋 2. HandlerRegistry Pattern
 
-**Datei:** `srv/handler/registry/HandlerRegistry.ts` (149 Zeilen)
+**Datei:** `srv/handler/registry/HandlerRegistry.ts`
 
 Strukturierte Event-Handler-Registrierung mit **before/on/after** Support:
 
@@ -572,15 +600,15 @@ registry.apply(service);
 
 Commands kapseln komplexe Business Operations:
 
-| Command                    | Zeilen | Zweck                                          |
-| -------------------------- | ------ | ---------------------------------------------- |
-| `CreateTimeEntryCommand`   | ~80    | Validierung, User-Lookup, Factory, Calculation |
-| `UpdateTimeEntryCommand`   | ~60    | Change Detection, Recalculation                |
-| `GenerateMonthlyCommand`   | ~70    | Monat generieren mit Stats                     |
-| `GenerateYearlyCommand`    | ~90    | Jahr mit Feiertagen                            |
-| `GetMonthlyBalanceCommand` | ~50    | Monatssaldo mit Criticality                    |
-| `GetCurrentBalanceCommand` | ~40    | Kumulierter Gesamtsaldo                        |
-| `GetRecentBalancesCommand` | ~45    | Historische Balances (6 Monate)                |
+| Command                    | Zweck                                          |
+| -------------------------- | ---------------------------------------------- |
+| `CreateTimeEntryCommand`   | Validierung, User-Lookup, Factory, Calculation |
+| `UpdateTimeEntryCommand`   | Change Detection, Recalculation                |
+| `GenerateMonthlyCommand`   | Monat generieren mit Stats                     |
+| `GenerateYearlyCommand`    | Jahr mit Feiertagen                            |
+| `GetMonthlyBalanceCommand` | Monatssaldo mit Criticality                    |
+| `GetCurrentBalanceCommand` | Kumulierter Gesamtsaldo                        |
+| `GetRecentBalancesCommand` | Historische Balances (6 Monate)                |
 
 ### 🏭 4. Factory Pattern (2 Factories!)
 
@@ -598,7 +626,7 @@ const entry = TimeEntryFactory.createWorkTimeEntry(user, workDate, startTime, en
 
 #### **HandlerFactory** - Handler Instance Creation
 
-**Datei:** `srv/handler/factories/HandlerFactory.ts` (62 Zeilen)
+**Datei:** `srv/handler/factories/HandlerFactory.ts`
 
 Erstellt Handler-Instanzen mit Dependencies aus dem ServiceContainer:
 
@@ -631,7 +659,7 @@ class HandlerFactory {
 
 ### 📋 5. Registrar Pattern
 
-**Datei:** `srv/handler/registry/HandlerRegistrar.ts` (99 Zeilen)
+**Datei:** `srv/handler/registry/HandlerRegistrar.ts`
 
 Trennt Registrierungslogik von der Business-Logik:
 
@@ -666,7 +694,7 @@ class HandlerRegistrar {
 
 ### 🏗️ 6. Builder Pattern (Fluent API)
 
-**Datei:** `srv/handler/setup/HandlerSetup.ts` (102 Zeilen)
+**Datei:** `srv/handler/setup/HandlerSetup.ts`
 
 Builder mit Fluent API für elegantes Handler-Setup:
 
@@ -742,9 +770,9 @@ Domain-spezifische Validierung:
 
 Event-Handler für verschiedene Domänen:
 
-- `TimeEntryHandlers` (67 Zeilen) - CRUD
-- `GenerationHandlers` (70 Zeilen) - Bulk-Generierung
-- `BalanceHandlers` (79 Zeilen) - Balance-Abfragen
+- `TimeEntryHandlers` - CRUD
+- `GenerationHandlers` - Bulk-Generierung
+- `BalanceHandlers` - Balance-Abfragen
 
 ---
 
@@ -1256,13 +1284,6 @@ export default class Home extends BaseController {
 
 ## 📊 Projekt-Stats
 
-**Code-Metriken:**
-
-- **Vorher:** `track-service.ts` mit 248 Zeilen (monolithisch)
-- **Nachher:** `track-service.ts` mit 43 Zeilen (-83% 🎉)
-
-**Neue Architektur:**
-
 - 7 Commands in 3 Kategorien (CRUD, Generation, Balance)
 - 3 Validators (Domain-spezifisch)
 - 4 Repositories (1 pro Entity)
@@ -1444,5 +1465,3 @@ MIT License - Do whatever you want with this code! 🚀
 _Built with ❤️ and TypeScript in 2025_
 
 ---
-
-**Bei Fragen:** Öffne ein Issue!
