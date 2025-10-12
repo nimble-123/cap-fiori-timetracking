@@ -1,27 +1,31 @@
-import { UserRepository } from '../repositories/UserRepository';
-import { ProjectRepository } from '../repositories/ProjectRepository';
-import { ActivityTypeRepository } from '../repositories/ActivityTypeRepository';
-import { TimeEntryRepository } from '../repositories/TimeEntryRepository';
-
-import { UserService } from '../services/UserService';
-import { HolidayService } from '../services/HolidayService';
-import { TimeBalanceService } from '../services/TimeBalanceService';
-
-import { TimeEntryValidator } from '../validators/TimeEntryValidator';
-import { GenerationValidator } from '../validators/GenerationValidator';
-import { BalanceValidator } from '../validators/BalanceValidator';
-
-import { TimeEntryFactory } from '../factories/TimeEntryFactory';
-import { MonthlyGenerationStrategy } from '../strategies/MonthlyGenerationStrategy';
-import { YearlyGenerationStrategy } from '../strategies/YearlyGenerationStrategy';
-
-import { CreateTimeEntryCommand, UpdateTimeEntryCommand } from '../commands/TimeEntryCommands';
-import { GenerateMonthlyCommand, GenerateYearlyCommand } from '../commands/GenerationCommands';
 import {
-  GetMonthlyBalanceCommand,
-  GetCurrentBalanceCommand,
-  GetRecentBalancesCommand,
-} from '../commands/BalanceCommands';
+  // Repositories
+  UserRepository,
+  ProjectRepository,
+  ActivityTypeRepository,
+  TimeEntryRepository,
+  // Services
+  UserService,
+  HolidayService,
+  TimeBalanceService,
+  // Validators
+  TimeEntryValidator,
+  GenerationValidator,
+  BalanceValidator,
+  // Strategies
+  MonthlyGenerationStrategy,
+  YearlyGenerationStrategy,
+  // Factories
+  TimeEntryFactory,
+  // Commands
+  CreateTimeEntryCommandImpl,
+  UpdateTimeEntryCommandImpl,
+  GenerateMonthlyCommandImpl,
+  GenerateYearlyCommandImpl,
+  GetMonthlyBalanceCommandImpl,
+  GetCurrentBalanceCommandImpl,
+  GetRecentBalancesCommandImpl,
+} from '../index';
 
 /**
  * Service Container für Dependency Injection
@@ -151,8 +155,8 @@ export class ServiceContainer {
       repository: this.getRepository<TimeEntryRepository>('timeEntry'),
       factory: this.getFactory<typeof TimeEntryFactory>('timeEntry'),
     };
-    this.commands.set('createTimeEntry', new CreateTimeEntryCommand(timeEntryDeps));
-    this.commands.set('updateTimeEntry', new UpdateTimeEntryCommand(timeEntryDeps));
+    this.commands.set('createTimeEntry', new CreateTimeEntryCommandImpl(timeEntryDeps));
+    this.commands.set('updateTimeEntry', new UpdateTimeEntryCommandImpl(timeEntryDeps));
 
     // Generation Commands
     const generationDeps = {
@@ -162,8 +166,8 @@ export class ServiceContainer {
       monthlyStrategy: this.getStrategy<MonthlyGenerationStrategy>('monthly'),
       yearlyStrategy: this.getStrategy<YearlyGenerationStrategy>('yearly'),
     };
-    this.commands.set('generateMonthly', new GenerateMonthlyCommand(generationDeps));
-    this.commands.set('generateYearly', new GenerateYearlyCommand(generationDeps));
+    this.commands.set('generateMonthly', new GenerateMonthlyCommandImpl(generationDeps));
+    this.commands.set('generateYearly', new GenerateYearlyCommandImpl(generationDeps));
 
     // Balance Commands
     const balanceDeps = {
@@ -171,8 +175,8 @@ export class ServiceContainer {
       userService: this.getService<UserService>('user'),
       validator: this.getValidator<BalanceValidator>('balance'),
     };
-    this.commands.set('getMonthlyBalance', new GetMonthlyBalanceCommand(balanceDeps));
-    this.commands.set('getCurrentBalance', new GetCurrentBalanceCommand(balanceDeps));
-    this.commands.set('getRecentBalances', new GetRecentBalancesCommand(balanceDeps));
+    this.commands.set('getMonthlyBalance', new GetMonthlyBalanceCommandImpl(balanceDeps));
+    this.commands.set('getCurrentBalance', new GetCurrentBalanceCommandImpl(balanceDeps));
+    this.commands.set('getRecentBalances', new GetRecentBalancesCommandImpl(balanceDeps));
   }
 }

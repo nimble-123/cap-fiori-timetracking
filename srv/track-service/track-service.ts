@@ -1,23 +1,23 @@
 import { ApplicationService } from '@sap/cds';
 import { TimeEntries } from '#cds-models/TrackService';
 
-// Import Infrastructure
-import { ServiceContainer } from '../handler/container/ServiceContainer';
-import { HandlerRegistry } from '../handler/registry/HandlerRegistry';
-
-// Import Handlers
-import { TimeEntryHandlers } from '../handler/handlers/TimeEntryHandlers';
-import { GenerationHandlers } from '../handler/handlers/GenerationHandlers';
-import { BalanceHandlers } from '../handler/handlers/BalanceHandlers';
-
-// Import Commands (für Type-Safety)
-import { CreateTimeEntryCommand, UpdateTimeEntryCommand } from '../handler/commands/TimeEntryCommands';
-import { GenerateMonthlyCommand, GenerateYearlyCommand } from '../handler/commands/GenerationCommands';
 import {
-  GetMonthlyBalanceCommand,
-  GetCurrentBalanceCommand,
-  GetRecentBalancesCommand,
-} from '../handler/commands/BalanceCommands';
+  // Infrastructure
+  ServiceContainer,
+  HandlerRegistry,
+  // Handlers
+  TimeEntryHandlers,
+  GenerationHandlers,
+  BalanceHandlers,
+  // Commands (Types)
+  type CreateTimeEntryCommand,
+  type UpdateTimeEntryCommand,
+  type GenerateMonthlyCommand,
+  type GenerateYearlyCommand,
+  type GetMonthlyBalanceCommand,
+  type GetCurrentBalanceCommand,
+  type GetRecentBalancesCommand,
+} from '../handler';
 
 /**
  * TrackService - Hauptorchestrierungsklasse
@@ -34,27 +34,40 @@ export default class TrackService extends ApplicationService {
   async init(): Promise<void> {
     console.log('🚀 Initialisiere TrackService...\n');
 
-    // Step 1: Dependency Injection Container aufbauen
+    this.setupContainer();
+    this.setupHandlers();
+
+    await super.init();
+    console.log('🎉 TrackService erfolgreich initialisiert!\n');
+  }
+
+  /**
+   * Initialisiert den Dependency Container
+   */
+  private setupContainer(): void {
     this.container = new ServiceContainer();
     this.container.build(this.entities);
     console.log('✅ ServiceContainer initialisiert\n');
+  }
 
-    // Step 2: Handler-Instanzen erstellen
+  /**
+   * Erstellt und registriert alle Handler
+   */
+  private setupHandlers(): void {
+    this.registry = new HandlerRegistry();
+
+    // Handler erstellen
     const timeEntryHandlers = this.createTimeEntryHandlers();
     const generationHandlers = this.createGenerationHandlers();
     const balanceHandlers = this.createBalanceHandlers();
 
-    // Step 3: Handler Registry aufbauen und registrieren
-    this.registry = new HandlerRegistry();
+    // Handler registrieren
     this.registerTimeEntryHandlers(timeEntryHandlers);
     this.registerGenerationHandlers(generationHandlers);
     this.registerBalanceHandlers(balanceHandlers);
 
-    // Step 4: Alle Handler auf Service anwenden
+    // Registry auf Service anwenden
     this.registry.apply(this);
-
-    await super.init();
-    console.log('🎉 TrackService erfolgreich initialisiert!\n');
   }
 
   /**
