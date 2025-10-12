@@ -755,35 +755,231 @@ private setupHandlers(): void {
 
 **Dateien:** `srv/handler/strategies/*.ts`
 
-Austauschbare Algorithmen für Generierung:
+Das **Strategy Pattern** ermöglicht austauschbare Algorithmen für unterschiedliche Generierungsszenarien. Jede Strategy kapselt einen spezifischen Algorithmus und ist unabhängig austauschbar:
 
-- `MonthlyGenerationStrategy` - Alle Tage eines Monats
-- `YearlyGenerationStrategy` - Jahr mit Wochenenden & Feiertagen
+```typescript
+/**
+ * MonthlyGenerationStrategy - Generiert alle Arbeitstage eines Monats
+ */
+export class MonthlyGenerationStrategy {
+  generateMissingEntries(userID: string, user: User, existingDates: Set<string>): TimeEntry[] {
+    const monthData = DateUtils.getCurrentMonthData();
+    const newEntries: TimeEntry[] = [];
+
+    for (let day = 1; day <= monthData.daysInMonth; day++) {
+      const currentDate = new Date(monthData.year, monthData.month, day);
+
+      // Skip Wochenenden & existierende Einträge
+      if (!DateUtils.isWorkingDay(currentDate, user.workingDaysPerWeek)) {
+        continue;
+      }
+
+      const dateStr = DateUtils.formatDate(currentDate);
+      if (existingDates.has(dateStr)) continue;
+
+      // Factory erstellt perfekt berechnete Entries
+      newEntries.push(TimeEntryFactory.createDefaultEntry(userID, dateStr, user));
+    }
+
+    return newEntries;
+  }
+}
+```
+
+**Features:**
+
+- 🔄 Austauschbare Algorithmen ohne Code-Änderung
+- 🎯 Jede Strategy kennt ihre spezifische Business-Logik
+- 🏭 Nutzt Factory für konsistente Entry-Erstellung
+- 📅 Weekend-Detection und Date-Utilities
+- ⚡ Performance-optimiert mit Sets für Lookup
 
 ### 💾 8. Repository Pattern (4 Repositories)
 
-Jede Entity hat ihr eigenes Repository:
+**Dateien:** `srv/handler/repositories/*.ts`
 
-- `TimeEntryRepository` - CRUD + Queries
-- `UserRepository` - User-Lookup
-- `ProjectRepository` - Validierung
-- `ActivityTypeRepository` - Validierung
+Das **Repository Pattern** abstrahiert den Datenzugriff und kapselt alle SQL-Operationen. Jede Entity hat ihr eigenes Repository mit domain-spezifischer Logik:
+
+```typescript
+/**
+ * TimeEntryRepository - Datenzugriff für TimeEntries
+ */
+export class TimeEntryRepository {
+  private TimeEntries: any;
+
+  constructor(entities: any) {
+    this.TimeEntries = entities.TimeEntries;
+  }
+
+  /**
+   * Prüft Eindeutigkeit pro User/Tag
+   */
+  async validateUniqueEntryPerDay(
+    tx: Transaction,
+    userId: string,
+    workDate: string,
+    excludeId: string | null = null,
+  ): Promise<void> {
+    const whereClause: any = { user_ID: userId, workDate };
+    if (excludeId) whereClause.ID = { '!=': excludeId };
+
+    const existing = await tx.run(SELECT.one.from(this.TimeEntries).where(whereClause));
+    if (existing) {
+      throw new Error('Es existiert bereits ein Eintrag für diesen Tag.');
+    }
+  }
+
+  /**
+   * Batch-Insert für Performance
+   */
+  async insertBatch(tx: Transaction, entries: TimeEntry[]): Promise<void> {
+    await tx.run(INSERT.into(this.TimeEntries).entries(entries));
+  }
+}
+```
+
+**Features:**
+
+- 💾 Komplette Abstraktion der Datenschicht
+- 🔍 Domain-spezifische Queries (z.B. `findByUserAndDate`)
+- ⚡ Performance-Optimierung mit Batch-Operations
+- 🛡️ Business Rules im Repository (z.B. Eindeutigkeit)
+- 🧪 Perfekt mockbar für Unit Tests
+
+**Unsere 4 Repositories:**
+
+- `TimeEntryRepository` - CRUD + Queries + Batch Insert
+- `UserRepository` - User-Lookup by Email/ID
+- `ProjectRepository` - Validierung aktiver Projekte
+- `ActivityTypeRepository` - Validierung von Activity Codes
 
 ### ✅ 9. Validator Pattern (3 Validators)
 
-Domain-spezifische Validierung:
+**Dateien:** `srv/handler/validators/*.ts`
+
+Das **Validator Pattern** kapselt komplexe Validierungslogik in wiederverwendbare Klassen. Jeder Validator fokussiert sich auf eine spezifische Domäne:
+
+```typescript
+/**
+ * TimeEntryValidator - Validierung für TimeEntry-Operationen
+ */
+export class TimeEntryValidator {
+  constructor(
+    private projectRepository: ProjectRepository,
+    private activityTypeRepository: ActivityTypeRepository,
+  ) {}
+
+  /**
+   * Validiert Pflichtfelder für CREATE
+   */
+  validateRequiredFieldsForCreate(entryData: Partial<TimeEntry>): string {
+    const { user_ID, workDate, startTime, endTime, entryType } = entryData;
+
+    if (!user_ID) throw new Error('user ist erforderlich.');
+    if (!workDate) throw new Error('workDate ist erforderlich.');
+
+    const type = entryType || 'WORK';
+
+    // Bei Arbeitszeit sind Start-/Endzeit erforderlich
+    if (type === 'WORK' && (!startTime || !endTime)) {
+      throw new Error('startTime und endTime sind bei Arbeitszeit erforderlich.');
+    }
+
+    return type;
+  }
+
+  /**
+   * Validiert Referenzen (Projekt, Activity)
+   */
+  async validateReferences(tx: Transaction, entryData: Partial<TimeEntry>): Promise<void> {
+    // Projekt-Validierung nur wenn angegeben
+    if (entryData.project_ID) {
+      await this.projectRepository.validateProjectExists(tx, entryData.project_ID);
+    }
+
+    // Activity-Validierung nur wenn angegeben
+    if (entryData.activity_code) {
+      await this.activityTypeRepository.validateActivityExists(tx, entryData.activity_code);
+    }
+  }
+}
+```
+
+**Features:**
+
+- ✅ Zentralisierte Validierungslogik
+- 🎯 Domain-spezifische Rules (TimeEntry vs. Generation vs. Balance)
+- 🔗 Nutzt Repositories für DB-basierte Validierung
+- 🛡️ Konsistente Error Messages
+- 🧪 Isoliert testbar ohne CAP Framework
+
+**Unsere 3 Validators:**
 
 - `TimeEntryValidator` - Entry-Validierung + Change Detection
-- `GenerationValidator` - User, StateCode, Year
-- `BalanceValidator` - Year/Month Plausibilität
+- `GenerationValidator` - User, StateCode, Year Validierung
+- `BalanceValidator` - Year/Month Plausibilitätsprüfung
 
 ### 🎭 10. Handler Pattern (3 Handler-Klassen)
 
-Event-Handler für verschiedene Domänen:
+**Dateien:** `srv/handler/handlers/*.ts`
 
-- `TimeEntryHandlers` - CRUD
-- `GenerationHandlers` - Bulk-Generierung
-- `BalanceHandlers` - Balance-Abfragen
+Das **Handler Pattern** trennt Event-Handling von Business-Logik. Handler sind die "Orchestratoren" die auf CAP-Events reagieren und die eigentliche Arbeit an Commands delegieren:
+
+```typescript
+/**
+ * TimeEntryHandlers - Handler für TimeEntry CRUD-Operationen
+ */
+export class TimeEntryHandlers {
+  constructor(
+    private createCommand: CreateTimeEntryCommand,
+    private updateCommand: UpdateTimeEntryCommand,
+  ) {}
+
+  /**
+   * Handler: TimeEntry erstellen (before CREATE)
+   * Delegiert Business Logic an Command
+   */
+  async handleCreate(req: any): Promise<void> {
+    try {
+      const tx = cds.transaction(req) as any;
+      const calculatedData = await this.createCommand.execute(tx, req.data);
+
+      // Berechnete Daten in Request übernehmen
+      // CAP Framework macht dann automatisch den INSERT
+      Object.assign(req.data, calculatedData);
+    } catch (error: any) {
+      req.reject(error.code || 400, error.message);
+    }
+  }
+
+  /**
+   * Handler: TimeEntry aktualisieren (before UPDATE)
+   */
+  async handleUpdate(req: any): Promise<void> {
+    try {
+      const tx = cds.transaction(req) as any;
+      const calculatedData = await this.updateCommand.execute(tx, req.data);
+      Object.assign(req.data, calculatedData);
+    } catch (error: any) {
+      req.reject(error.code || 400, error.message);
+    }
+  }
+}
+```
+
+**Features:**
+
+- 🎭 Klare Trennung: Handler = Orchestration, Command = Business Logic
+- 🔗 Dependency Injection der Commands
+- 🛡️ Zentrales Error Handling
+- 📋 Gruppierung nach Domäne (CRUD / Generation / Balance)
+- 🎯 Thin Layer - nur Delegation, keine Business Logic
+
+**Unsere 3 Handler-Klassen:**
+
+- `TimeEntryHandlers` - CRUD Operations (CREATE/UPDATE/DELETE)
+- `GenerationHandlers` - Bulk-Generierung (Monthly/Yearly)
+- `BalanceHandlers` - Balance-Abfragen (Monthly/Current/Recent)
 
 ---
 
