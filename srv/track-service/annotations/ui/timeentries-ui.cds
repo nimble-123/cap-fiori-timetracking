@@ -14,37 +14,49 @@ annotate service.TimeEntries with @(
 
   UI.LineItem                  : {
     $value            : [
-      // Action Button für Monatsgenerierung
+      // Action Group für Generieren
       {
-        $Type            : 'UI.DataFieldForAction',
-        Action           : 'TrackService.EntityContainer/generateMonthlyTimeEntries',
-        Label            : '{i18n>action.generateMonthlyTimeEntries}',
-        ![@UI.Importance]: #High,
-        Inline           : false
+        $Type  : 'UI.DataFieldForActionGroup',
+        Label  : '{i18n>actionGroup.generate}',
+        ID     : 'generateActions',
+        Actions: [
+          {
+            $Type            : 'UI.DataFieldForAction',
+            Action           : 'TrackService.EntityContainer/generateMonthlyTimeEntries',
+            Label            : '{i18n>action.generateMonthlyTimeEntries}',
+            ![@UI.Importance]: #High,
+            Inline           : false
+          },
+          {
+            $Type            : 'UI.DataFieldForAction',
+            Action           : 'TrackService.EntityContainer/generateYearlyTimeEntries',
+            Label            : '{i18n>action.generateYearlyTimeEntries}',
+            ![@UI.Importance]: #High,
+            Inline           : false
+          }
+        ]
       },
-      // Action Button für Jahresgenerierung
+      // Action Group für Salden
       {
-        $Type            : 'UI.DataFieldForAction',
-        Action           : 'TrackService.EntityContainer/generateYearlyTimeEntries',
-        Label            : '{i18n>action.generateYearlyTimeEntries}',
-        ![@UI.Importance]: #High,
-        Inline           : false
-      },
-      // Action Button für Monatssaldo
-      {
-        $Type            : 'UI.DataFieldForAction',
-        Action           : 'TrackService.EntityContainer/getMonthlyBalance',
-        Label            : '{i18n>action.getMonthlyBalance}',
-        ![@UI.Importance]: #Medium,
-        Inline           : false
-      },
-      // Action Button für aktuellen Gesamtsaldo
-      {
-        $Type            : 'UI.DataFieldForAction',
-        Action           : 'TrackService.EntityContainer/getCurrentBalance',
-        Label            : '{i18n>action.getCurrentBalance}',
-        ![@UI.Importance]: #Medium,
-        Inline           : false
+        $Type  : 'UI.DataFieldForActionGroup',
+        Label  : '{i18n>actionGroup.balances}',
+        ID     : 'balanceActions',
+        Actions: [
+          {
+            $Type            : 'UI.DataFieldForAction',
+            Action           : 'TrackService.EntityContainer/getMonthlyBalance',
+            Label            : '{i18n>action.getMonthlyBalance}',
+            ![@UI.Importance]: #Medium,
+            Inline           : false
+          },
+          {
+            $Type            : 'UI.DataFieldForAction',
+            Action           : 'TrackService.EntityContainer/getCurrentBalance',
+            Label            : '{i18n>action.getCurrentBalance}',
+            ![@UI.Importance]: #Medium,
+            Inline           : false
+          }
+        ]
       },
       {
         Value: workDate,
@@ -249,12 +261,6 @@ annotate service.TimeEntries with @(UI.Chart #alpChart: {
 ////////////////////////////////////////////////////////////////////////////
 //  Action Annotations
 ////////////////////////////////////////////////////////////////////////////
-
-// getMonthlyBalance - Zeige Ergebnis als Object Page Dialog
-annotate service.getMonthlyBalance with @(Common.ResultContext: {
-  $Type : 'UI.RecommendationStateType',
-  $Value: #Positive
-});
 
 // Parameter Field Controls für getMonthlyBalance
 //annotate service.getMonthlyBalance with(year @(Common.FieldControl: #Mandatory), month @(Common.FieldControl: #Mandatory));
