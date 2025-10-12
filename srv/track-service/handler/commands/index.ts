@@ -1,23 +1,23 @@
-// Export types for external use
-export type { CreateTimeEntryCommand, UpdateTimeEntryCommand } from './TimeEntryCommands';
+/**
+ * Central barrel export for all Command classes
+ *
+ * This file provides a single import point for all commands.
+ * Handlers can import from here instead of individual files.
+ */
 
-export type { GenerateMonthlyCommand, GenerateYearlyCommand } from './GenerationCommands';
+// Balance Commands
+export { GetMonthlyBalanceCommand } from './balance/GetMonthlyBalanceCommand';
+export { GetCurrentBalanceCommand } from './balance/GetCurrentBalanceCommand';
+export { GetRecentBalancesCommand } from './balance/GetRecentBalancesCommand';
 
-export type { GetMonthlyBalanceCommand, GetCurrentBalanceCommand, GetRecentBalancesCommand } from './BalanceCommands';
+// Generation Commands
+export { GenerateMonthlyCommand } from './generation/GenerateMonthlyCommand';
+export { GenerateYearlyCommand } from './generation/GenerateYearlyCommand';
 
-// Export implementations for internal use
-export {
-  CreateTimeEntryCommand as CreateTimeEntryCommandImpl,
-  UpdateTimeEntryCommand as UpdateTimeEntryCommandImpl,
-} from './TimeEntryCommands';
+// TimeEntry Commands
+export { CreateTimeEntryCommand } from './time-entry/CreateTimeEntryCommand';
+export { UpdateTimeEntryCommand } from './time-entry/UpdateTimeEntryCommand';
 
-export {
-  GenerateMonthlyCommand as GenerateMonthlyCommandImpl,
-  GenerateYearlyCommand as GenerateYearlyCommandImpl,
-} from './GenerationCommands';
-
-export {
-  GetMonthlyBalanceCommand as GetMonthlyBalanceCommandImpl,
-  GetCurrentBalanceCommand as GetCurrentBalanceCommandImpl,
-  GetRecentBalancesCommand as GetRecentBalancesCommandImpl,
-} from './BalanceCommands';
+// Re-export types (optional, for convenience)
+export type { MonthlyGenerationResult } from './generation/GenerateMonthlyCommand';
+export type { YearlyGenerationResult } from './generation/GenerateYearlyCommand';
