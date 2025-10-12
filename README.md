@@ -290,7 +290,7 @@ erDiagram
 
 ## 🎨 Design Patterns - Das Herzstück
 
-Diese App ist ein **Showcase** für moderne Design Patterns. Hier arbeiten 8 verschiedene Patterns perfekt zusammen:
+Diese App ist ein **Showcase** für moderne Design Patterns. Hier arbeiten 10 verschiedene Patterns perfekt zusammen:
 
 ```mermaid
 ---
@@ -316,19 +316,47 @@ classDiagram
         +apply(service)
         -handlers: HandlerConfig[]
     }
-    class TimeEntryHandlers {
+    class HandlerRegistrar {
+        -registry: HandlerRegistry
+        +registerTimeEntryHandlers(handlers)
+        +registerGenerationHandlers(handlers)
+        +registerBalanceHandlers(handlers)
+        +registerAllHandlers(handlers)
+    }
+    class HandlerFactory {
         -container: ServiceContainer
+        +createTimeEntryHandlers()
+        +createGenerationHandlers()
+        +createBalanceHandlers()
+        +createAllHandlers()
+    }
+    class HandlerSetup {
+        -factory: HandlerFactory
+        -registrar: HandlerRegistrar
+        +create(container, registry)
+        +withTimeEntryHandlers()
+        +withGenerationHandlers()
+        +withBalanceHandlers()
+        +withAllHandlers()
+        +apply(service)
+    }
+    class TimeEntryHandlers {
+        -createCommand: CreateTimeEntryCommand
+        -updateCommand: UpdateTimeEntryCommand
         +handleCreate(req)
         +handleUpdate(req)
         +handleDelete(req)
     }
     class GenerationHandlers {
-        -container: ServiceContainer
+        -monthlyCommand: GenerateMonthlyCommand
+        -yearlyCommand: GenerateYearlyCommand
         +handleGenerateMonthly(req)
         +handleGenerateYearly(req)
     }
     class BalanceHandlers {
-        -container: ServiceContainer
+        -monthlyBalanceCommand: GetMonthlyBalanceCommand
+        -currentBalanceCommand: GetCurrentBalanceCommand
+        -recentBalancesCommand: GetRecentBalancesCommand
         +handleGetMonthlyBalance(req)
         +handleGetCurrentBalance(req)
         +handleReadMonthlyBalances(req)
@@ -447,16 +475,23 @@ classDiagram
     ServiceContainer --> StrategyPattern : provides
     ServiceContainer --> FactoryPattern : provides
     ServiceContainer --> DomainServices : provides
-    HandlerRegistry --> TimeEntryHandlers : registers
-    HandlerRegistry --> GenerationHandlers : registers
-    HandlerRegistry --> BalanceHandlers : registers
-    TimeEntryHandlers --> ServiceContainer : uses
-    GenerationHandlers --> ServiceContainer : uses
-    BalanceHandlers --> ServiceContainer : uses
+    HandlerSetup --> HandlerFactory : uses
+    HandlerSetup --> HandlerRegistrar : uses
+    HandlerFactory --> ServiceContainer : uses
+    HandlerFactory --> TimeEntryHandlers : creates
+    HandlerFactory --> GenerationHandlers : creates
+    HandlerFactory --> BalanceHandlers : creates
+    HandlerRegistrar --> HandlerRegistry : uses
+    HandlerRegistrar --> TimeEntryHandlers : registers
+    HandlerRegistrar --> GenerationHandlers : registers
+    HandlerRegistrar --> BalanceHandlers : registers
     TimeEntryHandlers --> CreateTimeEntryCommand : delegates
     TimeEntryHandlers --> UpdateTimeEntryCommand : delegates
     GenerationHandlers --> GenerateMonthlyCommand : delegates
     GenerationHandlers --> GenerateYearlyCommand : delegates
+    BalanceHandlers --> GetMonthlyBalanceCommand : delegates
+    BalanceHandlers --> GetCurrentBalanceCommand : delegates
+    BalanceHandlers --> GetRecentBalancesCommand : delegates
     CommandPattern <|.. CreateTimeEntryCommand : implements
     CommandPattern <|.. UpdateTimeEntryCommand : implements
     CommandPattern <|.. GenerateMonthlyCommand : implements
@@ -547,7 +582,9 @@ Commands kapseln komplexe Business Operations:
 | `GetCurrentBalanceCommand` | ~40    | Kumulierter Gesamtsaldo                        |
 | `GetRecentBalancesCommand` | ~45    | Historische Balances (6 Monate)                |
 
-### 🏭 4. Factory Pattern
+### 🏭 4. Factory Pattern (2 Factories!)
+
+#### **TimeEntryFactory** - Domain Object Creation
 
 **Datei:** `srv/handler/factories/TimeEntryFactory.ts`
 
@@ -559,7 +596,123 @@ const entry = TimeEntryFactory.createWorkTimeEntry(user, workDate, startTime, en
 // → Berechnet automatisch: gross, net, overtime, undertime
 ```
 
-### 📋 5. Strategy Pattern
+#### **HandlerFactory** - Handler Instance Creation
+
+**Datei:** `srv/handler/factories/HandlerFactory.ts` (62 Zeilen)
+
+Erstellt Handler-Instanzen mit Dependencies aus dem ServiceContainer:
+
+```typescript
+class HandlerFactory {
+  constructor(private container: ServiceContainer) {}
+
+  createTimeEntryHandlers(): TimeEntryHandlers {
+    return new TimeEntryHandlers(
+      this.container.getCommand<CreateTimeEntryCommand>('createTimeEntry'),
+      this.container.getCommand<UpdateTimeEntryCommand>('updateTimeEntry'),
+    );
+  }
+
+  createAllHandlers() {
+    return {
+      timeEntry: this.createTimeEntryHandlers(),
+      generation: this.createGenerationHandlers(),
+      balance: this.createBalanceHandlers(),
+    };
+  }
+}
+```
+
+**Features:**
+
+- 🏭 Kapselt Handler-Instanziierung
+- 🔗 Löst Dependencies aus Container auf
+- 🧪 Perfekt für Unit Tests
+
+### 📋 5. Registrar Pattern
+
+**Datei:** `srv/handler/registry/HandlerRegistrar.ts` (99 Zeilen)
+
+Trennt Registrierungslogik von der Business-Logik:
+
+```typescript
+class HandlerRegistrar {
+  constructor(private registry: HandlerRegistry) {}
+
+  registerTimeEntryHandlers(handlers: TimeEntryHandlers): void {
+    this.registry.register({
+      type: 'before',
+      event: 'CREATE',
+      entity: TimeEntries,
+      handler: handlers.handleCreate.bind(handlers),
+      description: 'Validate and enrich time entry before creation',
+    });
+    // ... weitere Registrierungen
+  }
+
+  registerAllHandlers(handlers: { ... }): void {
+    this.registerTimeEntryHandlers(handlers.timeEntry);
+    this.registerGenerationHandlers(handlers.generation);
+    this.registerBalanceHandlers(handlers.balance);
+  }
+}
+```
+
+**Features:**
+
+- 📋 Strukturierte Registrierung
+- 🎯 Separation of Concerns
+- 🔄 Wiederverwendbar
+
+### 🏗️ 6. Builder Pattern (Fluent API)
+
+**Datei:** `srv/handler/setup/HandlerSetup.ts` (102 Zeilen)
+
+Builder mit Fluent API für elegantes Handler-Setup:
+
+```typescript
+class HandlerSetup {
+  static create(container: ServiceContainer, registry: HandlerRegistry): HandlerSetup {
+    return new HandlerSetup(container, registry);
+  }
+
+  withTimeEntryHandlers(): this {
+    this.handlers.timeEntry = this.factory.createTimeEntryHandlers();
+    this.registrar.registerTimeEntryHandlers(this.handlers.timeEntry);
+    return this;
+  }
+
+  withAllHandlers(): this {
+    return this.withTimeEntryHandlers().withGenerationHandlers().withBalanceHandlers();
+  }
+
+  apply(service: ApplicationService): void {
+    this.registry.apply(service);
+  }
+}
+```
+
+**Usage in TrackService:**
+
+```typescript
+private setupHandlers(): void {
+  this.registry = new HandlerRegistry();
+
+  HandlerSetup
+    .create(this.container, this.registry)
+    .withAllHandlers()
+    .apply(this);
+}
+```
+
+**Features:**
+
+- ⛓️ Chainable API
+- 🎨 Sehr elegant und lesbar
+- 🔧 Flexibel - kann selektiv Handler hinzufügen
+- 🧩 Kombiniert Factory + Registrar
+
+### 📋 7. Strategy Pattern
 
 **Dateien:** `srv/handler/strategies/*.ts`
 
@@ -568,7 +721,7 @@ Austauschbare Algorithmen für Generierung:
 - `MonthlyGenerationStrategy` - Alle Tage eines Monats
 - `YearlyGenerationStrategy` - Jahr mit Wochenenden & Feiertagen
 
-### 💾 6. Repository Pattern (4 Repositories)
+### 💾 8. Repository Pattern (4 Repositories)
 
 Jede Entity hat ihr eigenes Repository:
 
@@ -577,7 +730,7 @@ Jede Entity hat ihr eigenes Repository:
 - `ProjectRepository` - Validierung
 - `ActivityTypeRepository` - Validierung
 
-### ✅ 7. Validator Pattern (3 Validators)
+### ✅ 9. Validator Pattern (3 Validators)
 
 Domain-spezifische Validierung:
 
@@ -585,7 +738,7 @@ Domain-spezifische Validierung:
 - `GenerationValidator` - User, StateCode, Year
 - `BalanceValidator` - Year/Month Plausibilität
 
-### 🎭 8. Handler Pattern (3 Handler-Klassen)
+### 🎭 10. Handler Pattern (3 Handler-Klassen)
 
 Event-Handler für verschiedene Domänen:
 
@@ -605,27 +758,43 @@ sequenceDiagram
     actor User
     participant UI as 🖥️ Fiori UI
     participant SVC as 🎯 TrackService
+    participant SETUP as 🏗️ HandlerSetup
+    participant FACTORY as 🏭 HandlerFactory
+    participant REGISTRAR as 📋 HandlerRegistrar
     participant REG as 📋 HandlerRegistry
     participant H as 🎭 TimeEntryHandlers
     participant CMD as 🎯 CreateCommand
     participant VAL as ✅ Validator
     participant US as 👤 UserService
-    participant FACT as 🏭 Factory
+    participant EFACT as 🏭 EntryFactory
     participant REPO as 💾 Repository
     participant DB as 💾 Database
 
+    Note over SVC: Initialization Phase
+    SVC->>SVC: setupContainer()
+    SVC->>SVC: setupHandlers()
+    SVC->>SETUP: create(container, registry)
+    SETUP->>FACTORY: new HandlerFactory(container)
+    SETUP->>REGISTRAR: new HandlerRegistrar(registry)
+    SETUP->>SETUP: withAllHandlers()
+    SETUP->>FACTORY: createTimeEntryHandlers()
+    FACTORY->>H: new TimeEntryHandlers(createCmd, updateCmd)
+    FACTORY-->>SETUP: handlers
+    SETUP->>REGISTRAR: registerTimeEntryHandlers(handlers)
+    REGISTRAR->>REG: register('before', 'CREATE', ...)
+    SETUP->>SETUP: apply(service)
+
+    Note over User,DB: Request Processing Phase
     User->>UI: Erstelle TimeEntry
     UI->>SVC: POST /TimeEntries
 
-    Note over SVC: Container & Registry<br/>initialisiert
-
     SVC->>REG: trigger 'before CREATE'
     REG->>H: handleCreate(req)
-    H->>CMD: execute(tx, entryData)
+    H->>CMD: execute(req.data, req)
 
     Note over CMD: Orchestriert alle<br/>Dependencies
 
-    CMD->>VAL: validate(tx, entryData)
+    CMD->>VAL: validate(req.data)
     VAL->>REPO: validateProjectExists()
     REPO-->>VAL: ✅ valid
     VAL-->>CMD: ✅ validated
@@ -637,11 +806,11 @@ sequenceDiagram
     REPO-->>US: User Object
     US-->>CMD: User + expectedDailyHours
 
-    CMD->>FACT: createWorkTimeEntry(user, data)
-    Note over FACT: Berechnet gross, net,<br/>overtime, undertime
-    FACT-->>CMD: Calculated Entry
+    CMD->>EFACT: createWorkTimeEntry(user, data)
+    Note over EFACT: Berechnet gross, net,<br/>overtime, undertime
+    EFACT-->>CMD: Calculated Entry
 
-    CMD->>REPO: create(tx, entry)
+    CMD->>REPO: create(req.data)
     REPO->>DB: INSERT
     DB-->>REPO: Created
     REPO-->>CMD: Entry ID
@@ -678,9 +847,10 @@ sequenceDiagram
     participant TimeRepo as 💾 TimeEntryRepository
     participant DB as 🗄️ Database
 
-    Note over UI,DB: 🚀 Phase 1: Request Initialisierung
+    Note over UI,DB: 🚀 Phase 1: Request Initialisierung & Handler Lookup
     UI->>Router: POST /generateYearlyTimeEntries(year=2025, stateCode='BY')
     Router->>Service: Action Call mit Parametern
+    Note over Service: HandlerSetup hat alle Handler<br/>bereits beim Start registriert
     Service->>Registry: Lookup Handler für 'generateYearlyTimeEntries'
     Registry->>Handler: Route to handleGenerateYearly(req)
 
@@ -935,13 +1105,14 @@ npm run lint     # Linting (ESLint)
 ### Was du hier lernen kannst:
 
 1. ✅ **Clean Architecture** in der Praxis
-2. ✅ **Design Patterns** richtig anwenden (8 Patterns!)
+2. ✅ **Design Patterns** richtig anwenden (10 Patterns!)
 3. ✅ **TypeScript** in CAP Services (100% typed!)
 4. ✅ **Dependency Injection** ohne Framework
 5. ✅ **Event-Driven Architecture** mit Registry
-6. ✅ **SOLID Principles** im echten Code
-7. ✅ **Testbare Architektur** durch Separation of Concerns
-8. ✅ **Fiori Elements** vs. Custom UI5
+6. ✅ **Builder Pattern** mit Fluent API
+7. ✅ **SOLID Principles** im echten Code
+8. ✅ **Testbare Architektur** durch Separation of Concerns
+9. ✅ **Fiori Elements** vs. Custom UI5
 
 ### Best Practices die wir umsetzen:
 
@@ -1088,7 +1259,7 @@ export default class Home extends BaseController {
 **Code-Metriken:**
 
 - **Vorher:** `track-service.ts` mit 248 Zeilen (monolithisch)
-- **Nachher:** `track-service.ts` mit 165 Zeilen (-33% 🎉)
+- **Nachher:** `track-service.ts` mit 43 Zeilen (-83% 🎉)
 
 **Neue Architektur:**
 
@@ -1097,12 +1268,14 @@ export default class Home extends BaseController {
 - 4 Repositories (1 pro Entity)
 - 4 Services (Domain Logic)
 - 2 Strategies (Algorithms)
-- 1 Factory (Object Creation)
+- 2 Factories (TimeEntry + Handler Creation)
 - 1 ServiceContainer (DI mit 6 Kategorien)
 - 1 HandlerRegistry (Event-Driven Architecture)
+- 1 HandlerRegistrar (Handler-Registrierung)
+- 1 HandlerSetup (Builder mit Fluent API)
 - 3 Handler-Klassen (Separation of Concerns)
 
-**= 26 Pattern-Klassen!** Alle sauber strukturiert und testbar! 🚀
+**= 29 Pattern-Klassen!** Alle sauber strukturiert und testbar! 🚀
 
 ---
 
