@@ -776,7 +776,23 @@ Event-Handler für verschiedene Domänen:
 
 ---
 
-## 🎬 Das große Zusammenspiel - Sequence Diagram
+## 🔍 Wichtiger Unterschied: CREATE vs. Generation
+
+**CREATE (CRUD Operation):**
+
+- Handler enriched nur die Daten im `req.data`
+- **CAP Framework** übernimmt automatisch den INSERT
+- Kein expliziter Repository-Aufruf im Command
+- Standard CAP CRUD-Flow mit `before CREATE` Handler
+
+**Generation (Bulk Operations):**
+
+- Command erzeugt komplettes Array von Entries
+- **Expliziter** `repository.insertBatch()` Aufruf
+- Direkter DB-Zugriff für Performance (Batch-Insert)
+- Umgeht CAP CRUD-Events für bessere Performance
+
+### 🎬 Das große Zusammenspiel - Sequence Diagram
 
 So arbeiten alle Patterns bei einem CREATE-Request zusammen:
 
@@ -793,12 +809,11 @@ sequenceDiagram
     participant H as 🎭 TimeEntryHandlers
     participant CMD as 🎯 CreateCommand
     participant VAL as ✅ Validator
-    participant US as 👤 UserService
+    participant REPO as � Repository
     participant EFACT as 🏭 EntryFactory
-    participant REPO as 💾 Repository
     participant DB as 💾 Database
 
-    Note over SVC: Initialization Phase
+    Note over SVC: 🏗️ Initialization Phase
     SVC->>SVC: setupContainer()
     SVC->>SVC: setupHandlers()
     SVC->>SETUP: create(container, registry)
@@ -806,54 +821,68 @@ sequenceDiagram
     SETUP->>REGISTRAR: new HandlerRegistrar(registry)
     SETUP->>SETUP: withAllHandlers()
     SETUP->>FACTORY: createTimeEntryHandlers()
+    FACTORY->>CMD: resolve from container
     FACTORY->>H: new TimeEntryHandlers(createCmd, updateCmd)
     FACTORY-->>SETUP: handlers
     SETUP->>REGISTRAR: registerTimeEntryHandlers(handlers)
-    REGISTRAR->>REG: register('before', 'CREATE', ...)
+    REGISTRAR->>REG: register('before', 'CREATE', TimeEntries, handler)
     SETUP->>SETUP: apply(service)
+    SETUP->>REG: apply(service)
 
-    Note over User,DB: Request Processing Phase
+    Note over User,DB: 🚀 Request Processing Phase
     User->>UI: Erstelle TimeEntry
     UI->>SVC: POST /TimeEntries
 
     SVC->>REG: trigger 'before CREATE'
     REG->>H: handleCreate(req)
-    H->>CMD: execute(req.data, req)
+    H->>CMD: execute(tx, req.data)
 
-    Note over CMD: Orchestriert alle<br/>Dependencies
-
-    CMD->>VAL: validate(req.data)
-    VAL->>REPO: validateProjectExists()
+    rect rgb(240, 248, 255)
+    Note over CMD,VAL: ✅ Validation Phase
+    CMD->>VAL: validateRequiredFieldsForCreate(entryData)
+    VAL-->>CMD: entryType
+    CMD->>REPO: validateUniqueEntryPerDay(tx, userID, workDate)
+    REPO->>DB: SELECT COUNT WHERE user+date
+    DB-->>REPO: count=0
+    REPO-->>CMD: ✅ unique
+    CMD->>VAL: validateReferences(tx, entryData)
+    VAL->>REPO: check project, activity
+    REPO->>DB: SELECT project, activity
+    DB-->>REPO: valid references
     REPO-->>VAL: ✅ valid
     VAL-->>CMD: ✅ validated
+    end
 
-    CMD->>US: getCurrentUser(req)
-    US->>REPO: findByEmail()
-    REPO->>DB: SELECT User
-    DB-->>REPO: User Data
-    REPO-->>US: User Object
-    US-->>CMD: User + expectedDailyHours
+    rect rgb(240, 255, 240)
+    Note over CMD,EFACT: 🏭 Factory Phase - Object Creation
+    alt Work Entry (entryType=W)
+        CMD->>EFACT: createWorkTimeEntry(user, workDate, times)
+        EFACT->>EFACT: calculateNetHours(gross, breakMin)
+        EFACT->>EFACT: calculateOvertimeUndertime(net, expected)
+        EFACT-->>CMD: {gross, net, overtime, undertime}
+    else Non-Work Entry (V/S/H/O)
+        CMD->>EFACT: createNonWorkTimeEntry(user, workDate, entryType)
+        EFACT-->>CMD: {zeros for all time fields}
+    end
+    end
 
-    CMD->>EFACT: createWorkTimeEntry(user, data)
-    Note over EFACT: Berechnet gross, net,<br/>overtime, undertime
-    EFACT-->>CMD: Calculated Entry
+    CMD-->>H: calculatedData
+    H->>H: Object.assign(req.data, calculatedData)
+    H-->>SVC: enriched req.data
 
-    CMD->>REPO: create(req.data)
-    REPO->>DB: INSERT
-    DB-->>REPO: Created
-    REPO-->>CMD: Entry ID
+    rect rgb(255, 250, 240)
+    Note over SVC,DB: 💾 Persistence (CAP Framework)
+    SVC->>DB: INSERT INTO TimeEntries
+    DB-->>SVC: saved entry with ID
+    end
 
-    CMD-->>H: Calculated Data
-    H->>SVC: Object.assign(req.data)
-    SVC->>DB: Commit
-    DB-->>SVC: ✅ Success
-    SVC-->>UI: 201 Created
+    SVC-->>UI: 201 Created + entry data
     UI-->>User: ✅ "Entry created!"
 ```
 
 ---
 
-## 🎬 Yearly TimeEntry Generation - Complete Flow
+### 🎬 Yearly TimeEntry Generation - Complete Flow
 
 So läuft die **komplette Jahresgenerierung** ab - vom UI-Button-Click bis zur fertigen Datenbank-Einträge mit Feiertagen:
 
@@ -861,149 +890,150 @@ So läuft die **komplette Jahresgenerierung** ab - vom UI-Button-Click bis zur f
 sequenceDiagram
     autonumber
     participant UI as 📱 Fiori UI
-    participant Router as 🌐 OData Router
     participant Service as 🎬 TrackService
     participant Registry as 📋 HandlerRegistry
     participant Handler as 🎯 GenerationHandlers
     participant Command as 💼 GenerateYearlyCommand
     participant Validator as ✅ GenerationValidator
     participant UserService as 👤 UserService
-    participant UserRepo as 💾 UserRepository
     participant Strategy as 📋 YearlyGenerationStrategy
     participant HolidayAPI as 🎉 Feiertage-API
     participant Factory as 🏭 TimeEntryFactory
-    participant TimeRepo as 💾 TimeEntryRepository
+    participant Repo as 💾 TimeEntryRepository
     participant DB as 🗄️ Database
 
-    Note over UI,DB: 🚀 Phase 1: Request Initialisierung & Handler Lookup
-    UI->>Router: POST /generateYearlyTimeEntries(year=2025, stateCode='BY')
-    Router->>Service: Action Call mit Parametern
-    Note over Service: HandlerSetup hat alle Handler<br/>bereits beim Start registriert
-    Service->>Registry: Lookup Handler für 'generateYearlyTimeEntries'
-    Registry->>Handler: Route to handleGenerateYearly(req)
+    Note over UI,DB: 🚀 Phase 1: Request & Handler Lookup
+    UI->>Service: POST /generateYearlyTimeEntries(year=2025, stateCode='BY')
+    Service->>Registry: Lookup 'on generateYearlyTimeEntries'
+    Registry->>Handler: handleGenerateYearly(req)
 
-    Note over Handler,Command: 📋 Phase 2: Command Vorbereitung
+    rect rgb(240, 248, 255)
+    Note over Handler,Command: 📋 Phase 2: Command Execution
     Handler->>Command: execute(req, year=2025, stateCode='BY')
     Command->>Validator: validateStateCode('BY')
     Validator-->>Command: ✅ 'BY' ist valide
+    end
 
-    Note over Command,UserRepo: 👤 Phase 3: User Resolution
+    rect rgb(255, 250, 240)
+    Note over Command,UserService: 👤 Phase 3: User Resolution
     Command->>UserService: resolveUserForGeneration(req)
     UserService->>UserService: Extract userID from req.user
-    UserService->>UserRepo: SELECT * FROM Users WHERE ID = userID
-    UserRepo->>DB: SQL Query
-    DB-->>UserRepo: User Record
-    UserRepo-->>UserService: User Object
-    UserService-->>Command: { userID, user }
+    UserService->>Repo: SELECT User WHERE ID
+    Repo->>DB: SQL Query
+    DB-->>Repo: User Record
+    Repo-->>UserService: User Object
+    UserService-->>Command: {userID, user}
 
     Command->>Validator: validateUser(user, userID)
-    Validator->>Validator: Check user.active === true
-    Validator->>Validator: Check user.expectedDailyHoursDec > 0
+    Validator->>Validator: Check active && expectedDailyHours > 0
     Validator-->>Command: ✅ User validiert
+    end
 
+    rect rgb(240, 255, 240)
     Note over Command,Strategy: 📅 Phase 4: Jahresdaten-Ermittlung
     Command->>Strategy: getYearData(2025)
-    Strategy->>Strategy: Calculate: yearStart = 2025-01-01
-    Strategy->>Strategy: Calculate: yearEnd = 2025-12-31
-    Strategy->>Strategy: isLeapYear(2025)? → false → 365 Tage
-    Strategy-->>Command: { year: 2025, daysInYear: 365, yearStartStr: '2025-01-01', yearEndStr: '2025-12-31' }
+    Strategy->>Strategy: Calculate start/end, isLeapYear
+    Strategy-->>Command: {year: 2025, daysInYear: 365, yearStart, yearEnd}
+    end
 
+    rect rgb(255, 245, 235)
     Note over Command,DB: 🔍 Phase 5: Existierende Einträge prüfen
-    Command->>TimeRepo: getExistingDatesInRange(userID, '2025-01-01', '2025-12-31')
-    TimeRepo->>DB: SELECT workDate FROM TimeEntries WHERE user_ID = ? AND workDate BETWEEN ? AND ?
-    DB-->>TimeRepo: Array of existing dates
-    TimeRepo->>TimeRepo: Convert to Set<string>
-    TimeRepo-->>Command: Set<string> (z.B. 45 existing entries)
+    Command->>Repo: getExistingDatesInRange(userID, '2025-01-01', '2025-12-31')
+    Repo->>DB: SELECT workDate WHERE user+date range
+    DB-->>Repo: Array of dates
+    Repo->>Repo: Convert to Set
+    Repo-->>Command: Set (z.B. 45 existing entries)
+    end
 
-    Note over Command,HolidayAPI: 🎉 Phase 6: Feiertags-Ermittlung & Entry-Generierung
+    rect rgb(255, 240, 245)
+    Note over Command,HolidayAPI: 🎉 Phase 6: Feiertags-API & Entry-Generierung
     Command->>Strategy: generateMissingEntries(userID, user, yearData, 'BY', existingDates)
-    Strategy->>HolidayAPI: GET https://feiertage-api.de/api/?jahr=2025&nur_land=BY
+    Strategy->>HolidayAPI: GET feiertage-api.de/api/?jahr=2025&nur_land=BY
 
     alt API erfolgreich
-        HolidayAPI-->>Strategy: JSON { "Neujahr": { "datum": "2025-01-01" }, ... }
-        Strategy->>Strategy: parseHolidays() → 13 Feiertage für BY
-        Strategy->>Strategy: Cache in Map<'2025-BY', holidays>
+        HolidayAPI-->>Strategy: JSON {Neujahr, Ostern, ...}
+        Strategy->>Strategy: parseHolidays() → 13 Feiertage
+        Strategy->>Strategy: Cache in Map
     else API Fehler
-        HolidayAPI-->>Strategy: HTTP 500 / Network Error
-        Strategy->>Strategy: Return empty Map() → Fallback ohne Feiertage
+        HolidayAPI-->>Strategy: HTTP Error
+        Strategy->>Strategy: Fallback: empty Map()
     end
 
-    Note over Strategy,Factory: 🔁 Phase 7: Schleife über alle 365 Tage
-    loop Für jeden Tag (dayOfYear = 0 bis 364)
-        Strategy->>Strategy: currentDate = 2025-01-01 + dayOfYear
-        Strategy->>Strategy: dateString = currentDate.toISOString() → '2025-01-01'
+    Note over Strategy,Factory: 🔁 Phase 7: Schleife über 365 Tage
+    loop Für jeden Tag (0-364)
+        Strategy->>Strategy: currentDate = yearStart + dayOfYear
 
-        alt Eintrag existiert bereits
-            Strategy->>Strategy: Check: existingDates.has(dateString)?
-            Strategy->>Strategy: ⏭️ Skip - continue
-
+        alt Existiert bereits
+            Strategy->>Strategy: existingDates.has(date)? → Skip
         else Feiertag
-            Strategy->>Strategy: Check: holidays.get(dateString)?
-            Strategy->>Strategy: createHolidayEntry(userID, date, 'Neujahr')
-            Strategy->>Strategy: Push entry: { entryType_code: 'H', note: 'Neujahr', hours: 0 }
-
+            Strategy->>Strategy: holidays.get(date)?
+            Strategy->>Factory: createNonWorkTimeEntry(user, date, 'H')
+            Factory-->>Strategy: {entryType='H', note='Neujahr', hours=0}
         else Wochenende
-            Strategy->>Strategy: isWeekend(date)? → date.getDay() === 0 || === 6
-            Strategy->>Strategy: createWeekendEntry(userID, date)
-            Strategy->>Strategy: Push entry: { entryType_code: 'O', note: 'Samstag', hours: 0 }
-
-        else Normaler Arbeitstag
-            Strategy->>Factory: createDefaultEntry(userID, date, user)
-            Factory->>Factory: Calculate startTime, endTime from expectedDailyHoursDec
-            Factory->>Factory: Calculate gross, net, overtime, undertime
-            Factory-->>Strategy: TimeEntry { entryType_code: 'W', hours: 7.20, ... }
-            Strategy->>Strategy: Push entry to newEntries[]
+            Strategy->>Strategy: isWeekend(date)?
+            Strategy->>Factory: createNonWorkTimeEntry(user, date, 'O')
+            Factory-->>Strategy: {entryType='O', note='Samstag', hours=0}
+        else Arbeitstag
+            Strategy->>Factory: createWorkTimeEntry(user, date, defaultTimes)
+            Factory->>Factory: Calculate gross/net/overtime/undertime
+            Factory-->>Strategy: {entryType='W', hours=7.2, ...}
         end
+
+        Strategy->>Strategy: Push to newEntries[]
     end
 
-    Strategy-->>Command: newEntries[] (z.B. 320 neue Entries)
+    Strategy-->>Command: newEntries[] (320 Entries)
+    end
 
-    Note over Command,Validator: ✅ Phase 8: Validierung der generierten Entries
+    rect rgb(240, 248, 255)
+    Note over Command,Validator: ✅ Phase 8: Validierung
     Command->>Validator: validateGeneratedEntries(newEntries)
-    Validator->>Validator: Check: entries.length > 0
-    Validator->>Validator: For each: entry.workDate exists?
-    Validator->>Validator: For each: entry.user_ID matches?
-    Validator-->>Command: ✅ Alle Entries valide
+    Validator->>Validator: Check length > 0, workDate exists, user_ID matches
+    Validator-->>Command: ✅ Alle valide
+    end
 
+    rect rgb(255, 250, 240)
     Note over Command,Command: 📊 Phase 9: Stats-Berechnung
-    Command->>Command: calculateYearlyStats(newEntries, existingDates.size)
-    loop Für jeden Entry in newEntries
-        Command->>Command: Switch entryType_code
-        Command->>Command: 'W' → workdays++
-        Command->>Command: 'O' → weekends++
-        Command->>Command: 'H' → holidays++
+    Command->>Command: calculateYearlyStats(newEntries, existing.size)
+    loop Für jeden Entry
+        Command->>Command: Count by entryType: W→workdays, O→weekends, H→holidays
     end
-    Command->>Command: stats = { generated: 320, existing: 45, total: 365, workdays: 251, weekends: 104, holidays: 10 }
+    Command->>Command: stats = {generated: 320, existing: 45, total: 365, workdays: 251, weekends: 104, holidays: 10}
+    end
 
-    Note over Command,DB: 💾 Phase 10: Batch-Insert in Datenbank
-    alt Neue Entries vorhanden (320 > 0)
-        Command->>TimeRepo: insertBatch(newEntries)
-        TimeRepo->>DB: BEGIN TRANSACTION
-        loop Für jeden Entry (Batch von 320)
-            TimeRepo->>DB: INSERT INTO TimeEntries VALUES (...)
+    rect rgb(240, 255, 240)
+    Note over Command,DB: 💾 Phase 10: Batch-Insert
+    alt newEntries.length > 0
+        Command->>Repo: insertBatch(newEntries)
+        Repo->>DB: BEGIN TRANSACTION
+        loop 320 Entries
+            Repo->>DB: INSERT INTO TimeEntries
         end
-        TimeRepo->>DB: COMMIT
-        DB-->>TimeRepo: ✅ 320 rows inserted
-        TimeRepo-->>Command: Success
+        Repo->>DB: COMMIT
+        DB-->>Repo: ✅ 320 inserted
+        Repo-->>Command: Success
     else Keine neuen Entries
-        Command->>Command: Skip Insert
+        Command->>Command: Skip
+    end
     end
 
-    Note over Command,DB: 📖 Phase 11: Alle Entries des Jahres laden
-    Command->>TimeRepo: getEntriesInRange(userID, '2025-01-01', '2025-12-31')
-    TimeRepo->>DB: SELECT * FROM TimeEntries WHERE user_ID = ? AND workDate BETWEEN ? AND ?
-    DB-->>TimeRepo: 365 TimeEntry Records
-    TimeRepo-->>Command: allEntries[] (365 Entries)
+    rect rgb(255, 245, 235)
+    Note over Command,DB: 📖 Phase 11: Alle Entries laden
+    Command->>Repo: getEntriesInRange(userID, yearStart, yearEnd)
+    Repo->>DB: SELECT * WHERE user+date range
+    DB-->>Repo: 365 Records
+    Repo-->>Command: allEntries[]
+    end
 
-    Note over Command,UI: ✅ Phase 12: Response & UI Feedback
-    Command-->>Handler: { newEntries, allEntries, stats }
-    Handler->>Handler: req.info('✅ 320 neue Einträge generiert (251 Arbeitstage, 104 Wochenenden, 10 Feiertage)')
+    rect rgb(240, 248, 255)
+    Note over Command,UI: ✅ Phase 12: Response
+    Command-->>Handler: {newEntries, allEntries, stats}
+    Handler->>Handler: req.info('✅ 320 neue Einträge generiert...')
     Handler-->>Service: return allEntries[]
-    Service-->>Router: OData Response mit 365 Entries
-    Router-->>UI: HTTP 200 OK + JSON Payload
-    UI->>UI: Refresh Table
-    UI->>UI: Show Success Toast
+    Service-->>UI: HTTP 200 + JSON
+    UI->>UI: Refresh Table + Show Toast
     UI-->>UI: ✅ "Jahr 2025 erfolgreich generiert!"
+    end
 ```
 
 ### 🎯 Key Takeaways der Jahresgenerierung
