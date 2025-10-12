@@ -471,9 +471,11 @@ classDiagram
         +create(params)
     }
     class TimeEntryFactory {
-        +createWorkTimeEntry(user, date, start, end, break, project, activity)
-        +createNonWorkTimeEntry(user, date, entryType, source)
-        +createStandardEntry(user, date, project, activity)
+        +createWorkTimeData(userService, tx, userId, startTime, endTime, breakMin)
+        +createNonWorkTimeData(userService, tx, userId)
+        +createDefaultEntry(userId, date, user)
+        +createWeekendEntry(userId, date)
+        +createHolidayEntry(userId, date, holidayName)
     }
     class DomainServices {
         <<service layer>>
@@ -493,9 +495,10 @@ classDiagram
         +getCurrentBalance(tx, userId)
     }
     class TimeCalculationService {
-        +calculateDurationHours(start, end, break)
-        +calculateOvertime(net, expected)
-        +calculateUndertime(net, expected)
+        +timeToMinutes(timeString)
+        +roundToTwoDecimals(value)
+        +calculateWorkingHours(startTime, endTime, breakMinutes)
+        +calculateOvertimeAndUndertime(actualHours, expectedHours)
     }
     ServiceContainer --> CommandPattern : provides
     ServiceContainer --> RepositoryPattern : provides
@@ -619,9 +622,17 @@ Commands kapseln komplexe Business Operations:
 Kennt alle Business Rules und erstellt perfekt berechnete TimeEntry-Objekte:
 
 ```typescript
-// Work-Time Entry
-const entry = TimeEntryFactory.createWorkTimeEntry(user, workDate, startTime, endTime, breakMin, project, activity);
+// Work-Time Data (wird im Command verwendet)
+const workData = await TimeEntryFactory.createWorkTimeData(userService, tx, userId, startTime, endTime, breakMin);
 // → Berechnet automatisch: gross, net, overtime, undertime
+
+// Non-Work-Time Data (Urlaub, Krankheit)
+const nonWorkData = await TimeEntryFactory.createNonWorkTimeData(userService, tx, userId);
+
+// Komplette Entries für Generierung
+const workEntry = TimeEntryFactory.createDefaultEntry(userId, date, user);
+const weekendEntry = TimeEntryFactory.createWeekendEntry(userId, date);
+const holidayEntry = TimeEntryFactory.createHolidayEntry(userId, date, 'Neujahr');
 ```
 
 #### **HandlerFactory** - Handler Instance Creation
@@ -800,8 +811,8 @@ So arbeiten alle Patterns bei einem CREATE-Request zusammen:
 sequenceDiagram
     autonumber
     actor User
-    participant UI as 🖥️ Fiori UI
-    participant SVC as 🎯 TrackService
+    participant UI as 📱 Fiori UI
+    participant SVC as 🎬 TrackService
     participant SETUP as 🏗️ HandlerSetup
     participant FACTORY as 🏭 HandlerFactory
     participant REGISTRAR as 📋 HandlerRegistrar
@@ -809,9 +820,9 @@ sequenceDiagram
     participant H as 🎭 TimeEntryHandlers
     participant CMD as 🎯 CreateCommand
     participant VAL as ✅ Validator
-    participant REPO as � Repository
+    participant REPO as 💾 Repository
     participant EFACT as 🏭 EntryFactory
-    participant DB as 💾 Database
+    participant DB as 🗄️ Database
 
     Note over SVC: 🏗️ Initialization Phase
     SVC->>SVC: setupContainer()
@@ -854,14 +865,14 @@ sequenceDiagram
     end
 
     rect rgb(240, 255, 240)
-    Note over CMD,EFACT: 🏭 Factory Phase - Object Creation
+    Note over CMD,EFACT: 🏭 Factory Phase - Data Calculation
     alt Work Entry (entryType=W)
-        CMD->>EFACT: createWorkTimeEntry(user, workDate, times)
-        EFACT->>EFACT: calculateNetHours(gross, breakMin)
-        EFACT->>EFACT: calculateOvertimeUndertime(net, expected)
-        EFACT-->>CMD: {gross, net, overtime, undertime}
+        CMD->>EFACT: createWorkTimeData(userService, tx, userId, startTime, endTime, breakMin)
+        EFACT->>EFACT: calculateWorkingHours(start, end, break)
+        EFACT->>EFACT: calculateOvertimeAndUndertime(net, expected)
+        EFACT-->>CMD: {breakMin, gross, net, overtime, undertime}
     else Non-Work Entry (V/S/H/O)
-        CMD->>EFACT: createNonWorkTimeEntry(user, workDate, entryType)
+        CMD->>EFACT: createNonWorkTimeData(userService, tx, userId)
         EFACT-->>CMD: {zeros for all time fields}
     end
     end
@@ -871,7 +882,7 @@ sequenceDiagram
     H-->>SVC: enriched req.data
 
     rect rgb(255, 250, 240)
-    Note over SVC,DB: 💾 Persistence (CAP Framework)
+    Note over SVC,DB: 🗄️ Persistence (CAP Framework)
     SVC->>DB: INSERT INTO TimeEntries
     DB-->>SVC: saved entry with ID
     end
@@ -892,8 +903,8 @@ sequenceDiagram
     participant UI as 📱 Fiori UI
     participant Service as 🎬 TrackService
     participant Registry as 📋 HandlerRegistry
-    participant Handler as 🎯 GenerationHandlers
-    participant Command as 💼 GenerateYearlyCommand
+    participant Handler as 🎭 GenerationHandlers
+    participant Command as 🎯 GenerateYearlyCommand
     participant Validator as ✅ GenerationValidator
     participant UserService as 👤 UserService
     participant Strategy as 📋 YearlyGenerationStrategy
@@ -967,16 +978,17 @@ sequenceDiagram
             Strategy->>Strategy: existingDates.has(date)? → Skip
         else Feiertag
             Strategy->>Strategy: holidays.get(date)?
-            Strategy->>Factory: createNonWorkTimeEntry(user, date, 'H')
-            Factory-->>Strategy: {entryType='H', note='Neujahr', hours=0}
+            Strategy->>Factory: createHolidayEntry(userId, date, 'Neujahr')
+            Factory-->>Strategy: TimeEntry {entryType='H', note='Neujahr', hours=0}
         else Wochenende
             Strategy->>Strategy: isWeekend(date)?
-            Strategy->>Factory: createNonWorkTimeEntry(user, date, 'O')
-            Factory-->>Strategy: {entryType='O', note='Samstag', hours=0}
+            Strategy->>Factory: createWeekendEntry(userId, date)
+            Factory-->>Strategy: TimeEntry {entryType='O', note='Samstag', hours=0}
         else Arbeitstag
-            Strategy->>Factory: createWorkTimeEntry(user, date, defaultTimes)
+            Strategy->>Factory: createDefaultEntry(userId, date, user)
+            Factory->>Factory: Calculate start/end times from expectedDailyHours
             Factory->>Factory: Calculate gross/net/overtime/undertime
-            Factory-->>Strategy: {entryType='W', hours=7.2, ...}
+            Factory-->>Strategy: TimeEntry {entryType='W', hours=7.2, ...}
         end
 
         Strategy->>Strategy: Push to newEntries[]
