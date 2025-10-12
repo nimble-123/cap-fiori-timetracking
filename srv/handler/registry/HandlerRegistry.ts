@@ -81,8 +81,6 @@ export class HandlerRegistry {
         throw error;
       }
     });
-
-    console.log(`✅ Alle Handler erfolgreich registriert\n`);
   }
 
   /**

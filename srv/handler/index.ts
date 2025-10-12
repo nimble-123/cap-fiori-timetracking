@@ -1,6 +1,7 @@
 // Infrastructure
 export { ServiceContainer } from './container/ServiceContainer';
-export { HandlerRegistry } from './registry/HandlerRegistry';
+export { HandlerRegistry, HandlerRegistrar } from './registry';
+export { HandlerSetup } from './setup';
 
 // Repositories
 export { UserRepository, ProjectRepository, ActivityTypeRepository, TimeEntryRepository } from './repositories';
@@ -15,7 +16,7 @@ export { TimeEntryValidator, GenerationValidator, BalanceValidator } from './val
 export { MonthlyGenerationStrategy, YearlyGenerationStrategy } from './strategies';
 
 // Factories
-export { TimeEntryFactory } from './factories';
+export { TimeEntryFactory, HandlerFactory } from './factories';
 
 // Commands (Type-only exports for external use)
 export type {
