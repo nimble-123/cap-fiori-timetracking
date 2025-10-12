@@ -54,10 +54,10 @@ entity TimeEntries : managed, cuid {
   breakMin           : Integer default 0;
 
   // Abgeleitete Felder – ausschließlich Server-seitig setzen (berechnet in Service-Logic)
-  durationHoursGross : Decimal(5, 2); // 7.50 = 7h30
-  durationHoursNet   : Decimal(5, 2);
-  overtimeHours      : Decimal(9, 2);
-  undertimeHours     : Decimal(9, 2);
+  durationHoursGross : Decimal(4, 2); // 7.50 = 7h30
+  durationHoursNet   : Decimal(4, 2);
+  overtimeHours      : Decimal(4, 2);
+  undertimeHours     : Decimal(4, 2);
 
   source             : String(20);
   note               : String(500);
