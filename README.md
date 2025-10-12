@@ -231,10 +231,6 @@ erDiagram
         decimal weeklyHoursDec
         integer workingDaysPerWeek
         decimal expectedDailyHoursDec "calculated"
-        datetime createdAt
-        string createdBy
-        datetime modifiedAt
-        string modifiedBy
     }
 
     TimeEntry {
