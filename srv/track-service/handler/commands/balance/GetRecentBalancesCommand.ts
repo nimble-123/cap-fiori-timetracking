@@ -2,6 +2,7 @@ import { Transaction } from '@sap/cds';
 import type { MonthlyBalance } from '#cds-models/TrackService';
 import { TimeBalanceService, UserService } from '../../services';
 import { BalanceValidator } from '../../validators';
+import { logger } from '../../utils';
 
 // Type definitions
 interface BalanceDependencies {
@@ -38,21 +39,21 @@ export class GetRecentBalancesCommand {
    * @returns Array von Monatssalden
    */
   async execute(req: any, tx: Transaction, monthsCount: number = 6): Promise<MonthlyBalance[]> {
-    console.log('📊 GetRecentBalancesCommand.execute() gestartet');
+    logger.commandStart('GetRecentBalances', { monthsCount });
 
     // 1. Anzahl Monate validieren
     this.validator.validateMonthsCount(monthsCount);
 
-    console.log(`📅 Lade letzte ${monthsCount} Monate`);
+    logger.commandData('GetRecentBalances', 'Months count validated', { monthsCount });
 
     // 2. User auflösen
     const { userID } = await this.userService.resolveUserForGeneration(req);
-    console.log(`👤 User: ${userID}`);
+    logger.commandData('GetRecentBalances', 'User resolved', { userID });
 
     // 3. Salden vom Service berechnen lassen
     const balances = await this.balanceService.getRecentMonthsBalance(tx, userID, monthsCount);
 
-    console.log(`✅ ${balances.length} Monatssalden abgerufen`);
+    logger.commandEnd('GetRecentBalances', { count: balances.length });
 
     return balances;
   }

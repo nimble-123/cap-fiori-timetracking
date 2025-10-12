@@ -1,6 +1,6 @@
 import { ApplicationService } from '@sap/cds';
 
-import { ServiceContainer, HandlerRegistry, HandlerSetup } from './handler';
+import { ServiceContainer, HandlerRegistry, HandlerSetup, logger } from './handler';
 
 /**
  * TrackService - Hauptorchestrierungsklasse
@@ -15,13 +15,13 @@ export default class TrackService extends ApplicationService {
   private registry!: HandlerRegistry;
 
   async init(): Promise<void> {
-    console.log('🚀 Initialisiere TrackService...\n');
+    logger.serviceInit('Initializing TrackService...');
 
     this.setupContainer();
     this.setupHandlers();
 
     await super.init();
-    console.log('🎉 TrackService erfolgreich initialisiert!\n');
+    logger.serviceReady('TrackService successfully initialized');
   }
 
   /**
@@ -30,7 +30,7 @@ export default class TrackService extends ApplicationService {
   private setupContainer(): void {
     this.container = new ServiceContainer();
     this.container.build(this.entities);
-    console.log('✅ ServiceContainer initialisiert\n');
+    logger.serviceRegistered('ServiceContainer', 'initialized');
   }
 
   /**
@@ -40,6 +40,6 @@ export default class TrackService extends ApplicationService {
     this.registry = new HandlerRegistry();
 
     HandlerSetup.create(this.container, this.registry).withAllHandlers().apply(this);
-    console.log(`✅ Alle Handler registriert\n`);
+    logger.serviceRegistered('HandlerRegistry', 'all handlers registered');
   }
 }

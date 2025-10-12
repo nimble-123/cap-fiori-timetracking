@@ -1,5 +1,6 @@
 import { Transaction } from '@sap/cds';
 import { Project } from '#cds-models/TrackService';
+import { logger } from '../utils';
 
 /**
  * Repository für Project Datenzugriff
@@ -56,11 +57,15 @@ export class ProjectRepository {
    * @throws Error wenn Projekt ungültig oder inaktiv
    */
   async validateActive(tx: Transaction, projectId: string): Promise<void> {
+    logger.repositoryQuery('Project', 'Validating active project', { projectId });
     const project = await this.findByIdActive(tx, projectId);
 
     if (!project) {
+      logger.repositoryResult('Project', 'Project invalid or inactive', { projectId });
       throw new Error('Projekt ist ungültig oder inaktiv.');
     }
+
+    logger.repositoryResult('Project', 'Project validated', { projectId, name: project.name });
   }
 
   /**

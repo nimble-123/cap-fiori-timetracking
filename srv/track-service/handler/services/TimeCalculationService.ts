@@ -1,3 +1,5 @@
+import { logger } from '../utils';
+
 /**
  * Service für Zeitberechnungen
  * Alle zeitbezogenen Berechnungen und Konvertierungen
@@ -48,6 +50,7 @@ export class TimeCalculationService {
     const grossMinutes = this.timeToMinutes(endTime) - this.timeToMinutes(startTime);
 
     if (grossMinutes <= 0) {
+      logger.calculationResult('WorkingHours', 'Invalid time range (end before start)', { startTime, endTime });
       return {
         error: 'Endzeit muss nach Startzeit liegen (gleicher Tag).',
       };
@@ -56,6 +59,7 @@ export class TimeCalculationService {
     const breakMin = Math.max(0, Number(breakMinutes));
 
     if (breakMin > grossMinutes) {
+      logger.calculationResult('WorkingHours', 'Break longer than gross time', { breakMin, grossMinutes });
       return {
         error: 'Pause darf nicht länger als Bruttozeit sein.',
       };
@@ -63,6 +67,13 @@ export class TimeCalculationService {
 
     const netMinutes = grossMinutes - breakMin;
     const netHours = this.roundToTwoDecimals(netMinutes / 60);
+
+    logger.calculationResult('WorkingHours', 'Working hours calculated', {
+      startTime,
+      endTime,
+      breakMin,
+      netHours,
+    });
 
     return {
       grossMinutes,

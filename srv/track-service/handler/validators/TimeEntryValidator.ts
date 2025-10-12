@@ -1,6 +1,7 @@
 import { Transaction } from '@sap/cds';
 import { TimeEntry } from '#cds-models/TrackService';
 import { ProjectRepository, ActivityTypeRepository, TimeEntryRepository } from '../repositories';
+import { logger } from '../utils';
 
 /**
  * Validator für TimeEntry Operationen
@@ -45,6 +46,7 @@ export class TimeEntryValidator {
       throw new Error('startTime und endTime sind bei Arbeitszeit erforderlich.');
     }
 
+    logger.validationSuccess('TimeEntry', 'Required fields validated for CREATE', { type, workDate });
     return String(type);
   }
 
@@ -63,6 +65,11 @@ export class TimeEntryValidator {
     if (entryType === 'WORK' && (!startTime || !endTime)) {
       throw new Error('startTime und endTime sind bei Arbeitszeit erforderlich.');
     }
+
+    logger.validationSuccess('TimeEntry', 'Fields validated for UPDATE', {
+      entryId: existingEntry.ID,
+      type: entryType,
+    });
   }
 
   /**
@@ -74,11 +81,13 @@ export class TimeEntryValidator {
     // Projekt-Validierung (nur aktive Projekte)
     if (entryData.project_ID) {
       await this.projectRepository.validateActive(tx, entryData.project_ID);
+      logger.validationSuccess('TimeEntry', 'Project reference validated', { projectId: entryData.project_ID });
     }
 
     // Activity-Validierung
     if (entryData.activity_code) {
       await this.activityTypeRepository.validateExists(tx, entryData.activity_code);
+      logger.validationSuccess('TimeEntry', 'Activity reference validated', { activityCode: entryData.activity_code });
     }
   }
 
@@ -117,10 +126,17 @@ export class TimeEntryValidator {
     const existingEntry = await this.timeEntryRepository.getEntryByUserAndDate(tx, userId, workDate, excludeId);
 
     if (existingEntry) {
+      logger.validationWarning('TimeEntry', 'Duplicate entry detected', {
+        userId,
+        workDate,
+        existingId: existingEntry.ID,
+      });
       const error = new Error('Es existiert bereits ein Eintrag für diesen Tag.') as any;
       error.code = 409;
       throw error;
     }
+
+    logger.validationSuccess('TimeEntry', 'Unique entry per day validated', { userId, workDate });
   }
 }
 

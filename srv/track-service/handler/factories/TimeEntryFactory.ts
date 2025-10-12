@@ -2,7 +2,7 @@ import { randomUUID } from 'crypto';
 import { Transaction } from '@sap/cds';
 import { TimeEntry, User } from '#cds-models/TrackService';
 import { TimeCalculationService, UserService } from '../services';
-import { DateUtils } from '../utils';
+import { DateUtils, logger } from '../utils';
 
 // Type definitions
 interface WorkTimeData {
@@ -39,6 +39,7 @@ export class TimeEntryFactory {
     const workingHours = TimeCalculationService.calculateWorkingHours(startTime, endTime, breakMinutes);
 
     if (workingHours.error) {
+      logger.validationWarning('TimeEntryFactory', workingHours.error, { startTime, endTime, breakMinutes });
       throw new Error(workingHours.error);
     }
 
@@ -47,6 +48,13 @@ export class TimeEntryFactory {
       workingHours.netHours!,
       expectedDaily,
     );
+
+    logger.factoryCreated('WorkTimeData', 'Work time data calculated', {
+      userId,
+      netHours: workingHours.netHours,
+      overtime,
+      undertime,
+    });
 
     return {
       breakMin: workingHours.breakMinutes!,
@@ -101,6 +109,11 @@ export class TimeEntryFactory {
     const startTime = `${String(startHour).padStart(2, '0')}:00:00`;
     const endTime = `${String(endHour).padStart(2, '0')}:${String(endMinute).padStart(2, '0')}:00`;
 
+    logger.factoryCreated('DefaultEntry', 'Default work entry created', {
+      workDate: dateString,
+      expectedHours: expected,
+    });
+
     return {
       ID: randomUUID(),
       user_ID: userID,
@@ -128,6 +141,8 @@ export class TimeEntryFactory {
     const dateString = DateUtils.toLocalDateString(date);
     const dayName = DateUtils.getWeekdayName(date);
 
+    logger.factoryCreated('WeekendEntry', 'Weekend entry created', { workDate: dateString, dayName });
+
     return {
       ID: randomUUID(),
       user_ID: userID,
@@ -154,6 +169,8 @@ export class TimeEntryFactory {
    */
   static createHolidayEntry(userID: string, date: Date, holidayName: string): TimeEntry {
     const dateString = DateUtils.toLocalDateString(date);
+
+    logger.factoryCreated('HolidayEntry', 'Holiday entry created', { workDate: dateString, holidayName });
 
     return {
       ID: randomUUID(),

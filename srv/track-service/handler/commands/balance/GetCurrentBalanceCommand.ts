@@ -1,6 +1,7 @@
 import { Transaction } from '@sap/cds';
 import { TimeBalanceService, UserService } from '../../services';
 import { BalanceValidator } from '../../validators';
+import { logger } from '../../utils';
 
 // Type definitions
 interface BalanceDependencies {
@@ -42,11 +43,11 @@ export class GetCurrentBalanceCommand {
    * @returns Kumulierter Gesamtsaldo in Stunden
    */
   async execute(req: any, tx: Transaction): Promise<number> {
-    console.log('📊 GetCurrentBalanceCommand.execute() gestartet');
+    logger.commandStart('GetCurrentBalance');
 
     // 1. User auflösen
     const { userID } = await this.userService.resolveUserForGeneration(req);
-    console.log(`👤 User: ${userID}`);
+    logger.commandData('GetCurrentBalance', 'User resolved', { userID });
 
     // 2. Kumulierten Saldo berechnen
     const balance = await this.balanceService.getCurrentCumulativeBalance(tx, userID);
@@ -59,7 +60,7 @@ export class GetCurrentBalanceCommand {
       `${statusInfo.emoji} Ihr aktueller Gesamtsaldo beträgt ${statusInfo.formattedBalance} (Status: ${statusInfo.status})`,
     );
 
-    console.log(`✅ Aktueller Gesamtsaldo: ${balance}h`);
+    logger.commandEnd('GetCurrentBalance', { balance, status: statusInfo.status });
 
     return balance;
   }

@@ -1,4 +1,5 @@
 import { ApplicationService } from '@sap/cds';
+import { logger } from '../utils';
 
 /**
  * Handler-Konfiguration für Event-Registrierung
@@ -67,17 +68,20 @@ export class HandlerRegistry {
    * @param service - CAP ApplicationService Instanz
    */
   apply(service: ApplicationService): void {
-    console.log(`📝 Registriere ${this.handlers.length} Event-Handler...`);
+    logger.registryStart(`Registering ${this.handlers.length} event handlers`, { count: this.handlers.length });
 
     this.handlers.forEach((config, index) => {
       try {
         this.applyHandler(service, config);
 
         if (config.description) {
-          console.log(`  ✓ [${index + 1}] ${config.type}:${config.event} - ${config.description}`);
+          logger.registrySuccess(`${config.type}:${config.event}`, config.description, {
+            index: index + 1,
+            entity: config.entity,
+          });
         }
       } catch (error) {
-        console.error(`  ✗ Fehler bei Handler-Registrierung [${index + 1}]:`, error);
+        logger.error(`Handler registration failed [${index + 1}]`, error, { config });
         throw error;
       }
     });

@@ -4,6 +4,7 @@ import { UserService } from '../../services';
 import { TimeEntryValidator } from '../../validators';
 import { TimeEntryRepository } from '../../repositories';
 import { TimeEntryFactory } from '../../factories';
+import { logger } from '../../utils';
 
 // Type definitions
 interface Dependencies {
@@ -38,8 +39,11 @@ export class UpdateTimeEntryCommand {
    * @returns Berechnete Daten oder leeres Objekt
    */
   async execute(tx: Transaction, entryId: string, updateData: Partial<TimeEntry>): Promise<any> {
+    logger.commandStart('UpdateTimeEntry', { entryId, fields: Object.keys(updateData) });
+
     // Existierenden Entry laden
     const existingEntry = await this.repository.getById(tx, entryId);
+    logger.commandData('UpdateTimeEntry', 'Existing entry loaded', { workDate: existingEntry.workDate });
 
     // Eindeutigkeit bei User/Datum-Änderungen prüfen
     await this.validateUniquenessForUpdate(tx, updateData, existingEntry, entryId);
@@ -47,8 +51,11 @@ export class UpdateTimeEntryCommand {
     // Referenzen validieren
     await this.validator.validateReferences(tx, updateData);
 
+    logger.commandData('UpdateTimeEntry', 'Validations passed', { entryId });
+
     // Prüfen ob Neuberechnung erforderlich ist
     if (!this.validator.requiresTimeRecalculation(updateData)) {
+      logger.commandEnd('UpdateTimeEntry', { recalculation: false });
       return {}; // Keine zeitrelevanten Änderungen
     }
 
@@ -57,6 +64,8 @@ export class UpdateTimeEntryCommand {
 
     // Felder validieren
     this.validator.validateFieldsForUpdate(updateData, existingEntry);
+
+    logger.commandData('UpdateTimeEntry', 'Recalculating time data', { entryType: mergedData.entryType });
 
     // Zeitdaten neu berechnen
     let durationData;
@@ -72,6 +81,8 @@ export class UpdateTimeEntryCommand {
     } else {
       durationData = await this.factory.createNonWorkTimeData(this.userService, tx, mergedData.user_ID);
     }
+
+    logger.commandEnd('UpdateTimeEntry', { recalculation: true, netHours: durationData.durationHoursNet });
 
     return durationData;
   }

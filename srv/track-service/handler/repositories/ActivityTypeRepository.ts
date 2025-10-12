@@ -1,5 +1,6 @@
 import { Transaction } from '@sap/cds';
 import { ActivityType } from '#cds-models/TrackService';
+import { logger } from '../utils';
 
 /**
  * Repository für ActivityType Datenzugriff
@@ -40,11 +41,15 @@ export class ActivityTypeRepository {
    * @throws Error wenn Activity Code ungültig
    */
   async validateExists(tx: Transaction, code: string): Promise<void> {
+    logger.repositoryQuery('ActivityType', 'Validating activity code', { code });
     const activity = await this.findByCode(tx, code);
 
     if (!activity) {
+      logger.repositoryResult('ActivityType', 'Activity code invalid', { code });
       throw new Error('Ungültiger Activity Code.');
     }
+
+    logger.repositoryResult('ActivityType', 'Activity code validated', { code, name: activity.name });
   }
 
   /**

@@ -52,6 +52,11 @@
           }
         }
       }
+    },
+    "log": {
+      "levels": {
+        "track-service": "info"
+      }
     }
   },
   "sapux": [

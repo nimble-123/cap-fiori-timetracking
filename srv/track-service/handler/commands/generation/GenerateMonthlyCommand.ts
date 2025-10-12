@@ -3,7 +3,7 @@ import { MonthlyGenerationStrategy } from '../../strategies';
 import { TimeEntryRepository } from '../../repositories';
 import { UserService } from '../../services';
 import { GenerationValidator } from '../../validators';
-import { DateUtils } from '../../utils';
+import { DateUtils, logger } from '../../utils';
 
 // Type definitions
 interface GenerationDependencies {
@@ -54,17 +54,20 @@ export class GenerateMonthlyCommand {
    * @returns Generierungsergebnis mit Stats
    */
   async execute(req: any): Promise<MonthlyGenerationResult> {
-    console.log('🚀 GenerateMonthlyCommand.execute() gestartet');
+    logger.commandStart('GenerateMonthly');
 
     // 1. User auflösen und validieren
     const { userID, user } = await this.userService.resolveUserForGeneration(req);
     this.validator.validateUser(user, userID);
 
-    console.log(`👤 User validiert: ${userID}`);
+    logger.commandData('GenerateMonthly', 'User validated', { userID });
 
     // 2. Monatsdaten ermitteln (aktueller Monat)
     const monthData = DateUtils.getCurrentMonthData();
-    console.log(`📅 Monat: ${monthData.monthStartStr} bis ${monthData.monthEndStr}`);
+    logger.commandData('GenerateMonthly', 'Month period calculated', {
+      start: monthData.monthStartStr,
+      end: monthData.monthEndStr,
+    });
 
     // 3. Existierende Einträge laden
     const existingDates = await this.repository.getExistingDatesInRange(
@@ -73,12 +76,12 @@ export class GenerateMonthlyCommand {
       monthData.monthEndStr,
     );
 
-    console.log(`📊 ${existingDates.size} existierende Einträge gefunden`);
+    logger.commandData('GenerateMonthly', 'Existing entries loaded', { count: existingDates.size });
 
     // 4. Fehlende Einträge generieren
     const newEntries = this.strategy.generateMissingEntries(userID, user, existingDates);
 
-    console.log(`✨ ${newEntries.length} neue Einträge zu generieren`);
+    logger.commandData('GenerateMonthly', 'New entries generated', { count: newEntries.length });
 
     // 5. Validierung der generierten Einträge
     this.validator.validateGeneratedEntries(newEntries);
@@ -86,7 +89,7 @@ export class GenerateMonthlyCommand {
     // 6. Batch-Insert (nur wenn neue Einträge vorhanden)
     if (newEntries.length > 0) {
       await this.repository.insertBatch(newEntries);
-      console.log(`💾 ${newEntries.length} Einträge erfolgreich gespeichert`);
+      logger.commandData('GenerateMonthly', 'Entries persisted', { count: newEntries.length });
     }
 
     // 7. Alle Einträge des Monats laden
@@ -99,7 +102,7 @@ export class GenerateMonthlyCommand {
       total: allEntries.length,
     };
 
-    console.log(`✅ GenerateMonthlyCommand abgeschlossen:`, stats);
+    logger.commandEnd('GenerateMonthly', stats);
 
     return {
       newEntries,

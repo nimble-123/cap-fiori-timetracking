@@ -1,3 +1,5 @@
+import { logger } from '../utils';
+
 /**
  * Service zur Ermittlung von deutschen Feiertagen
  * Nutzt die kostenlose Feiertage-API (feiertage-api.de)
@@ -29,18 +31,22 @@ export class HolidayService {
 
     // Prüfe Cache
     if (this.cache.has(cacheKey)) {
-      console.log(`✅ Feiertage für ${year}/${stateCode} aus Cache geladen`);
+      logger.serviceCacheHit('Holiday', `Holidays for ${year}/${stateCode}`, { year, stateCode });
       return this.cache.get(cacheKey)!;
     }
 
     try {
-      console.log(`🔍 Lade Feiertage für ${year}/${stateCode} von API...`);
+      logger.serviceCall('Holiday', `Fetching holidays from API for ${year}/${stateCode}`, { year, stateCode });
       const url = `https://feiertage-api.de/api/?jahr=${year}&nur_land=${stateCode}`;
 
       const response = await fetch(url);
 
       if (!response.ok) {
-        console.error(`❌ API Fehler: ${response.status} ${response.statusText}`);
+        logger.error('Holiday API error', new Error(`${response.status} ${response.statusText}`), {
+          year,
+          stateCode,
+          status: response.status,
+        });
         return new Map();
       }
 
@@ -50,10 +56,14 @@ export class HolidayService {
       // In Cache speichern
       this.cache.set(cacheKey, holidays);
 
-      console.log(`✅ ${holidays.size} Feiertage für ${year}/${stateCode} geladen`);
+      logger.serviceInfo('Holiday', `Loaded ${holidays.size} holidays for ${year}/${stateCode}`, {
+        year,
+        stateCode,
+        count: holidays.size,
+      });
       return holidays;
     } catch (error: any) {
-      console.error(`❌ Fehler beim Laden der Feiertage:`, error.message);
+      logger.error('Error loading holidays', error, { year, stateCode });
       return new Map();
     }
   }
@@ -91,7 +101,7 @@ export class HolidayService {
    */
   clearCache(): void {
     this.cache.clear();
-    console.log('🗑️  Holiday-Cache geleert');
+    logger.serviceCacheCleared('Holiday');
   }
 }
 

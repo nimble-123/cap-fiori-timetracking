@@ -1,3 +1,5 @@
+import { logger } from '../utils';
+
 /**
  * Validator für Balance-Operationen
  *
@@ -27,7 +29,7 @@ export class BalanceValidator {
       throw new Error(`Jahr ${year} ist keine ganze Zahl.`);
     }
 
-    console.log(`✅ Jahr validiert: ${year}`);
+    logger.validationSuccess('Year', `Validated: ${year}`, { year });
   }
 
   /**
@@ -44,7 +46,7 @@ export class BalanceValidator {
       throw new Error(`Monat ${month} ist ungültig. Erlaubter Bereich: 1-12`);
     }
 
-    console.log(`✅ Monat validiert: ${month}`);
+    logger.validationSuccess('Month', `Validated: ${month}`, { month });
   }
 
   /**
@@ -67,7 +69,7 @@ export class BalanceValidator {
       );
     }
 
-    console.log(`✅ Monats-Anzahl validiert: ${monthsCount}`);
+    logger.validationSuccess('MonthsCount', `Validated: ${monthsCount}`, { monthsCount });
   }
 
   /**
@@ -91,7 +93,7 @@ export class BalanceValidator {
       );
     }
 
-    console.log(`✅ Jahr-Monat-Kombination validiert: ${year}-${String(month).padStart(2, '0')}`);
+    logger.validationSuccess('YearMonth', `Validated: ${year}-${String(month).padStart(2, '0')}`, { year, month });
   }
 
   /**
@@ -109,11 +111,15 @@ export class BalanceValidator {
     const MAX_REALISTIC_HOURS = 500;
 
     if (Math.abs(balance) > MAX_REALISTIC_HOURS) {
-      console.warn(`⚠️ ${context} ist extrem hoch: ${balance}h. Dies könnte auf einen Berechnungsfehler hindeuten.`);
+      logger.validationWarning(
+        'Balance',
+        `${context} is extremely high: ${balance}h. Could indicate calculation error.`,
+        { balance, context },
+      );
       // Kein throw, nur Warning - könnte bei langjährigen Daten vorkommen
     }
 
-    console.log(`✅ ${context} validiert: ${balance}h`);
+    logger.validationSuccess('Balance', `${context} validated: ${balance}h`, { balance, context });
   }
 
   /**
@@ -133,11 +139,13 @@ export class BalanceValidator {
 
     // Max 23 Arbeitstage pro Monat (realistischer Wert)
     if (workingDays > 23) {
-      console.warn(
-        `⚠️ Arbeitstage-Anzahl ${workingDays} für ${context} ist ungewöhnlich hoch. Normalerweise max. 23 Arbeitstage/Monat.`,
+      logger.validationWarning(
+        'WorkingDays',
+        `${workingDays} working days for ${context} is unusually high. Normally max 23/month.`,
+        { workingDays, context },
       );
     }
 
-    console.log(`✅ Arbeitstage validiert: ${workingDays} für ${context}`);
+    logger.validationSuccess('WorkingDays', `Validated ${workingDays} for ${context}`, { workingDays, context });
   }
 }

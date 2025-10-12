@@ -3,7 +3,7 @@ import { YearlyGenerationStrategy } from '../../strategies';
 import { TimeEntryRepository } from '../../repositories';
 import { UserService } from '../../services';
 import { GenerationValidator } from '../../validators';
-import { DateUtils } from '../../utils';
+import { DateUtils, logger } from '../../utils';
 
 // Type definitions
 interface GenerationDependencies {
@@ -60,23 +60,26 @@ export class GenerateYearlyCommand {
    * @returns Generierungsergebnis mit detaillierten Stats
    */
   async execute(req: any, year?: number, stateCode?: string): Promise<YearlyGenerationResult> {
-    console.log('🚀 GenerateYearlyCommand.execute() gestartet');
+    logger.commandStart('GenerateYearly');
 
     // 1. Parameter validieren und defaults setzen
     const targetYear = year || new Date().getFullYear();
     const validatedStateCode = this.validator.validateStateCode(stateCode);
 
-    console.log(`📅 Jahr: ${targetYear}, Bundesland: ${validatedStateCode}`);
+    logger.commandData('GenerateYearly', 'Parameters validated', { year: targetYear, state: validatedStateCode });
 
     // 2. User auflösen und validieren
     const { userID, user } = await this.userService.resolveUserForGeneration(req);
     this.validator.validateUser(user, userID);
 
-    console.log(`👤 User validiert: ${userID}`);
+    logger.commandData('GenerateYearly', 'User validated', { userID });
 
     // 3. Jahresdaten ermitteln
     const yearData = DateUtils.getYearData(targetYear);
-    console.log(`📅 Zeitraum: ${yearData.yearStartStr} bis ${yearData.yearEndStr}`);
+    logger.commandData('GenerateYearly', 'Year period calculated', {
+      start: yearData.yearStartStr,
+      end: yearData.yearEndStr,
+    });
 
     // 4. Existierende Einträge laden
     const existingDates = await this.repository.getExistingDatesInRange(
@@ -85,7 +88,7 @@ export class GenerateYearlyCommand {
       yearData.yearEndStr,
     );
 
-    console.log(`📊 ${existingDates.size} existierende Einträge gefunden`);
+    logger.commandData('GenerateYearly', 'Existing entries loaded', { count: existingDates.size });
 
     // 5. Fehlende Einträge generieren (inkl. Feiertags-API-Call)
     // Strategy nutzt jetzt intern DateUtils und bekommt nur year statt yearData
@@ -97,25 +100,25 @@ export class GenerateYearlyCommand {
       existingDates,
     );
 
-    console.log(`✨ ${newEntries.length} neue Einträge zu generieren`);
+    logger.commandData('GenerateYearly', 'New entries generated', { count: newEntries.length });
 
     // 6. Validierung der generierten Einträge
     this.validator.validateGeneratedEntries(newEntries);
 
     // 7. Stats vorab berechnen (für detaillierte Ausgabe)
     const stats = this.calculateYearlyStats(newEntries, existingDates.size);
-    console.log(`📈 Stats:`, stats);
+    logger.stats('YearlyGeneration', 'Statistics calculated', stats);
 
     // 8. Batch-Insert (nur wenn neue Einträge vorhanden)
     if (newEntries.length > 0) {
       await this.repository.insertBatch(newEntries);
-      console.log(`💾 ${newEntries.length} Einträge erfolgreich gespeichert`);
+      logger.commandData('GenerateYearly', 'Entries persisted', { count: newEntries.length });
     }
 
     // 9. Alle Einträge des Jahres laden
     const allEntries = await this.repository.getEntriesInRange(userID, yearData.yearStartStr, yearData.yearEndStr);
 
-    console.log(`✅ GenerateYearlyCommand abgeschlossen`);
+    logger.commandEnd('GenerateYearly', { total: allEntries.length, generated: newEntries.length });
 
     return {
       newEntries,

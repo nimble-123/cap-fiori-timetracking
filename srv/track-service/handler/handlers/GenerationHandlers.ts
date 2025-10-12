@@ -1,5 +1,6 @@
 import { TimeEntry } from '#cds-models/TrackService';
 import { GenerateMonthlyCommand, GenerateYearlyCommand } from '../commands';
+import { logger } from '../utils';
 
 /**
  * Handler für TimeEntry-Generierung
@@ -20,7 +21,7 @@ export class GenerationHandlers {
    */
   async handleGenerateMonthly(req: any): Promise<TimeEntry[]> {
     try {
-      console.log('🚀 Action generateMonthlyTimeEntries aufgerufen');
+      logger.handlerInvoked('Generation', 'generateMonthly', req.data);
 
       const result = await this.generateMonthlyCommand.execute(req);
 
@@ -30,7 +31,7 @@ export class GenerationHandlers {
 
       return result.allEntries;
     } catch (error: any) {
-      console.error('❌ Fehler in generateMonthlyTimeEntries:', error);
+      logger.error('Error in generateMonthly handler', error, { action: 'generateMonthly' });
       req.reject(500, `Fehler: ${error.message}`);
       return [];
     }
@@ -44,7 +45,7 @@ export class GenerationHandlers {
    */
   async handleGenerateYearly(req: any): Promise<TimeEntry[]> {
     try {
-      console.log('🚀 Action generateYearlyTimeEntries aufgerufen');
+      logger.handlerInvoked('Generation', 'generateYearly', req.data);
 
       // Parameter aus Request extrahieren
       const year = req.data.year;
@@ -62,7 +63,7 @@ export class GenerationHandlers {
 
       return result.allEntries;
     } catch (error: any) {
-      console.error('❌ Fehler in generateYearlyTimeEntries:', error);
+      logger.error('Error in generateYearly handler', error, { action: 'generateYearly', data: req.data });
       req.reject(500, `Fehler: ${error.message}`);
       return [];
     }

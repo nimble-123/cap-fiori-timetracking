@@ -1,5 +1,6 @@
 import { Transaction } from '@sap/cds';
 import { TimeEntry } from '#cds-models/TrackService';
+import { logger } from '../utils';
 
 /**
  * Repository für TimeEntry Datenzugriff
@@ -95,13 +96,13 @@ export class TimeEntryRepository {
    */
   async insertBatch(entries: TimeEntry[]): Promise<void> {
     if (entries.length === 0) {
-      console.log(`ℹ️ Keine neuen Einträge zu erstellen`);
+      logger.repositoryInfo('TimeEntry', 'No new entries to create');
       return;
     }
 
-    console.log(`💾 Persistiere ${entries.length} neue TimeEntries in DB...`);
+    logger.repositoryQuery('TimeEntry', `Persisting ${entries.length} new entries`, { count: entries.length });
     await INSERT.into(this.TimeEntries).entries(entries);
-    console.log(`✅ ${entries.length} TimeEntries erfolgreich gespeichert`);
+    logger.repositorySave('TimeEntry', entries.length);
   }
 
   /**

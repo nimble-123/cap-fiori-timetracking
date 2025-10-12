@@ -1,7 +1,7 @@
 import { TimeEntry, User } from '#cds-models/TrackService';
 import { TimeEntryFactory } from '../factories';
 import { HolidayService } from '../services';
-import { DateUtils } from '../utils';
+import { DateUtils, logger } from '../utils';
 
 /**
  * Strategy für jährliche TimeEntries Generierung
@@ -32,13 +32,19 @@ export class YearlyGenerationStrategy {
     existingDates: Set<string>,
   ): Promise<TimeEntry[]> {
     const yearData = DateUtils.getYearData(year);
-    console.log(`📅 Generiere für Jahr ${yearData.year} (${yearData.daysInYear} Tage)`);
+    logger.strategyExecute('YearlyGeneration', `Generating year ${yearData.year} (${yearData.daysInYear} days)`, {
+      year: yearData.year,
+      daysInYear: yearData.daysInYear,
+    });
 
     const newEntries: TimeEntry[] = [];
 
     // Feiertage für das Jahr laden
     const holidays = await this.holidayService.getHolidays(yearData.year, stateCode);
-    console.log(`🎉 ${holidays.size} Feiertage für ${stateCode} geladen`);
+    logger.strategyInfo('YearlyGeneration', `Loaded ${holidays.size} holidays for ${stateCode}`, {
+      count: holidays.size,
+      stateCode,
+    });
 
     for (let dayOfYear = 0; dayOfYear < yearData.daysInYear; dayOfYear++) {
       const currentDate = new Date(yearData.year, 0, 1);
@@ -47,7 +53,7 @@ export class YearlyGenerationStrategy {
       const dateString = DateUtils.toLocalDateString(currentDate);
 
       if (existingDates.has(dateString)) {
-        console.log(`⏭️  Überspringe ${dateString} - Eintrag existiert bereits`);
+        logger.strategySkip('YearlyGeneration', `Entry exists: ${dateString}`, { date: dateString });
         continue;
       }
 
@@ -56,7 +62,10 @@ export class YearlyGenerationStrategy {
       if (holiday) {
         const entry = TimeEntryFactory.createHolidayEntry(userID, currentDate, holiday.name);
         newEntries.push(entry);
-        console.log(`🎉 Feiertag: ${dateString} - ${holiday.name}`);
+        logger.strategyEvent('YearlyGeneration', `Holiday: ${dateString} - ${holiday.name}`, {
+          date: dateString,
+          holiday: holiday.name,
+        });
         continue;
       }
 

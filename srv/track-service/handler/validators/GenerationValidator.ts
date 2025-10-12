@@ -1,4 +1,5 @@
 import { TimeEntry, User } from '#cds-models/TrackService';
+import { logger } from '../utils';
 
 /**
  * Validator für Generierungs-Operationen
@@ -54,9 +55,11 @@ export class GenerationValidator {
       );
     }
 
-    console.log(
-      `✅ User-Validierung OK: ${user.name} (${user.expectedDailyHoursDec}h/Tag, ${user.workingDaysPerWeek} Tage/Woche)`,
-    );
+    logger.validationSuccess('User', `${user.name} validated`, {
+      userId,
+      dailyHours: user.expectedDailyHoursDec,
+      workingDays: user.workingDaysPerWeek,
+    });
   }
 
   /**
@@ -80,7 +83,7 @@ export class GenerationValidator {
       );
     }
 
-    console.log(`✅ Bundesland-Code validiert: ${normalizedCode}`);
+    logger.validationSuccess('StateCode', `Validated: ${normalizedCode}`, { stateCode: normalizedCode });
     return normalizedCode;
   }
 
@@ -96,7 +99,7 @@ export class GenerationValidator {
 
     // Leeres Array ist OK (alle Tage bereits vorhanden)
     if (entries.length === 0) {
-      console.log('ℹ️ Keine neuen Einträge zu generieren (alle bereits vorhanden)');
+      logger.validationInfo('GeneratedEntries', 'No new entries to generate (all already exist)');
       return;
     }
 
@@ -133,7 +136,7 @@ export class GenerationValidator {
       }
     }
 
-    console.log(`✅ ${entries.length} generierte Einträge validiert`);
+    logger.validationSuccess('GeneratedEntries', `${entries.length} entries validated`, { count: entries.length });
   }
 
   /**
@@ -152,7 +155,7 @@ export class GenerationValidator {
       );
     }
 
-    console.log(`✅ Jahr validiert: ${year}`);
+    logger.validationSuccess('Year', `Validated: ${year}`, { year });
   }
 
   /**
@@ -165,6 +168,6 @@ export class GenerationValidator {
       throw new Error(`Monat ${month} ist ungültig. Erlaubter Bereich: 1-12`);
     }
 
-    console.log(`✅ Monat validiert: ${month}`);
+    logger.validationSuccess('Month', `Validated: ${month}`, { month });
   }
 }

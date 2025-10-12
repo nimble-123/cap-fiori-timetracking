@@ -1,5 +1,6 @@
 import { Transaction } from '@sap/cds';
 import { User } from '#cds-models/TrackService';
+import { logger } from '../utils';
 
 /**
  * Repository für User Datenzugriff
@@ -36,12 +37,15 @@ export class UserRepository {
    * @throws Error wenn User nicht gefunden oder inaktiv
    */
   async findByIdActiveOrThrow(tx: Transaction, userId: string): Promise<User> {
+    logger.repositoryQuery('User', 'Finding active user by ID', { userId });
     const user = await this.findById(tx, userId, true);
 
     if (!user) {
+      logger.repositoryResult('User', 'User not found or inactive', { userId });
       throw new Error('User not found or inactive');
     }
 
+    logger.repositoryResult('User', 'Active user found', { userId, name: user.name });
     return user;
   }
 

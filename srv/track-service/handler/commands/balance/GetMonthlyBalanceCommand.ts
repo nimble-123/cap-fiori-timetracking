@@ -2,6 +2,7 @@ import { Transaction } from '@sap/cds';
 import type { MonthlyBalance } from '#cds-models/TrackService';
 import { TimeBalanceService, UserService } from '../../services';
 import { BalanceValidator } from '../../validators';
+import { logger } from '../../utils';
 
 // Type definitions
 interface BalanceDependencies {
@@ -46,7 +47,7 @@ export class GetMonthlyBalanceCommand {
    * @returns Monatssaldo mit Criticality
    */
   async execute(req: any, tx: Transaction, year?: number, month?: number): Promise<MonthlyBalance> {
-    console.log('📊 GetMonthlyBalanceCommand.execute() gestartet');
+    logger.commandStart('GetMonthlyBalance');
 
     // 1. Jahr und Monat mit Defaults
     const targetYear = year || new Date().getFullYear();
@@ -56,11 +57,14 @@ export class GetMonthlyBalanceCommand {
     this.validator.validateYear(targetYear);
     this.validator.validateMonth(targetMonth);
 
-    console.log(`📅 Saldo für: ${targetYear}-${String(targetMonth).padStart(2, '0')}`);
+    logger.commandData('GetMonthlyBalance', 'Period validated', {
+      year: targetYear,
+      month: targetMonth,
+    });
 
     // 3. User auflösen
     const { userID } = await this.userService.resolveUserForGeneration(req);
-    console.log(`👤 User: ${userID}`);
+    logger.commandData('GetMonthlyBalance', 'User resolved', { userID });
 
     // 4. Saldo vom Service berechnen lassen
     const balance = await this.balanceService.getMonthBalance(tx, userID, targetYear, targetMonth);
@@ -74,7 +78,11 @@ export class GetMonthlyBalanceCommand {
       `${statusInfo.emoji} Monatssaldo ${targetYear}-${String(targetMonth).padStart(2, '0')}: ${statusInfo.formattedBalance} bei ${balance.workingDays ?? 0} Arbeitstagen (Status: ${statusInfo.status})`,
     );
 
-    console.log(`✅ Saldo berechnet: ${balance.balanceHours}h (${balance.workingDays} Arbeitstage)`);
+    logger.commandEnd('GetMonthlyBalance', {
+      balance: balance.balanceHours,
+      workingDays: balance.workingDays,
+      status: statusInfo.status,
+    });
 
     return balance;
   }

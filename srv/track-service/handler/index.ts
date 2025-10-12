@@ -19,7 +19,7 @@ export { MonthlyGenerationStrategy, YearlyGenerationStrategy } from './strategie
 export { TimeEntryFactory, HandlerFactory } from './factories';
 
 // Utils
-export { DateUtils } from './utils';
+export { DateUtils, logger, TrackLogger } from './utils';
 
 // Commands
 export {

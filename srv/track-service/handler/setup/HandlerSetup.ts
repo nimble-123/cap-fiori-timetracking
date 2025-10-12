@@ -3,6 +3,7 @@ import { ServiceContainer } from '../container';
 import { HandlerRegistry, HandlerRegistrar } from '../registry';
 import { HandlerFactory } from '../factories';
 import { TimeEntryHandlers, GenerationHandlers, BalanceHandlers } from '../handlers';
+import { logger } from '../utils';
 
 /**
  * Builder für Handler-Setup mit Fluent API
@@ -87,7 +88,16 @@ export class HandlerSetup {
    * Wendet die Registry auf den Service an
    */
   apply(service: ApplicationService): void {
+    const handlerCount = Object.keys(this.handlers).length;
+    logger.serviceInit(`Applying ${handlerCount} handler group(s) to service`, {
+      component: 'HandlerSetup',
+    });
+
     this.registry.apply(service);
+
+    logger.serviceReady('All handlers successfully applied', {
+      component: 'HandlerSetup',
+    });
   }
 
   /**

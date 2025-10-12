@@ -2,6 +2,7 @@ import { Request, Transaction } from '@sap/cds';
 import { User } from '#cds-models/TrackService';
 import { TimeCalculationService } from './TimeCalculationService';
 import { UserRepository } from '../repositories';
+import { logger } from '../utils';
 
 // Type definitions
 interface UserResolveResult {
@@ -65,27 +66,28 @@ export class UserService {
       // Development Fallback: Suche nach Test-Usern
       const testUserResult = await this.userRepository.findFirstTestUser(TEST_USER_IDS);
       if (testUserResult) {
-        console.log(
-          `💡 Development-Fallback: Gefunden ${testUserResult.id} (${testUserResult.user.name || 'Unbekannt'})`,
-        );
+        logger.userOperation('Fallback', `Development fallback found: ${testUserResult.id}`, {
+          userId: testUserResult.id,
+          name: testUserResult.user.name,
+        });
         return { userID: testUserResult.id, user: testUserResult.user };
       }
 
-      console.log('⚠️ Fallback auf Demo-User');
+      logger.userOperation('Fallback', 'Using demo user (no authenticated user)');
       return { userID: DEMO_USER_ID, user: DEMO_USER };
     }
 
-    console.log(`✅ Authentifizierter User: ${userID}`);
+    logger.userOperation('Auth', `Authenticated user: ${userID}`, { userID });
 
     try {
       const user = await this.userRepository.findByIdWithoutTx(userID);
       if (!user) {
-        console.log(`⚠️ Authentifizierter User ${userID} nicht in DB, verwende Demo-User`);
+        logger.userOperation('Fallback', `Authenticated user ${userID} not in DB, using demo user`, { userID });
         return { userID: DEMO_USER_ID, user: DEMO_USER };
       }
       return { userID, user };
     } catch (error: any) {
-      console.log(`⚠️ Fehler beim User-Laden, verwende Demo-User: ${error.message}`);
+      logger.userOperation('Fallback', `Error loading user, using demo user: ${error.message}`, { userID });
       return { userID: DEMO_USER_ID, user: DEMO_USER };
     }
   }

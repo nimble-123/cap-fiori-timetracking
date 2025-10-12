@@ -1,5 +1,6 @@
 import cds from '@sap/cds';
 import { GetMonthlyBalanceCommand, GetCurrentBalanceCommand, GetRecentBalancesCommand } from '../commands';
+import { logger } from '../utils';
 
 /**
  * Handler für Zeitkonto-Balance-Operationen
@@ -20,15 +21,18 @@ export class BalanceHandlers {
    */
   async handleGetMonthlyBalance(req: any): Promise<any> {
     try {
+      logger.handlerInvoked('Balance', 'getMonthlyBalance', req.data);
+
       const year = req.data.year;
       const month = req.data.month;
       const tx = cds.transaction(req) as any;
 
       const balance = await this.getMonthlyBalanceCommand.execute(req, tx, year, month);
 
+      logger.handlerCompleted('Balance', 'getMonthlyBalance', { year, month, balanceHours: balance.balanceHours });
       return balance;
     } catch (error: any) {
-      console.error('❌ Fehler in getMonthlyBalance:', error);
+      logger.error('Error in getMonthlyBalance handler', error, { action: 'getMonthlyBalance', data: req.data });
       req.reject(500, `Fehler: ${error.message}`);
       return null;
     }
@@ -41,13 +45,16 @@ export class BalanceHandlers {
    */
   async handleGetCurrentBalance(req: any): Promise<number> {
     try {
+      logger.handlerInvoked('Balance', 'getCurrentBalance', {});
+
       const tx = cds.transaction(req) as any;
 
       const balance = await this.getCurrentBalanceCommand.execute(req, tx);
 
+      logger.handlerCompleted('Balance', 'getCurrentBalance', { balance });
       return balance;
     } catch (error: any) {
-      console.error('❌ Fehler in getCurrentBalance:', error);
+      logger.error('Error in getCurrentBalance handler', error, { action: 'getCurrentBalance' });
       req.reject(500, `Fehler: ${error.message}`);
       return 0;
     }
@@ -60,14 +67,17 @@ export class BalanceHandlers {
    */
   async handleReadMonthlyBalances(req: any): Promise<any[]> {
     try {
+      logger.handlerInvoked('Balance', 'readMonthlyBalances', { monthsCount: 6 });
+
       const tx = cds.transaction(req) as any;
 
       // Letzte 6 Monate abrufen
       const balances = await this.getRecentBalancesCommand.execute(req, tx, 6);
 
+      logger.handlerCompleted('Balance', 'readMonthlyBalances', { balancesCount: balances.length });
       return balances;
     } catch (error: any) {
-      console.error('❌ Fehler in handleReadMonthlyBalances:', error);
+      logger.error('Error in handleReadMonthlyBalances handler', error, { action: 'readMonthlyBalances' });
       req.reject(500, `Fehler: ${error.message}`);
       return [];
     }

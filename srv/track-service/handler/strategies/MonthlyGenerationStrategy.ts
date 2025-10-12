@@ -1,6 +1,6 @@
 import { TimeEntry, User } from '#cds-models/TrackService';
 import { TimeEntryFactory } from '../factories';
-import { DateUtils } from '../utils';
+import { DateUtils, logger } from '../utils';
 
 /**
  * Strategy für monatliche TimeEntries Generierung
@@ -16,8 +16,10 @@ export class MonthlyGenerationStrategy {
    */
   generateMissingEntries(userID: string, user: User, existingDates: Set<string>): TimeEntry[] {
     const monthData = DateUtils.getCurrentMonthData();
-    console.log(
-      `📅 Generiere für ${monthData.year}-${(monthData.month + 1).toString().padStart(2, '0')} (${monthData.daysInMonth} Tage)`,
+    logger.strategyExecute(
+      'MonthlyGeneration',
+      `Generating month ${monthData.year}-${(monthData.month + 1).toString().padStart(2, '0')} (${monthData.daysInMonth} days)`,
+      { year: monthData.year, month: monthData.month + 1, daysInMonth: monthData.daysInMonth },
     );
 
     const workingDaysPerWeek = user.workingDaysPerWeek || 5;
@@ -33,7 +35,7 @@ export class MonthlyGenerationStrategy {
       const dateString = DateUtils.toLocalDateString(currentDate);
 
       if (existingDates.has(dateString)) {
-        console.log(`⏭️  Überspringe ${dateString} - Eintrag existiert bereits`);
+        logger.strategySkip('MonthlyGeneration', `Entry exists: ${dateString}`, { date: dateString });
         continue;
       }
 

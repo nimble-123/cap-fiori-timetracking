@@ -1,6 +1,7 @@
 import { Transaction } from '@sap/cds';
 import type { MonthlyBalance } from '#cds-models/TrackService';
 import { TimeEntryRepository } from '../repositories';
+import { logger } from '../utils';
 
 export interface YearBalance {
   year: number;
@@ -31,6 +32,8 @@ export class TimeBalanceService {
    * @returns Monatssaldo mit Criticality
    */
   async getMonthBalance(tx: Transaction, userId: string, year: number, month: number): Promise<MonthlyBalance> {
+    logger.serviceCall('TimeBalance', 'Calculating monthly balance', { userId, year, month });
+
     // Nutze Repository statt direkter DB-Zugriff
     const entries = await this.repository.getEntriesForMonth(tx, userId, year, month);
 
@@ -38,6 +41,14 @@ export class TimeBalanceService {
     const { totalOvertime, totalUndertime, workingDays } = this.repository.calculateSums(entries);
 
     const balance = totalOvertime - totalUndertime;
+
+    logger.calculationResult('MonthlyBalance', 'Balance calculated', {
+      year,
+      month,
+      balance,
+      workingDays,
+      entries: entries.length,
+    });
 
     // Criticality: 3=positive(grün), 2=critical(gelb), 1=negative(rot), 0=neutral
     let criticality = 0;
@@ -115,13 +126,23 @@ export class TimeBalanceService {
    * @returns Gesamtsaldo über alle TimeEntries
    */
   async getCurrentCumulativeBalance(tx: Transaction, userId: string): Promise<number> {
+    logger.serviceCall('TimeBalance', 'Calculating cumulative balance', { userId });
+
     // Nutze Repository statt direkter DB-Zugriff
     const entries = await this.repository.getAllEntriesForUser(tx, userId);
 
     // Nutze Repository-Methode für Summenberechnung
     const { totalOvertime, totalUndertime } = this.repository.calculateSums(entries);
 
-    return Math.round((totalOvertime - totalUndertime) * 100) / 100;
+    const balance = Math.round((totalOvertime - totalUndertime) * 100) / 100;
+
+    logger.calculationResult('CumulativeBalance', 'Balance calculated', {
+      userId,
+      balance,
+      totalEntries: entries.length,
+    });
+
+    return balance;
   }
 }
 
