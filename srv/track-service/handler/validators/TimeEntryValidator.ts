@@ -1,6 +1,6 @@
 import { Transaction } from '@sap/cds';
 import { TimeEntry } from '#cds-models/TrackService';
-import { ProjectRepository, ActivityTypeRepository } from '../repositories';
+import { ProjectRepository, ActivityTypeRepository, TimeEntryRepository } from '../repositories';
 
 /**
  * Validator für TimeEntry Operationen
@@ -9,10 +9,16 @@ import { ProjectRepository, ActivityTypeRepository } from '../repositories';
 export class TimeEntryValidator {
   private projectRepository: ProjectRepository;
   private activityTypeRepository: ActivityTypeRepository;
+  private timeEntryRepository: TimeEntryRepository;
 
-  constructor(projectRepository: ProjectRepository, activityTypeRepository: ActivityTypeRepository) {
+  constructor(
+    projectRepository: ProjectRepository,
+    activityTypeRepository: ActivityTypeRepository,
+    timeEntryRepository: TimeEntryRepository,
+  ) {
     this.projectRepository = projectRepository;
     this.activityTypeRepository = activityTypeRepository;
+    this.timeEntryRepository = timeEntryRepository;
   }
 
   /**
@@ -92,6 +98,29 @@ export class TimeEntryValidator {
     ];
 
     return timeRelevantFields.some((field) => field in updateData);
+  }
+
+  /**
+   * Validiert Eindeutigkeit pro User/Tag
+   * @param tx - Transaction Objekt
+   * @param userId - User ID
+   * @param workDate - Arbeitsdatum
+   * @param excludeId - Optional: ID die ausgeschlossen werden soll
+   * @throws Error wenn bereits ein Eintrag für diesen Tag existiert
+   */
+  async validateUniqueEntryPerDay(
+    tx: Transaction,
+    userId: string,
+    workDate: string,
+    excludeId?: string,
+  ): Promise<void> {
+    const existingEntry = await this.timeEntryRepository.getEntryByUserAndDate(tx, userId, workDate, excludeId);
+
+    if (existingEntry) {
+      const error = new Error('Es existiert bereits ein Eintrag für diesen Tag.') as any;
+      error.code = 409;
+      throw error;
+    }
   }
 }
 

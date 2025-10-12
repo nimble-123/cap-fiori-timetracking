@@ -97,7 +97,7 @@ export class UpdateTimeEntryCommand {
     const userId = updateData.user_ID ?? existingEntry.user_ID;
     const workDate = updateData.workDate ?? existingEntry.workDate;
 
-    await this.repository.validateUniqueEntryPerDay(tx, userId!, workDate!, entryId);
+    await this.validator.validateUniqueEntryPerDay(tx, userId!, workDate!, entryId);
   }
 
   /**

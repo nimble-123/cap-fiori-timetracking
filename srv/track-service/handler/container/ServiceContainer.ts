@@ -129,7 +129,11 @@ export class ServiceContainer {
   private buildValidators(): void {
     this.validators.set(
       'timeEntry',
-      new TimeEntryValidator(this.getRepository('project'), this.getRepository('activityType')),
+      new TimeEntryValidator(
+        this.getRepository('project'),
+        this.getRepository('activityType'),
+        this.getRepository('timeEntry'),
+      ),
     );
     this.validators.set('generation', new GenerationValidator());
     this.validators.set('balance', new BalanceValidator());

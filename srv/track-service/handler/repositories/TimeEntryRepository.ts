@@ -13,34 +13,6 @@ export class TimeEntryRepository {
   }
 
   /**
-   * Prüft Eindeutigkeit pro User/Tag
-   * @param tx - Transaction Objekt
-   * @param userId - User ID
-   * @param workDate - Arbeitsdatum
-   * @param excludeId - Optional: ID die ausgeschlossen werden soll
-   */
-  async validateUniqueEntryPerDay(
-    tx: Transaction,
-    userId: string,
-    workDate: string,
-    excludeId: string | null = null,
-  ): Promise<void> {
-    const whereClause: any = { user_ID: userId, workDate };
-
-    if (excludeId) {
-      whereClause.ID = { '!=': excludeId };
-    }
-
-    const existingEntry = await tx.run(SELECT.one.from(this.TimeEntries).where(whereClause));
-
-    if (existingEntry) {
-      const error = new Error('Es existiert bereits ein Eintrag für diesen Tag.') as any;
-      error.code = 409;
-      throw error;
-    }
-  }
-
-  /**
    * Lädt TimeEntry by ID
    * @param tx - Transaction Objekt
    * @param entryId - TimeEntry ID
@@ -54,6 +26,31 @@ export class TimeEntryRepository {
     }
 
     return entry;
+  }
+
+  /**
+   * Lädt TimeEntry für User und Datum (reiner Datenzugriff)
+   * @param tx - Transaction Objekt
+   * @param userId - User ID
+   * @param workDate - Arbeitsdatum
+   * @param excludeId - Optional: ID die ausgeschlossen werden soll
+   * @returns TimeEntry oder null
+   */
+  async getEntryByUserAndDate(
+    tx: Transaction,
+    userId: string,
+    workDate: string,
+    excludeId?: string,
+  ): Promise<TimeEntry | null> {
+    const whereClause: any = { user_ID: userId, workDate };
+
+    if (excludeId) {
+      whereClause.ID = { '!=': excludeId };
+    }
+
+    const entry = await tx.run(SELECT.one.from(this.TimeEntries).where(whereClause));
+
+    return entry || null;
   }
 
   /**

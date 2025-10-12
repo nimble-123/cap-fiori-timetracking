@@ -42,7 +42,7 @@ export class CreateTimeEntryCommand {
     const { user_ID, workDate, startTime, endTime, entryType_code } = entryData;
 
     // Eindeutigkeit pro Tag prüfen
-    await this.repository.validateUniqueEntryPerDay(tx, user_ID!, workDate!);
+    await this.validator.validateUniqueEntryPerDay(tx, user_ID!, workDate!);
 
     // Referenzen validieren
     await this.validator.validateReferences(tx, entryData);
