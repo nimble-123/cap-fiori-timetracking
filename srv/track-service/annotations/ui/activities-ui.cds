@@ -1,4 +1,4 @@
-using TrackService as service from '../../service-model';
+using TrackService as service from '../../../service-model';
 
 ////////////////////////////////////////////////////////////////////////////
 //  ActivityTypes - UI Layout

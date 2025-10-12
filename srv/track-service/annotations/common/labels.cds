@@ -1,4 +1,4 @@
-using TrackService as service from '../../service-model';
+using TrackService as service from '../../../service-model';
 
 ////////////////////////////////////////////////////////////////////////////
 //  User Entity - Labels & TextArrangements
