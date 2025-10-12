@@ -166,10 +166,11 @@ cap-fiori-timetracking/
 │           ├── index.ts             # Handler Entry Point
 │           │
 │           ├── container/           # 🏗️ Dependency Injection
-│           │   └── ServiceContainer.ts  # DI Container
-│           │       - 6 Kategorien: Repos, Services, Validators, Strategies, Commands, Factories
-│           │       - Type-safe Resolution mit Generics
-│           │       - Auto-Wiring aller Dependencies
+│           │   ├── ServiceContainer.ts  # DI Container
+│           │   │   - 6 Kategorien: Repos, Services, Validators, Strategies, Commands, Factories
+│           │   │   - Type-safe Resolution mit Generics
+│           │   │   - Auto-Wiring aller Dependencies
+│           │   └── index.ts             # Barrel Export
 │           │
 │           ├── registry/            # 📋 Event Handler Registry
 │           │   ├── HandlerRegistry.ts   # Handler-Registrierung
@@ -189,10 +190,17 @@ cap-fiori-timetracking/
 │           │   └── index.ts
 │           │
 │           ├── commands/            # 🎯 Command Pattern (7 Commands!)
-│           │   ├── TimeEntryCommands.ts     # CREATE & UPDATE
-│           │   ├── GenerationCommands.ts    # Monthly & Yearly
-│           │   ├── BalanceCommands.ts       # 3 Balance Commands
-│           │   └── index.ts
+│           │   ├── balance/                 # Balance Commands
+│           │   │   ├── GetMonthlyBalanceCommand.ts
+│           │   │   ├── GetCurrentBalanceCommand.ts
+│           │   │   └── GetRecentBalancesCommand.ts
+│           │   ├── generation/              # Generation Commands
+│           │   │   ├── GenerateMonthlyCommand.ts
+│           │   │   └── GenerateYearlyCommand.ts
+│           │   ├── time-entry/              # TimeEntry Commands
+│           │   │   ├── CreateTimeEntryCommand.ts
+│           │   │   └── UpdateTimeEntryCommand.ts
+│           │   └── index.ts                 # Barrel Export
 │           │
 │           ├── services/            # 💼 Domain Services
 │           │   ├── TimeCalculationService.ts   # Static Utilities
@@ -219,9 +227,13 @@ cap-fiori-timetracking/
 │           │   └── YearlyGenerationStrategy.ts
 │           │   └── index.ts
 │           │
-│           └── factories/           # 🏭 Factory Pattern
-│               ├── TimeEntryFactory.ts
-│               ├── HandlerFactory.ts
+│           ├── factories/           # 🏭 Factory Pattern
+│           │   ├── TimeEntryFactory.ts
+│           │   ├── HandlerFactory.ts
+│           │   └── index.ts
+│           │
+│           └── utils/               # 🛠️ Utility Classes
+│               ├── DateUtils.ts
 │               └── index.ts
 │
 ├── @cds-models/                     # 🎯 Auto-generierte TypeScript Types
@@ -429,7 +441,7 @@ classDiagram
         +create(tx, entry)
         +update(tx, id, data)
         +findById(tx, id)
-        +findByUserAndDate(tx, userId, date)
+        +getEntryByUserAndDate(tx, userId, date, excludeId?)
         +insertBatch(tx, entries)
     }
     class UserRepository {
@@ -443,7 +455,9 @@ classDiagram
     class TimeEntryValidator {
         -projectRepo: ProjectRepository
         -activityRepo: ActivityTypeRepository
+        -timeEntryRepo: TimeEntryRepository
         +validate(tx, data)
+        +validateUniqueEntryPerDay(tx, userId, date, excludeId?)
         +hasRelevantChanges(old, new)
     }
     class GenerationValidator {
@@ -550,6 +564,7 @@ classDiagram
     FactoryPattern <|.. TimeEntryFactory : implements
     TimeEntryValidator --> ProjectRepository : uses
     TimeEntryValidator --> ActivityTypeRepository : uses
+    TimeEntryValidator --> TimeEntryRepository : uses
     GenerationValidator --> UserRepository : uses
     TimeEntryFactory --> TimeCalculationService : uses
     UserService --> UserRepository : uses
@@ -812,21 +827,19 @@ export class TimeEntryRepository {
   }
 
   /**
-   * Prüft Eindeutigkeit pro User/Tag
+   * Lädt Eintrag nach User/Datum
    */
-  async validateUniqueEntryPerDay(
+  async getEntryByUserAndDate(
     tx: Transaction,
     userId: string,
     workDate: string,
-    excludeId: string | null = null,
-  ): Promise<void> {
+    excludeId?: string,
+  ): Promise<TimeEntry | null> {
     const whereClause: any = { user_ID: userId, workDate };
     if (excludeId) whereClause.ID = { '!=': excludeId };
 
-    const existing = await tx.run(SELECT.one.from(this.TimeEntries).where(whereClause));
-    if (existing) {
-      throw new Error('Es existiert bereits ein Eintrag für diesen Tag.');
-    }
+    const entry = await tx.run(SELECT.one.from(this.TimeEntries).where(whereClause));
+    return entry || null; // 🎯 Kein throw! Pure Datenabfrage
   }
 
   /**
@@ -841,9 +854,9 @@ export class TimeEntryRepository {
 **Features:**
 
 - 💾 Komplette Abstraktion der Datenschicht
-- 🔍 Domain-spezifische Queries (z.B. `findByUserAndDate`)
+- 🔍 Domain-spezifische Queries (z.B. `getEntryByUserAndDate`)
 - ⚡ Performance-Optimierung mit Batch-Operations
-- 🛡️ Business Rules im Repository (z.B. Eindeutigkeit)
+- 🎯 Reiner Datenzugriff ohne Business Logic (Separation of Concerns!)
 - 🧪 Perfekt mockbar für Unit Tests
 
 **Unsere 4 Repositories:**
@@ -867,6 +880,7 @@ export class TimeEntryValidator {
   constructor(
     private projectRepository: ProjectRepository,
     private activityTypeRepository: ActivityTypeRepository,
+    private timeEntryRepository: TimeEntryRepository,
   ) {}
 
   /**
@@ -1048,10 +1062,12 @@ sequenceDiagram
     Note over CMD,VAL: ✅ Validation Phase
     CMD->>VAL: validateRequiredFieldsForCreate(entryData)
     VAL-->>CMD: entryType
-    CMD->>REPO: validateUniqueEntryPerDay(tx, userID, workDate)
-    REPO->>DB: SELECT COUNT WHERE user+date
-    DB-->>REPO: count=0
-    REPO-->>CMD: ✅ unique
+    CMD->>VAL: validateUniqueEntryPerDay(tx, userID, workDate)
+    VAL->>REPO: getEntryByUserAndDate(tx, userID, workDate)
+    REPO->>DB: SELECT WHERE user+date
+    DB-->>REPO: null (no entry)
+    REPO-->>VAL: null
+    VAL-->>CMD: ✅ unique
     CMD->>VAL: validateReferences(tx, entryData)
     VAL->>REPO: check project, activity
     REPO->>DB: SELECT project, activity
@@ -1522,7 +1538,7 @@ export default class Home extends BaseController {
 
 ## 📊 Projekt-Stats
 
-- 7 Commands in 3 Kategorien (CRUD, Generation, Balance)
+- 7 Commands in 3 Kategorien (Balance, Generation, TimeEntry)
 - 3 Validators (Domain-spezifisch)
 - 4 Repositories (1 pro Entity)
 - 4 Services (Domain Logic)
@@ -1533,8 +1549,10 @@ export default class Home extends BaseController {
 - 1 HandlerRegistrar (Handler-Registrierung)
 - 1 HandlerSetup (Builder mit Fluent API)
 - 3 Handler-Klassen (Separation of Concerns)
+- 1 DateUtils (Utility Functions)
+- **12 Barrel Exports (index.ts)** für saubere Imports 📦
 
-**= 29 Pattern-Klassen!** Alle sauber strukturiert und testbar! 🚀
+**= 30 Pattern-Klassen + 12 Barrel Exports!** Alle sauber strukturiert und testbar! 🚀
 
 ---
 
