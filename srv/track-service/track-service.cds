@@ -29,7 +29,7 @@ service TrackService {
                 when 'H'
                      then 5 // Information (blau) - Feiertag
                 when 'O'
-                     then 5 // Information (blau) - Frei/Wochenende
+                     then 3 // Information (blau) - Frei/Wochenende
                 when 'V'
                      then 2 // Critical (orange) - Urlaub
                 when 'S'
