@@ -17,11 +17,15 @@ entity Users : managed {
       // Server berechnet/aktualisiert in Service-Logic
       expectedDailyHoursDec : Decimal(4, 2);
 
-      // Bevorzugtes Bundesland für Feiertage
-      preferredState        : Association to GermanStates;
-}
+  // Bevorzugtes Bundesland für Feiertage
+  preferredState        : Association to GermanStates;
 
-entity Projects : managed, cuid {
+  // Urlaubstage pro Jahr
+  annualVacationDays    : Decimal(4, 1) default 30.0;
+
+  // Standard-Arbeitsort (Dienstsitz)
+  defaultWorkLocation   : Association to WorkLocations;
+}entity Projects : managed, cuid {
   number   : String(40);
   name     : String(111);
   active   : Boolean default true;
@@ -43,6 +47,16 @@ entity GermanStates : CodeList {
       text : localized String(80);
 }
 
+entity WorkLocations : CodeList {
+  key code : String(10);
+      text : localized String(80);
+}
+
+entity TravelTypes : CodeList {
+  key code : String(2);
+      text : localized String(80);
+}
+
 entity TimeEntries : managed, cuid {
   user               : Association to Users not null;
   workDate           : Date not null;
@@ -51,6 +65,10 @@ entity TimeEntries : managed, cuid {
   // Optional: Zuordnung
   project            : Association to Projects;
   activity           : Association to ActivityTypes;
+
+  // Optional: Arbeitsort & Reiseart
+  workLocation       : Association to WorkLocations;
+  travelType         : Association to TravelTypes;
 
   startTime          : Time not null;
   endTime            : Time not null;

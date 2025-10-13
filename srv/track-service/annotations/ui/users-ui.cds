@@ -31,7 +31,15 @@ annotate service.Users with @(
       $Type: 'UI.DataField'
     },
     {
+      Value: annualVacationDays,
+      $Type: 'UI.DataField'
+    },
+    {
       Value: preferredState_code,
+      $Type: 'UI.DataField'
+    },
+    {
+      Value: defaultWorkLocation_code,
       $Type: 'UI.DataField'
     }
   ],

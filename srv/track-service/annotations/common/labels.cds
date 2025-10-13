@@ -26,9 +26,17 @@ annotate service.Users with {
                            @Common.Label          : '{i18n>user.expectedDailyHoursDec}'
                            @Measures.Unit         : 'h';
 
+     annualVacationDays    @title                 : '{i18n>title.user.annualVacationDays}'
+                           @Common.Label          : '{i18n>user.annualVacationDays}';
+
      preferredState        @title                 : '{i18n>title.user.preferredState}'
                            @Common.Label          : '{i18n>user.preferredState}'
                            @Common.Text           : preferredState.text
+                           @Common.TextArrangement: #TextOnly;
+
+     defaultWorkLocation   @title                 : '{i18n>title.user.defaultWorkLocation}'
+                           @Common.Label          : '{i18n>user.defaultWorkLocation}'
+                           @Common.Text           : defaultWorkLocation.text
                            @Common.TextArrangement: #TextOnly;
 };
 
@@ -81,6 +89,32 @@ annotate service.EntryTypes with {
 };
 
 ////////////////////////////////////////////////////////////////////////////
+//  WorkLocations Entity - Labels & TextArrangements
+////////////////////////////////////////////////////////////////////////////
+annotate service.WorkLocations with {
+     code @title                 : '{i18n>title.workLocation.code}'
+          @Common.Label          : '{i18n>workLocation.code}'
+          @Common.Text           : text
+          @Common.TextArrangement: #TextOnly;
+
+     text @title                 : '{i18n>title.workLocation.text}'
+          @Common.Label          : '{i18n>workLocation.text}';
+};
+
+////////////////////////////////////////////////////////////////////////////
+//  TravelTypes Entity - Labels & TextArrangements
+////////////////////////////////////////////////////////////////////////////
+annotate service.TravelTypes with {
+     code @title                 : '{i18n>title.travelType.code}'
+          @Common.Label          : '{i18n>travelType.code}'
+          @Common.Text           : text
+          @Common.TextArrangement: #TextFirst;
+
+     text @title                 : '{i18n>title.travelType.text}'
+          @Common.Label          : '{i18n>travelType.text}';
+};
+
+////////////////////////////////////////////////////////////////////////////
 //  TimeEntries Entity - Labels & TextArrangements
 ////////////////////////////////////////////////////////////////////////////
 annotate service.TimeEntries with {
@@ -109,6 +143,16 @@ annotate service.TimeEntries with {
                           @Common.Label          : '{i18n>timeEntry.activity}'
                           @Common.Text           : activity.text
                           @Common.TextArrangement: #TextOnly;
+
+     workLocation         @title                 : '{i18n>title.timeEntry.workLocation}'
+                          @Common.Label          : '{i18n>timeEntry.workLocation}'
+                          @Common.Text           : workLocation.text
+                          @Common.TextArrangement: #TextOnly;
+
+     travelType           @title                 : '{i18n>title.timeEntry.travelType}'
+                          @Common.Label          : '{i18n>timeEntry.travelType}'
+                          @Common.Text           : travelType.text
+                          @Common.TextArrangement: #TextFirst;
 
      startTime            @title                 : '{i18n>title.timeEntry.startTime}'
                           @Common.Label          : '{i18n>timeEntry.startTime}';
@@ -187,6 +231,40 @@ annotate service.MonthlyBalances with {
 };
 
 ////////////////////////////////////////////////////////////////////////////
+//  VacationBalances Entity - Labels & TextArrangements
+////////////////////////////////////////////////////////////////////////////
+annotate service.VacationBalances with {
+     year               @title       : '{i18n>title.vacationBalance.year}'
+                        @Common.Label: '{i18n>vacationBalance.year}';
+
+     totalDays          @title       : '{i18n>title.vacationBalance.totalDays}'
+                        @Common.Label: '{i18n>vacationBalance.totalDays}';
+
+     takenDays          @title       : '{i18n>title.vacationBalance.takenDays}'
+                        @Common.Label: '{i18n>vacationBalance.takenDays}';
+
+     remainingDays      @title       : '{i18n>title.vacationBalance.remainingDays}'
+                        @Common.Label: '{i18n>vacationBalance.remainingDays}';
+
+     balanceCriticality @title       : '{i18n>title.vacationBalance.balanceCriticality}'
+                        @Common.Label: '{i18n>vacationBalance.balanceCriticality}';
+};
+
+////////////////////////////////////////////////////////////////////////////
+//  SickLeaveBalances Entity - Labels & TextArrangements
+////////////////////////////////////////////////////////////////////////////
+annotate service.SickLeaveBalances with {
+     year        @title       : '{i18n>title.sickLeaveBalance.year}'
+                 @Common.Label: '{i18n>sickLeaveBalance.year}';
+
+     totalDays   @title       : '{i18n>title.sickLeaveBalance.totalDays}'
+                 @Common.Label: '{i18n>sickLeaveBalance.totalDays}';
+
+     criticality @title       : '{i18n>title.sickLeaveBalance.criticality}'
+                 @Common.Label: '{i18n>sickLeaveBalance.criticality}';
+};
+
+////////////////////////////////////////////////////////////////////////////
 //  Unbound Actions - Labels & TextArrangements
 ////////////////////////////////////////////////////////////////////////////
 annotate service.generateYearlyTimeEntries with(year  @title: '{i18n>title.generateYearlyTimeEntries.year}'       @Common.Label: '{i18n>generateYearlyTimeEntries.year}',
@@ -204,10 +282,16 @@ annotate service.Users with @(Common.Label: '{i18n>entity.Users}');
 annotate service.Projects with @(Common.Label: '{i18n>entity.Projects}');
 annotate service.ActivityTypes with @(Common.Label: '{i18n>entity.ActivityTypes}');
 annotate service.EntryTypes with @(Common.Label: '{i18n>entity.EntryTypes}');
+annotate service.WorkLocations with @(Common.Label: '{i18n>entity.WorkLocations}');
+annotate service.TravelTypes with @(Common.Label: '{i18n>entity.TravelTypes}');
 annotate service.TimeEntries with @(Common.Label: '{i18n>entity.TimeEntries}');
 annotate service.MonthlyBalances with @(Common.Label: '{i18n>entity.MonthlyBalances}');
+annotate service.VacationBalances with @(Common.Label: '{i18n>entity.VacationBalances}');
+annotate service.SickLeaveBalances with @(Common.Label: '{i18n>entity.SickLeaveBalances}');
 annotate service.getMonthlyBalance with @(Common.Label: '{i18n>action.getMonthlyBalance}');
 annotate service.getCurrentBalance with @(Common.Label: '{i18n>action.getCurrentBalance}');
+annotate service.getVacationBalance with @(Common.Label: '{i18n>action.getVacationBalance}');
+annotate service.getSickLeaveBalance with @(Common.Label: '{i18n>action.getSickLeaveBalance}');
 annotate service.generateYearlyTimeEntries with @(Common.Label: '{i18n>action.generateYearlyTimeEntries}');
 annotate service.generateMonthlyTimeEntries with @(Common.Label: '{i18n>action.generateMonthlyTimeEntries}');
 

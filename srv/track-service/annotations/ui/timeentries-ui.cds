@@ -8,6 +8,8 @@ annotate service.TimeEntries with @(
     user_ID,
     workDate,
     entryType_code,
+    workLocation_code,
+    travelType_code,
     project_ID,
     activity_code
   ],
@@ -67,6 +69,14 @@ annotate service.TimeEntries with @(
         $Type: 'UI.DataField'
       },
       {
+        Value: workLocation.text,
+        $Type: 'UI.DataField'
+      },
+      {
+        Value: travelType.text,
+        $Type: 'UI.DataField'
+      },
+      {
         Value: project.name,
         $Type: 'UI.DataField'
       },
@@ -84,6 +94,10 @@ annotate service.TimeEntries with @(
       },
       {
         Value: breakMin,
+        $Type: 'UI.DataField'
+      },
+      {
+        Value: durationHoursGross,
         $Type: 'UI.DataField'
       },
       {
@@ -123,6 +137,7 @@ annotate service.TimeEntries with @(
         Descending: false
       }
     ],
+    MaxItems : 31,
     Visualizations: ['@UI.LineItem']
   },
 
@@ -164,6 +179,14 @@ annotate service.TimeEntries with @(
     },
     {
       Value: entryType_code,
+      $Type: 'UI.DataField'
+    },
+    {
+      Value: workLocation_code,
+      $Type: 'UI.DataField'
+    },
+    {
+      Value: travelType_code,
       $Type: 'UI.DataField'
     },
     {

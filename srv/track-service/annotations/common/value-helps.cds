@@ -92,6 +92,48 @@ annotate service.TimeEntries with {
   )
 };
 
+// WorkLocation Value Help
+annotate service.TimeEntries with {
+  workLocation @(
+    Common.ValueList               : {
+      CollectionPath: 'WorkLocations',
+      Parameters    : [
+        {
+          $Type            : 'Common.ValueListParameterInOut',
+          LocalDataProperty: workLocation_code,
+          ValueListProperty: 'code'
+        },
+        {
+          $Type            : 'Common.ValueListParameterDisplayOnly',
+          ValueListProperty: 'text'
+        }
+      ]
+    },
+    Common.ValueListWithFixedValues: true
+  )
+};
+
+// TravelType Value Help
+annotate service.TimeEntries with {
+  travelType @(
+    Common.ValueList               : {
+      CollectionPath: 'TravelTypes',
+      Parameters    : [
+        {
+          $Type            : 'Common.ValueListParameterInOut',
+          LocalDataProperty: travelType_code,
+          ValueListProperty: 'code'
+        },
+        {
+          $Type            : 'Common.ValueListParameterDisplayOnly',
+          ValueListProperty: 'text'
+        }
+      ]
+    },
+    Common.ValueListWithFixedValues: true
+  )
+};
+
 ////////////////////////////////////////////////////////////////////////////
 //  Action Parameter - Value Helps
 ////////////////////////////////////////////////////////////////////////////
@@ -116,13 +158,26 @@ annotate service.generateYearlyTimeEntries with(stateCode @(
 ) );
 
 ////////////////////////////////////////////////////////////////////////////
-//  Weitere Value Helps können hier hinzugefügt werden
+//  Weitere Value Helps
 ////////////////////////////////////////////////////////////////////////////
-// Beispiele:
-// annotate service.Users with {
-//   // Falls Users auch Dropdown/ValueHelp benötigen
-// };
 
-// annotate service.Projects with {
-//   // Falls Projects auch Dropdown/ValueHelp benötigen
-// };
+// Users - defaultWorkLocation Value Help
+annotate service.Users with {
+  defaultWorkLocation @(
+    Common.ValueList               : {
+      CollectionPath: 'WorkLocations',
+      Parameters    : [
+        {
+          $Type            : 'Common.ValueListParameterInOut',
+          LocalDataProperty: defaultWorkLocation_code,
+          ValueListProperty: 'code'
+        },
+        {
+          $Type            : 'Common.ValueListParameterDisplayOnly',
+          ValueListProperty: 'text'
+        }
+      ]
+    },
+    Common.ValueListWithFixedValues: true
+  )
+};
