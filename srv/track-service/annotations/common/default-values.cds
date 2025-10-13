@@ -9,4 +9,4 @@ using TrackService as service from '../../../service-model';
  * Prefüllt den 'year' Parameter mit dem aktuellen Jahr
  * und 'stateCode' mit dem bevorzugten Bundesland des Users (falls vorhanden)
  */
-annotate service.generateYearlyTimeEntries with @Common.DefaultValuesFunction: 'getDefaultParamsForGenerateYearly';
+annotate service.generateYearlyTimeEntries with @(Common.DefaultValuesFunction: 'TrackService.getDefaultParamsForGenerateYearly');
