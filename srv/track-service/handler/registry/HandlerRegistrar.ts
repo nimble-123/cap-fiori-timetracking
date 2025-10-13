@@ -90,6 +90,20 @@ export class HandlerRegistrar {
       handler: handlers.handleReadMonthlyBalances.bind(handlers),
       description: 'Read recent monthly balances (last 6 months)',
     });
+
+    this.registry.register({
+      type: 'on',
+      event: 'getVacationBalance',
+      handler: handlers.handleGetVacationBalance.bind(handlers),
+      description: 'Calculate vacation balance for current year',
+    });
+
+    this.registry.register({
+      type: 'on',
+      event: 'getSickLeaveBalance',
+      handler: handlers.handleGetSickLeaveBalance.bind(handlers),
+      description: 'Calculate sick leave balance for current year',
+    });
   }
 
   /**

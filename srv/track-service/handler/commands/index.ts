@@ -9,6 +9,8 @@
 export { GetMonthlyBalanceCommand } from './balance/GetMonthlyBalanceCommand';
 export { GetCurrentBalanceCommand } from './balance/GetCurrentBalanceCommand';
 export { GetRecentBalancesCommand } from './balance/GetRecentBalancesCommand';
+export { GetVacationBalanceCommand } from './balance/GetVacationBalanceCommand';
+export { GetSickLeaveBalanceCommand } from './balance/GetSickLeaveBalanceCommand';
 
 // Generation Commands
 export { GenerateMonthlyCommand } from './generation/GenerateMonthlyCommand';

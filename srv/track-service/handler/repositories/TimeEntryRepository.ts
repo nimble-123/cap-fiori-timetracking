@@ -151,6 +151,41 @@ export class TimeEntryRepository {
   }
 
   /**
+   * Lädt TimeEntries für User in Datumsbereich mit bestimmtem EntryType
+   * @param tx - Transaction Objekt
+   * @param userId - User ID
+   * @param startDate - Start-Datum (YYYY-MM-DD)
+   * @param endDate - End-Datum (YYYY-MM-DD)
+   * @param entryTypeCode - EntryType Code (z.B. 'V', 'S')
+   * @returns TimeEntries
+   */
+  async findByUserAndDateRangeAndType(
+    tx: Transaction,
+    userId: string,
+    startDate: string,
+    endDate: string,
+    entryTypeCode: string,
+  ): Promise<TimeEntry[]> {
+    logger.repositoryQuery('TimeEntry', 'Finding entries by user, date range and type', {
+      userId,
+      startDate,
+      endDate,
+      entryTypeCode,
+    });
+
+    const entries = await tx.run(
+      SELECT.from(this.TimeEntries)
+        .where({ user_ID: userId, entryType_code: entryTypeCode })
+        .and(`workDate >= '${startDate}'`)
+        .and(`workDate <= '${endDate}'`)
+        .orderBy('workDate'),
+    );
+
+    logger.repositoryResult('TimeEntry', 'Entries found', { count: entries.length });
+    return entries;
+  }
+
+  /**
    * Berechnet Summen für TimeEntries
    * @param entries - TimeEntry Array
    * @returns Aggregierte Summen

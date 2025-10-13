@@ -128,6 +128,8 @@ export class TimeEntryFactory {
       undertimeHours: 0,
       source: 'GENERATED',
       note: `Automatisch generiert für ${displayDate}`,
+      workLocation_code: user.defaultWorkLocation_code || null,
+      travelType_code: null,
     } as TimeEntry;
   }
 
@@ -157,6 +159,8 @@ export class TimeEntryFactory {
       undertimeHours: 0,
       source: 'GENERATED',
       note: `${dayName}`,
+      workLocation_code: null,
+      travelType_code: null,
     } as TimeEntry;
   }
 
@@ -186,6 +190,8 @@ export class TimeEntryFactory {
       undertimeHours: 0,
       source: 'GENERATED',
       note: holidayName,
+      workLocation_code: null,
+      travelType_code: null,
     } as TimeEntry;
   }
 }

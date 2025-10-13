@@ -1,8 +1,21 @@
 // Repositories
-import { UserRepository, ProjectRepository, ActivityTypeRepository, TimeEntryRepository } from '../repositories';
+import {
+  UserRepository,
+  ProjectRepository,
+  ActivityTypeRepository,
+  TimeEntryRepository,
+  WorkLocationRepository,
+  TravelTypeRepository,
+} from '../repositories';
 
 // Services
-import { UserService, HolidayService, TimeBalanceService } from '../services';
+import {
+  UserService,
+  HolidayService,
+  TimeBalanceService,
+  VacationBalanceService,
+  SickLeaveBalanceService,
+} from '../services';
 
 // Validators
 import {
@@ -11,6 +24,8 @@ import {
   BalanceValidator,
   ProjectValidator,
   ActivityTypeValidator,
+  WorkLocationValidator,
+  TravelTypeValidator,
 } from '../validators';
 
 // Strategies
@@ -29,6 +44,8 @@ import {
   GetMonthlyBalanceCommand,
   GetCurrentBalanceCommand,
   GetRecentBalancesCommand,
+  GetVacationBalanceCommand,
+  GetSickLeaveBalanceCommand,
 } from '../commands';
 
 /**
@@ -125,12 +142,19 @@ export class ServiceContainer {
     this.repositories.set('project', new ProjectRepository(entities));
     this.repositories.set('activityType', new ActivityTypeRepository(entities));
     this.repositories.set('timeEntry', new TimeEntryRepository(entities));
+    this.repositories.set('workLocation', new WorkLocationRepository(entities));
+    this.repositories.set('travelType', new TravelTypeRepository(entities));
   }
 
   private buildServices(): void {
     this.services.set('user', new UserService(this.getRepository('user')));
     this.services.set('holiday', new HolidayService());
     this.services.set('balance', new TimeBalanceService(this.getRepository('timeEntry')));
+    this.services.set(
+      'vacationBalance',
+      new VacationBalanceService(this.getRepository('timeEntry'), this.getRepository('user')),
+    );
+    this.services.set('sickLeaveBalance', new SickLeaveBalanceService(this.getRepository('timeEntry')));
   }
 
   private buildValidators(): void {
@@ -138,13 +162,19 @@ export class ServiceContainer {
     this.validators.set('project', new ProjectValidator(this.getRepository('project')));
     this.validators.set('activityType', new ActivityTypeValidator(this.getRepository('activityType')));
 
-    // TimeEntryValidator mit den neuen Validators
+    // WorkLocation und TravelType Validators
+    this.validators.set('workLocation', new WorkLocationValidator(this.getRepository('workLocation')));
+    this.validators.set('travelType', new TravelTypeValidator(this.getRepository('travelType')));
+
+    // TimeEntryValidator mit allen Validators
     this.validators.set(
       'timeEntry',
       new TimeEntryValidator(
         this.getValidator('project'),
         this.getValidator('activityType'),
         this.getRepository('timeEntry'),
+        this.getValidator('workLocation'),
+        this.getValidator('travelType'),
       ),
     );
     this.validators.set('generation', new GenerationValidator());
@@ -192,5 +222,19 @@ export class ServiceContainer {
     this.commands.set('getMonthlyBalance', new GetMonthlyBalanceCommand(balanceDeps));
     this.commands.set('getCurrentBalance', new GetCurrentBalanceCommand(balanceDeps));
     this.commands.set('getRecentBalances', new GetRecentBalancesCommand(balanceDeps));
+
+    // Vacation Balance Command
+    const vacationBalanceDeps = {
+      vacationBalanceService: this.getService<VacationBalanceService>('vacationBalance'),
+      userService: this.getService<UserService>('user'),
+    };
+    this.commands.set('getVacationBalance', new GetVacationBalanceCommand(vacationBalanceDeps));
+
+    // Sick Leave Balance Command
+    const sickLeaveBalanceDeps = {
+      sickLeaveBalanceService: this.getService<SickLeaveBalanceService>('sickLeaveBalance'),
+      userService: this.getService<UserService>('user'),
+    };
+    this.commands.set('getSickLeaveBalance', new GetSickLeaveBalanceCommand(sickLeaveBalanceDeps));
   }
 }

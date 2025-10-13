@@ -3,6 +3,8 @@ import { TimeEntry } from '#cds-models/TrackService';
 import { TimeEntryRepository } from '../repositories';
 import { ProjectValidator } from './ProjectValidator';
 import { ActivityTypeValidator } from './ActivityTypeValidator';
+import { WorkLocationValidator } from './WorkLocationValidator';
+import { TravelTypeValidator } from './TravelTypeValidator';
 import { logger } from '../utils';
 
 /**
@@ -13,15 +15,21 @@ export class TimeEntryValidator {
   private projectValidator: ProjectValidator;
   private activityTypeValidator: ActivityTypeValidator;
   private timeEntryRepository: TimeEntryRepository;
+  private workLocationValidator: WorkLocationValidator;
+  private travelTypeValidator: TravelTypeValidator;
 
   constructor(
     projectValidator: ProjectValidator,
     activityTypeValidator: ActivityTypeValidator,
     timeEntryRepository: TimeEntryRepository,
+    workLocationValidator: WorkLocationValidator,
+    travelTypeValidator: TravelTypeValidator,
   ) {
     this.projectValidator = projectValidator;
     this.activityTypeValidator = activityTypeValidator;
     this.timeEntryRepository = timeEntryRepository;
+    this.workLocationValidator = workLocationValidator;
+    this.travelTypeValidator = travelTypeValidator;
   }
 
   /**
@@ -90,6 +98,22 @@ export class TimeEntryValidator {
     if (entryData.activity_code) {
       await this.activityTypeValidator.validateExists(tx, entryData.activity_code);
       logger.validationSuccess('TimeEntry', 'Activity reference valid', { activityCode: entryData.activity_code });
+    }
+
+    // WorkLocation validieren (falls gesetzt)
+    if (entryData.workLocation_code) {
+      await this.workLocationValidator.validateExists(tx, entryData.workLocation_code);
+      logger.validationSuccess('TimeEntry', 'WorkLocation reference valid', {
+        workLocationCode: entryData.workLocation_code,
+      });
+    }
+
+    // TravelType validieren (falls gesetzt)
+    if (entryData.travelType_code) {
+      await this.travelTypeValidator.validateExists(tx, entryData.travelType_code);
+      logger.validationSuccess('TimeEntry', 'TravelType reference valid', {
+        travelTypeCode: entryData.travelType_code,
+      });
     }
   }
 

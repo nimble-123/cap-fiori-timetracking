@@ -1,5 +1,11 @@
 import cds from '@sap/cds';
-import { GetMonthlyBalanceCommand, GetCurrentBalanceCommand, GetRecentBalancesCommand } from '../commands';
+import {
+  GetMonthlyBalanceCommand,
+  GetCurrentBalanceCommand,
+  GetRecentBalancesCommand,
+  GetVacationBalanceCommand,
+  GetSickLeaveBalanceCommand,
+} from '../commands';
 import { logger } from '../utils';
 
 /**
@@ -12,6 +18,8 @@ export class BalanceHandlers {
     private getMonthlyBalanceCommand: GetMonthlyBalanceCommand,
     private getCurrentBalanceCommand: GetCurrentBalanceCommand,
     private getRecentBalancesCommand: GetRecentBalancesCommand,
+    private getVacationBalanceCommand: GetVacationBalanceCommand,
+    private getSickLeaveBalanceCommand: GetSickLeaveBalanceCommand,
   ) {}
 
   /**
@@ -78,8 +86,59 @@ export class BalanceHandlers {
       return balances;
     } catch (error: any) {
       logger.error('Error in handleReadMonthlyBalances handler', error, { action: 'readMonthlyBalances' });
-      req.reject(500, `Fehler: ${error.message}`);
+      req.reject(500, `Fehler beim Abrufen der Monatssalden: ${error.message}`);
       return [];
+    }
+  }
+
+  /**
+   * Handler: Urlaubssaldo abrufen (Action)
+   *
+   * Berechnet den Urlaubssaldo für das aktuelle Jahr.
+   */
+  async handleGetVacationBalance(req: any): Promise<any> {
+    try {
+      logger.handlerInvoked('Balance', 'getVacationBalance', {});
+
+      const tx = cds.transaction(req) as any;
+
+      const balance = await this.getVacationBalanceCommand.execute(req, tx);
+
+      logger.handlerCompleted('Balance', 'getVacationBalance', {
+        year: balance.year,
+        totalDays: balance.totalDays,
+        remainingDays: balance.remainingDays,
+      });
+      return balance;
+    } catch (error: any) {
+      logger.error('Error in getVacationBalance handler', error, { action: 'getVacationBalance' });
+      req.reject(500, `Fehler: ${error.message}`);
+      return null;
+    }
+  }
+
+  /**
+   * Handler: Krankheitssaldo abrufen (Action)
+   *
+   * Berechnet den Krankheitssaldo für das aktuelle Jahr.
+   */
+  async handleGetSickLeaveBalance(req: any): Promise<any> {
+    try {
+      logger.handlerInvoked('Balance', 'getSickLeaveBalance', {});
+
+      const tx = cds.transaction(req) as any;
+
+      const balance = await this.getSickLeaveBalanceCommand.execute(req, tx);
+
+      logger.handlerCompleted('Balance', 'getSickLeaveBalance', {
+        year: balance.year,
+        totalDays: balance.totalDays,
+      });
+      return balance;
+    } catch (error: any) {
+      logger.error('Error in getSickLeaveBalance handler', error, { action: 'getSickLeaveBalance' });
+      req.reject(500, `Fehler: ${error.message}`);
+      return null;
     }
   }
 }

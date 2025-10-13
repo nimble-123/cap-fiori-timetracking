@@ -9,6 +9,8 @@ import type {
   GetMonthlyBalanceCommand,
   GetCurrentBalanceCommand,
   GetRecentBalancesCommand,
+  GetVacationBalanceCommand,
+  GetSickLeaveBalanceCommand,
 } from '../commands';
 
 /**
@@ -47,6 +49,8 @@ export class HandlerFactory {
       this.container.getCommand<GetMonthlyBalanceCommand>('getMonthlyBalance'),
       this.container.getCommand<GetCurrentBalanceCommand>('getCurrentBalance'),
       this.container.getCommand<GetRecentBalancesCommand>('getRecentBalances'),
+      this.container.getCommand<GetVacationBalanceCommand>('getVacationBalance'),
+      this.container.getCommand<GetSickLeaveBalanceCommand>('getSickLeaveBalance'),
     );
   }
 
