@@ -189,39 +189,48 @@ cap-fiori-timetracking/
 │           │   ├── BalanceHandlers.ts       # Balance-Abfragen
 │           │   └── index.ts
 │           │
-│           ├── commands/            # 🎯 Command Pattern (7 Commands!)
+│           ├── commands/            # 🎯 Command Pattern (10 Commands!)
 │           │   ├── balance/                 # Balance Commands
 │           │   │   ├── GetMonthlyBalanceCommand.ts
 │           │   │   ├── GetCurrentBalanceCommand.ts
-│           │   │   └── GetRecentBalancesCommand.ts
+│           │   │   ├── GetRecentBalancesCommand.ts
+│           │   │   ├── GetVacationBalanceCommand.ts
+│           │   │   └── GetSickLeaveBalanceCommand.ts
 │           │   ├── generation/              # Generation Commands
 │           │   │   ├── GenerateMonthlyCommand.ts
-│           │   │   └── GenerateYearlyCommand.ts
+│           │   │   ├── GenerateYearlyCommand.ts
+│           │   │   └── GetDefaultParamsCommand.ts
 │           │   ├── time-entry/              # TimeEntry Commands
 │           │   │   ├── CreateTimeEntryCommand.ts
 │           │   │   └── UpdateTimeEntryCommand.ts
 │           │   └── index.ts                 # Barrel Export
 │           │
 │           ├── services/            # 💼 Domain Services
-│           │   ├── TimeCalculationService.ts   # Static Utilities
-│           │   ├── UserService.ts              # User Management
-│           │   ├── HolidayService.ts           # API Integration mit Cache
-│           │   ├── TimeBalanceService.ts       # Balance Calculations
+│           │   ├── TimeCalculationService.ts      # Static Utilities
+│           │   ├── UserService.ts                 # User Management
+│           │   ├── HolidayService.ts              # API Integration mit Cache
+│           │   ├── TimeBalanceService.ts          # Balance Calculations
+│           │   ├── VacationBalanceService.ts      # Vacation Balance
+│           │   ├── SickLeaveBalanceService.ts     # Sick Leave Balance
 │           │   └── index.ts
 │           │
-│           ├── repositories/        # 💾 Data Access (4 Repositories)
+│           ├── repositories/        # 💾 Data Access (6 Repositories)
 │           │   ├── TimeEntryRepository.ts
 │           │   ├── UserRepository.ts
 │           │   ├── ProjectRepository.ts
 │           │   ├── ActivityTypeRepository.ts
+│           │   ├── WorkLocationRepository.ts
+│           │   ├── TravelTypeRepository.ts
 │           │   └── index.ts
 │           │
-│           ├── validators/          # ✅ Validation (5 Validators)
+│           ├── validators/          # ✅ Validation (7 Validators)
 │           │   ├── TimeEntryValidator.ts
 │           │   ├── GenerationValidator.ts
 │           │   ├── BalanceValidator.ts
 │           │   ├── ProjectValidator.ts
 │           │   ├── ActivityTypeValidator.ts
+│           │   ├── WorkLocationValidator.ts
+│           │   ├── TravelTypeValidator.ts
 │           │   └── index.ts
 │           │
 │           ├── strategies/          # 📋 Strategy Pattern
@@ -265,6 +274,10 @@ erDiagram
     Projects ||--o{ TimeEntry : assigned_to
     EntryTypes ||--o{ TimeEntry : has_type
     ActivityTypes ||--o{ TimeEntry : has_activity
+    WorkLocations ||--o{ TimeEntry : has_location
+    TravelTypes ||--o{ TimeEntry : has_travel_type
+    GermanStates ||--o{ Users : preferred_state
+    WorkLocations ||--o{ Users : default_location
 
     Users {
         string ID PK
@@ -273,6 +286,9 @@ erDiagram
         decimal weeklyHoursDec
         integer workingDaysPerWeek
         decimal expectedDailyHoursDec "calculated"
+        string preferredState_code FK "optional"
+        decimal annualVacationDays "default 30.0"
+        string defaultWorkLocation_code FK "optional"
     }
 
     TimeEntry {
@@ -282,6 +298,8 @@ erDiagram
         string entryType_code FK
         uuid project_ID FK "optional"
         string activity_code FK "optional"
+        string workLocation_code FK "optional"
+        string travelType_code FK "optional"
         time startTime
         time endTime
         integer breakMin
@@ -302,11 +320,22 @@ erDiagram
     }
 
     EntryTypes {
-        string code PK "W,V,S,H"
+        string code PK "W,V,S,H,O,B,F,G"
         string text "localized"
+        integer criticality "UI5"
     }
 
     ActivityTypes {
+        string code PK
+        string text "localized"
+    }
+
+    WorkLocations {
+        string code PK
+        string text "localized"
+    }
+
+    TravelTypes {
         string code PK
         string text "localized"
     }
@@ -321,11 +350,13 @@ erDiagram
 
 - **Automatische Berechnung**: Brutto-/Nettozeiten, Über-/Unterstunden werden server-seitig berechnet
 - **Eindeutigkeit**: Nur ein Entry pro User/Tag (wird im Repository validiert)
-- **Flexible Entry Types**: Work (W), Vacation (V), Sick Leave (S), Holiday (H) über CodeList
+- **Flexible Entry Types**: Work (W), Vacation (V), Sick Leave (S), Holiday (H), Off (O), Business Trip (B), Flextime (F), Gleitzeit (G) über CodeList mit Criticality
 - **Project Assignment**: Optional, nur aktive Projekte werden zugelassen
 - **Activity Tracking**: Kategorisierung der Tätigkeiten für Reporting
+- **Work Location & Travel**: Optional - Arbeitsort (Büro/Home Office) und Reiseart (Dienstreise) Tracking
+- **User Preferences**: Bevorzugtes Bundesland für Feiertage, Urlaubstage pro Jahr, Standard-Arbeitsort
 - **Managed Fields**: `createdAt`, `createdBy`, `modifiedAt`, `modifiedBy` automatisch via `@sap/cds/common`
-- **Localization**: EntryTypes, ActivityTypes, GermanStates mit i18n-Support (de/en)
+- **Localization**: EntryTypes, ActivityTypes, GermanStates, WorkLocations, TravelTypes mit i18n-Support (de/en)
 - **Computed Fields**: `expectedDailyHoursDec` wird automatisch aus `weeklyHoursDec` / `workingDaysPerWeek` berechnet
 
 ---
@@ -392,16 +423,22 @@ classDiagram
     class GenerationHandlers {
         -monthlyCommand: GenerateMonthlyCommand
         -yearlyCommand: GenerateYearlyCommand
+        -defaultParamsCommand: GetDefaultParamsCommand
         +handleGenerateMonthly(req)
         +handleGenerateYearly(req)
+        +handleGetDefaultParams(req)
     }
     class BalanceHandlers {
         -monthlyBalanceCommand: GetMonthlyBalanceCommand
         -currentBalanceCommand: GetCurrentBalanceCommand
         -recentBalancesCommand: GetRecentBalancesCommand
+        -vacationBalanceCommand: GetVacationBalanceCommand
+        -sickLeaveBalanceCommand: GetSickLeaveBalanceCommand
         +handleGetMonthlyBalance(req)
         +handleGetCurrentBalance(req)
         +handleReadMonthlyBalances(req)
+        +handleGetVacationBalance(req)
+        +handleGetSickLeaveBalance(req)
     }
     class CommandPattern {
         <<interface>>
@@ -432,6 +469,37 @@ classDiagram
         -repository: TimeEntryRepository
         +execute(tx, params)
     }
+    class GetDefaultParamsCommand {
+        -userService: UserService
+        +execute(req)
+    }
+    class GetMonthlyBalanceCommand {
+        -balanceService: TimeBalanceService
+        -userService: UserService
+        -validator: BalanceValidator
+        +execute(tx, year, month)
+    }
+    class GetCurrentBalanceCommand {
+        -balanceService: TimeBalanceService
+        -userService: UserService
+        +execute(tx)
+    }
+    class GetRecentBalancesCommand {
+        -balanceService: TimeBalanceService
+        -userService: UserService
+        -validator: BalanceValidator
+        +execute(tx, months)
+    }
+    class GetVacationBalanceCommand {
+        -vacationBalanceService: VacationBalanceService
+        -userService: UserService
+        +execute(tx, year)
+    }
+    class GetSickLeaveBalanceCommand {
+        -sickLeaveBalanceService: SickLeaveBalanceService
+        -userService: UserService
+        +execute(tx, year)
+    }
     class RepositoryPattern {
         <<interface>>
         +create(tx, data)
@@ -450,6 +518,18 @@ classDiagram
         +findByEmail(email)
         +findById(id)
     }
+    class ProjectRepository {
+        +findByIdActive(tx, id)
+    }
+    class ActivityTypeRepository {
+        +findByCode(tx, code)
+    }
+    class WorkLocationRepository {
+        +findByCode(tx, code)
+    }
+    class TravelTypeRepository {
+        +findByCode(tx, code)
+    }
     class ValidatorPattern {
         <<interface>>
         +validate(tx, data)
@@ -464,9 +544,21 @@ classDiagram
         +validateExists(tx, code)
         +exists(tx, code)
     }
+    class WorkLocationValidator {
+        -workLocationRepo: WorkLocationRepository
+        +validateExists(tx, code)
+        +exists(tx, code)
+    }
+    class TravelTypeValidator {
+        -travelTypeRepo: TravelTypeRepository
+        +validateExists(tx, code)
+        +exists(tx, code)
+    }
     class TimeEntryValidator {
         -projectValidator: ProjectValidator
         -activityValidator: ActivityTypeValidator
+        -workLocationValidator: WorkLocationValidator
+        -travelTypeValidator: TravelTypeValidator
         -timeEntryRepo: TimeEntryRepository
         +validateRequiredFieldsForCreate(data)
         +validateFieldsForUpdate(updateData, existingEntry)
@@ -524,6 +616,15 @@ classDiagram
         +calculateMonthlyBalance(tx, userId, year, month)
         +getCurrentBalance(tx, userId)
     }
+    class VacationBalanceService {
+        -timeEntryRepo: TimeEntryRepository
+        -userRepo: UserRepository
+        +getVacationBalance(tx, userId, year)
+    }
+    class SickLeaveBalanceService {
+        -timeEntryRepo: TimeEntryRepository
+        +getSickLeaveBalance(tx, userId, year)
+    }
     class TimeCalculationService {
         +timeToMinutes(timeString)
         +roundToTwoDecimals(value)
@@ -550,13 +651,22 @@ classDiagram
     TimeEntryHandlers --> UpdateTimeEntryCommand : delegates
     GenerationHandlers --> GenerateMonthlyCommand : delegates
     GenerationHandlers --> GenerateYearlyCommand : delegates
+    GenerationHandlers --> GetDefaultParamsCommand : delegates
     BalanceHandlers --> GetMonthlyBalanceCommand : delegates
     BalanceHandlers --> GetCurrentBalanceCommand : delegates
     BalanceHandlers --> GetRecentBalancesCommand : delegates
+    BalanceHandlers --> GetVacationBalanceCommand : delegates
+    BalanceHandlers --> GetSickLeaveBalanceCommand : delegates
     CommandPattern <|.. CreateTimeEntryCommand : implements
     CommandPattern <|.. UpdateTimeEntryCommand : implements
     CommandPattern <|.. GenerateMonthlyCommand : implements
     CommandPattern <|.. GenerateYearlyCommand : implements
+    CommandPattern <|.. GetDefaultParamsCommand : implements
+    CommandPattern <|.. GetMonthlyBalanceCommand : implements
+    CommandPattern <|.. GetCurrentBalanceCommand : implements
+    CommandPattern <|.. GetRecentBalancesCommand : implements
+    CommandPattern <|.. GetVacationBalanceCommand : implements
+    CommandPattern <|.. GetSickLeaveBalanceCommand : implements
     CreateTimeEntryCommand --> TimeEntryValidator : uses
     CreateTimeEntryCommand --> UserService : uses
     CreateTimeEntryCommand --> TimeEntryFactory : uses
@@ -570,11 +680,30 @@ classDiagram
     GenerateYearlyCommand --> YearlyGenerationStrategy : uses
     GenerateYearlyCommand --> HolidayService : uses
     GenerateYearlyCommand --> TimeEntryRepository : uses
+    GetDefaultParamsCommand --> UserService : uses
+    GetMonthlyBalanceCommand --> TimeBalanceService : uses
+    GetMonthlyBalanceCommand --> UserService : uses
+    GetMonthlyBalanceCommand --> BalanceValidator : uses
+    GetCurrentBalanceCommand --> TimeBalanceService : uses
+    GetCurrentBalanceCommand --> UserService : uses
+    GetRecentBalancesCommand --> TimeBalanceService : uses
+    GetRecentBalancesCommand --> UserService : uses
+    GetRecentBalancesCommand --> BalanceValidator : uses
+    GetVacationBalanceCommand --> VacationBalanceService : uses
+    GetVacationBalanceCommand --> UserService : uses
+    GetSickLeaveBalanceCommand --> SickLeaveBalanceService : uses
+    GetSickLeaveBalanceCommand --> UserService : uses
     RepositoryPattern <|.. TimeEntryRepository : implements
     RepositoryPattern <|.. UserRepository : implements
+    RepositoryPattern <|.. ProjectRepository : implements
+    RepositoryPattern <|.. ActivityTypeRepository : implements
+    RepositoryPattern <|.. WorkLocationRepository : implements
+    RepositoryPattern <|.. TravelTypeRepository : implements
     ValidatorPattern <|.. TimeEntryValidator : implements
     ValidatorPattern <|.. ProjectValidator : implements
     ValidatorPattern <|.. ActivityTypeValidator : implements
+    ValidatorPattern <|.. WorkLocationValidator : implements
+    ValidatorPattern <|.. TravelTypeValidator : implements
     ValidatorPattern <|.. GenerationValidator : implements
     ValidatorPattern <|.. BalanceValidator : implements
     StrategyPattern <|.. MonthlyGenerationStrategy : implements
@@ -582,13 +711,20 @@ classDiagram
     FactoryPattern <|.. TimeEntryFactory : implements
     TimeEntryValidator --> ProjectValidator : uses
     TimeEntryValidator --> ActivityTypeValidator : uses
+    TimeEntryValidator --> WorkLocationValidator : uses
+    TimeEntryValidator --> TravelTypeValidator : uses
     TimeEntryValidator --> TimeEntryRepository : uses
     ProjectValidator --> ProjectRepository : uses
     ActivityTypeValidator --> ActivityTypeRepository : uses
+    WorkLocationValidator --> WorkLocationRepository : uses
+    TravelTypeValidator --> TravelTypeRepository : uses
     GenerationValidator --> UserRepository : uses
     TimeEntryFactory --> TimeCalculationService : uses
     UserService --> UserRepository : uses
     TimeBalanceService --> TimeEntryRepository : uses
+    VacationBalanceService --> TimeEntryRepository : uses
+    VacationBalanceService --> UserRepository : uses
+    SickLeaveBalanceService --> TimeEntryRepository : uses
 ```
 
 ### 🏗️ 1. ServiceContainer Pattern (Dependency Injection)
@@ -609,7 +745,7 @@ const createCommand = container.getCommand<CreateTimeEntryCommand>('createTimeEn
 
 **Features:**
 
-- 🎯 6 Kategorien: Repositories, Services, Validators, Strategies, Commands, Factories
+- 🎯 6 Kategorien: Repositories (6), Services (5), Validators (7), Strategies (2), Commands (10), Factories (2)
 - 🔗 Auto-Wiring von Dependencies
 - 🛡️ Type-Safe mit Generics
 - 🧪 Perfekt für Unit Tests
@@ -632,21 +768,24 @@ registry.register({
 registry.apply(service);
 ```
 
-### 🎯 3. Command Pattern (7 Commands!)
+### 🎯 3. Command Pattern (10 Commands!)
 
 **Dateien:** `srv/handler/commands/*.ts`
 
 Commands kapseln komplexe Business Operations:
 
-| Command                    | Zweck                                          |
-| -------------------------- | ---------------------------------------------- |
-| `CreateTimeEntryCommand`   | Validierung, User-Lookup, Factory, Calculation |
-| `UpdateTimeEntryCommand`   | Change Detection, Recalculation                |
-| `GenerateMonthlyCommand`   | Monat generieren mit Stats                     |
-| `GenerateYearlyCommand`    | Jahr mit Feiertagen                            |
-| `GetMonthlyBalanceCommand` | Monatssaldo mit Criticality                    |
-| `GetCurrentBalanceCommand` | Kumulierter Gesamtsaldo                        |
-| `GetRecentBalancesCommand` | Historische Balances (6 Monate)                |
+| Command                      | Zweck                                          |
+| ---------------------------- | ---------------------------------------------- |
+| `CreateTimeEntryCommand`     | Validierung, User-Lookup, Factory, Calculation |
+| `UpdateTimeEntryCommand`     | Change Detection, Recalculation                |
+| `GenerateMonthlyCommand`     | Monat generieren mit Stats                     |
+| `GenerateYearlyCommand`      | Jahr mit Feiertagen                            |
+| `GetDefaultParamsCommand`    | Default-Parameter für Generierung              |
+| `GetMonthlyBalanceCommand`   | Monatssaldo mit Criticality                    |
+| `GetCurrentBalanceCommand`   | Kumulierter Gesamtsaldo                        |
+| `GetRecentBalancesCommand`   | Historische Balances (6 Monate)                |
+| `GetVacationBalanceCommand`  | Urlaubssaldo-Berechnung                        |
+| `GetSickLeaveBalanceCommand` | Krankheitsstand-Berechnung                     |
 
 ### 🏭 4. Factory Pattern (2 Factories!)
 
@@ -829,7 +968,7 @@ export class MonthlyGenerationStrategy {
 - 📅 Weekend-Detection und Date-Utilities
 - ⚡ Performance-optimiert mit Sets für Lookup
 
-### 💾 8. Repository Pattern (4 Repositories)
+### 💾 8. Repository Pattern (6 Repositories)
 
 **Dateien:** `srv/handler/repositories/*.ts`
 
@@ -879,14 +1018,16 @@ export class TimeEntryRepository {
 - 🎯 Reiner Datenzugriff ohne Business Logic (Separation of Concerns!)
 - 🧪 Perfekt mockbar für Unit Tests
 
-**Unsere 4 Repositories:**
+**Unsere 6 Repositories:**
 
 - `TimeEntryRepository` - CRUD + Queries + Batch Insert
 - `UserRepository` - User-Lookup by Email/ID
 - `ProjectRepository` - Validierung aktiver Projekte
 - `ActivityTypeRepository` - Validierung von Activity Codes
+- `WorkLocationRepository` - Validierung von Arbeitsorten
+- `TravelTypeRepository` - Validierung von Reisearten
 
-### ✅ 9. Validator Pattern (5 Validators)
+### ✅ 9. Validator Pattern (7 Validators)
 
 **Dateien:** `srv/handler/validators/*.ts`
 
@@ -951,11 +1092,13 @@ export class TimeEntryValidator {
 - 🛡️ **Konsistente Error Messages** mit Logging
 - 🧪 **Isoliert testbar** - Reine Business Logic ohne CAP Dependencies
 
-**Unsere 5 Validators:**
+**Unsere 7 Validators:**
 
 - `ProjectValidator` - Project-Aktivitäts-Validierung
 - `ActivityTypeValidator` - Activity-Code-Validierung
-- `TimeEntryValidator` - Entry-Validierung + Change Detection (nutzt Project & ActivityType)
+- `WorkLocationValidator` - Arbeitsort-Validierung
+- `TravelTypeValidator` - Reiseart-Validierung
+- `TimeEntryValidator` - Entry-Validierung + Change Detection (nutzt Project, ActivityType, WorkLocation, TravelType)
 - `GenerationValidator` - User, StateCode, Year Validierung
 - `BalanceValidator` - Year/Month Plausibilitätsprüfung
 
