@@ -82,9 +82,47 @@ export class UpdateTimeEntryCommand {
       durationData = await this.factory.createNonWorkTimeData(this.userService, tx, mergedData.user_ID);
     }
 
+    // expectedDailyHours aktualisieren falls User-Profil geändert wurde
+    const updatedExpected = await this.checkAndUpdateExpectedHours(
+      tx,
+      mergedData.user_ID,
+      existingEntry.expectedDailyHoursDec ?? undefined,
+    );
+
+    if (updatedExpected !== undefined) {
+      durationData.expectedDailyHoursDec = updatedExpected;
+    }
+
     logger.commandEnd('UpdateTimeEntry', { recalculation: true, netHours: durationData.durationHoursNet });
 
     return durationData;
+  }
+
+  /**
+   * Prüft ob expectedDailyHours aktualisiert werden müssen
+   * @param tx - Transaction Objekt
+   * @param userId - User ID
+   * @param currentExpected - Aktueller Wert im TimeEntry
+   * @returns Neuer Wert oder undefined wenn keine Änderung
+   */
+  private async checkAndUpdateExpectedHours(
+    tx: Transaction,
+    userId: string,
+    currentExpected?: number,
+  ): Promise<number | undefined> {
+    const userExpected = await this.userService.getExpectedDailyHours(tx, userId);
+
+    // Nur aktualisieren wenn sich der Wert geändert hat
+    if (currentExpected !== undefined && Math.abs(currentExpected - userExpected) < 0.01) {
+      return undefined; // Keine Änderung
+    }
+
+    logger.commandData('UpdateTimeEntry', 'Expected hours updated from user profile', {
+      old: currentExpected,
+      new: userExpected,
+    });
+
+    return userExpected;
   }
 
   /**

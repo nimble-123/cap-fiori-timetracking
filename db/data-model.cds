@@ -17,15 +17,17 @@ entity Users : managed {
       // Server berechnet/aktualisiert in Service-Logic
       expectedDailyHoursDec : Decimal(4, 2);
 
-  // Bevorzugtes Bundesland für Feiertage
-  preferredState        : Association to GermanStates;
+      // Bevorzugtes Bundesland für Feiertage
+      preferredState        : Association to GermanStates;
 
-  // Urlaubstage pro Jahr
-  annualVacationDays    : Decimal(4, 1) default 30.0;
+      // Urlaubstage pro Jahr
+      annualVacationDays    : Decimal(4, 1) default 30.0;
 
-  // Standard-Arbeitsort (Dienstsitz)
-  defaultWorkLocation   : Association to WorkLocations;
-}entity Projects : managed, cuid {
+      // Standard-Arbeitsort (Dienstsitz)
+      defaultWorkLocation   : Association to WorkLocations;
+}
+
+entity Projects : managed, cuid {
   number   : String(40);
   name     : String(111);
   active   : Boolean default true;
@@ -59,28 +61,31 @@ entity TravelTypes : CodeList {
 }
 
 entity TimeEntries : managed, cuid {
-  user               : Association to Users not null;
-  workDate           : Date not null;
-  entryType          : Association to EntryTypes not null;
+  user                  : Association to Users not null;
+  workDate              : Date not null;
+  entryType             : Association to EntryTypes not null;
 
   // Optional: Zuordnung
-  project            : Association to Projects;
-  activity           : Association to ActivityTypes;
+  project               : Association to Projects;
+  activity              : Association to ActivityTypes;
 
   // Optional: Arbeitsort & Reiseart
-  workLocation       : Association to WorkLocations;
-  travelType         : Association to TravelTypes;
+  workLocation          : Association to WorkLocations;
+  travelType            : Association to TravelTypes;
 
-  startTime          : Time not null;
-  endTime            : Time not null;
-  breakMin           : Integer default 0;
+  startTime             : Time not null;
+  endTime               : Time not null;
+  breakMin              : Integer default 0;
 
   // Abgeleitete Felder – ausschließlich Server-seitig setzen (berechnet in Service-Logic)
-  durationHoursGross : Decimal(4, 2); // 7.50 = 7h30
-  durationHoursNet   : Decimal(4, 2);
-  overtimeHours      : Decimal(4, 2);
-  undertimeHours     : Decimal(4, 2);
+  durationHoursGross    : Decimal(4, 2); // 7.50 = 7h30
+  durationHoursNet      : Decimal(4, 2);
+  overtimeHours         : Decimal(4, 2);
+  undertimeHours        : Decimal(4, 2);
 
-  source             : String(20);
-  note               : String(500);
+  // Sollstunden (Target Hours) - aus User-Profil beim Anlegen kopiert
+  expectedDailyHoursDec : Decimal(4, 2);
+
+  source                : String(20);
+  note                  : String(500);
 }

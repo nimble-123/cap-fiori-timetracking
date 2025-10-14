@@ -4,10 +4,11 @@ using TrackService as service from '../../../service-model';
 //  Berechnete Felder als readonly markieren
 ////////////////////////////////////////////////////////////////////////////
 annotate service.TimeEntries with {
-  durationHoursGross @readonly;
-  durationHoursNet   @readonly;
-  overtimeHours      @readonly;
-  undertimeHours     @readonly;
+  durationHoursGross    @readonly;
+  durationHoursNet      @readonly;
+  overtimeHours         @readonly;
+  undertimeHours        @readonly;
+  expectedDailyHoursDec @readonly;
 };
 
 ////////////////////////////////////////////////////////////////////////////

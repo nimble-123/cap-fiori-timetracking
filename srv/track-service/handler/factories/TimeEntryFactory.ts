@@ -11,6 +11,7 @@ interface WorkTimeData {
   durationHoursNet: number;
   overtimeHours: number;
   undertimeHours: number;
+  expectedDailyHoursDec: number;
 }
 
 /**
@@ -54,6 +55,7 @@ export class TimeEntryFactory {
       netHours: workingHours.netHours,
       overtime,
       undertime,
+      expectedDaily,
     });
 
     return {
@@ -62,6 +64,7 @@ export class TimeEntryFactory {
       durationHoursNet: workingHours.netHours!,
       overtimeHours: overtime,
       undertimeHours: undertime,
+      expectedDailyHoursDec: expectedDaily,
     };
   }
 
@@ -81,6 +84,7 @@ export class TimeEntryFactory {
       durationHoursNet: expectedDaily,
       overtimeHours: 0,
       undertimeHours: 0,
+      expectedDailyHoursDec: expectedDaily,
     };
   }
 
@@ -126,6 +130,7 @@ export class TimeEntryFactory {
       durationHoursNet: expected,
       overtimeHours: 0,
       undertimeHours: 0,
+      expectedDailyHoursDec: expected,
       source: 'GENERATED',
       note: `Automatisch generiert für ${displayDate}`,
       workLocation_code: user.defaultWorkLocation_code || null,
@@ -157,6 +162,7 @@ export class TimeEntryFactory {
       durationHoursNet: 0,
       overtimeHours: 0,
       undertimeHours: 0,
+      expectedDailyHoursDec: 0,
       source: 'GENERATED',
       note: `${dayName}`,
       workLocation_code: null,
@@ -188,6 +194,7 @@ export class TimeEntryFactory {
       durationHoursNet: 0,
       overtimeHours: 0,
       undertimeHours: 0,
+      expectedDailyHoursDec: 0,
       source: 'GENERATED',
       note: holidayName,
       workLocation_code: null,

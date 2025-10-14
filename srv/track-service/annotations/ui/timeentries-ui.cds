@@ -121,6 +121,11 @@ annotate service.TimeEntries with @(
         $Type: 'UI.DataField'
       },
       {
+        Value            : expectedDailyHoursDec,
+        $Type            : 'UI.DataField',
+        ![@UI.Importance]: #Low
+      },
+      {
         Value      : overtimeHours,
         $Type      : 'UI.DataField',
         Criticality: overtimeCriticality
@@ -325,6 +330,11 @@ annotate service.TimeEntries with @(
         Criticality: undertimeCriticality,
       },
       {
+        Value            : expectedDailyHoursDec,
+        $Type            : 'UI.DataField',
+        ![@UI.Importance]: #Low
+      },
+      {
         Value            : source,
         ![@UI.Importance]: #Low,
         $Type            : 'UI.DataField'
@@ -473,13 +483,17 @@ annotate service.TimeEntries with @(
       $Type: 'UI.DataField'
     },
     {
+      Value: expectedDailyHoursDec,
+      $Type: 'UI.DataField'
+    },
+    {
       Value: overtimeHours,
       $Type: 'UI.DataField'
     },
     {
       Value: undertimeHours,
       $Type: 'UI.DataField'
-    }
+    },
   ]}
 );
 
