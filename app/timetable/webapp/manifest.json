@@ -149,14 +149,17 @@
                   "tableSettings": {
                     "type": "ResponsiveTable",
                     "condensedTableLayout": true,
-                    "enableMassEdit": true,
+                    "enableMassEdit": {
+                      "visibleFields": "startTime,endTime,breakMin"
+                    },
                     "selectionMode": "Multi",
                     "personalization": {
                       "column": true,
                       "sort": true,
                       "group": true,
                       "filter": true
-                    }
+                    },
+                    "enableExport": false
                   },
                   "columns": {
                     "DataField::note": {
@@ -164,6 +167,12 @@
                     },
                     "DataField::entryType::text": {
                       "width": "100px"
+                    },
+                    "DataField::workLocation::text": {
+                      "width": "120px"
+                    },
+                    "DataField::travelType::text": {
+                      "width": "150px"
                     }
                   }
                 }
