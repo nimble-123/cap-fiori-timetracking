@@ -9,6 +9,12 @@ gen/
 node_modules/
 target/
 
+# Test & Coverage
+coverage/
+junit.xml
+*.test.js.snap
+.nyc_output/
+
 # Web IDE, App Studio
 .che/
 .gen/
