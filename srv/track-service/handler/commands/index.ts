@@ -20,6 +20,7 @@ export { GetDefaultParamsCommand } from './generation/GetDefaultParamsCommand';
 // TimeEntry Commands
 export { CreateTimeEntryCommand } from './time-entry/CreateTimeEntryCommand';
 export { UpdateTimeEntryCommand } from './time-entry/UpdateTimeEntryCommand';
+export { RecalculateTimeEntryCommand } from './time-entry/RecalculateTimeEntryCommand';
 
 // Re-export types (optional, for convenience)
 export type { MonthlyGenerationResult } from './generation/GenerateMonthlyCommand';

@@ -36,6 +36,14 @@ export class HandlerRegistrar {
       handler: handlers.handleDelete.bind(handlers),
       description: 'Prevent deletion of time entries',
     });
+
+    this.registry.register({
+      type: 'on',
+      event: 'recalculateTimeEntry',
+      entity: TimeEntries,
+      handler: handlers.handleRecalculate.bind(handlers),
+      description: 'Recalculate time entry values based on current times',
+    });
   }
 
   /**

@@ -269,7 +269,8 @@ annotate service.SickLeaveBalances with {
 };
 
 ////////////////////////////////////////////////////////////////////////////
-//  Unbound Actions - Labels & TextArrangements
+//  Action Parameters - Labels
+//  (Action Labels wurden nach actions.cds verschoben)
 ////////////////////////////////////////////////////////////////////////////
 annotate service.generateYearlyTimeEntries with(year  @title: '{i18n>title.generateYearlyTimeEntries.year}'       @Common.Label: '{i18n>generateYearlyTimeEntries.year}',
 stateCode                                             @title: '{i18n>title.generateYearlyTimeEntries.stateCode}'  @Common.Label: '{i18n>generateYearlyTimeEntries.stateCode}'
@@ -280,7 +281,7 @@ month                                         @title: '{i18n>title.parameter.mon
 );
 
 ////////////////////////////////////////////////////////////////////////////
-//  Entity and Action Labels (Common.Label)
+//  Entity Labels (Common.Label)
 ////////////////////////////////////////////////////////////////////////////
 annotate service.Users with @(Common.Label: '{i18n>entity.Users}');
 annotate service.Projects with @(Common.Label: '{i18n>entity.Projects}');
@@ -292,12 +293,6 @@ annotate service.TimeEntries with @(Common.Label: '{i18n>entity.TimeEntries}');
 annotate service.MonthlyBalances with @(Common.Label: '{i18n>entity.MonthlyBalances}');
 annotate service.VacationBalances with @(Common.Label: '{i18n>entity.VacationBalances}');
 annotate service.SickLeaveBalances with @(Common.Label: '{i18n>entity.SickLeaveBalances}');
-annotate service.getMonthlyBalance with @(Common.Label: '{i18n>action.getMonthlyBalance}');
-annotate service.getCurrentBalance with @(Common.Label: '{i18n>action.getCurrentBalance}');
-annotate service.getVacationBalance with @(Common.Label: '{i18n>action.getVacationBalance}');
-annotate service.getSickLeaveBalance with @(Common.Label: '{i18n>action.getSickLeaveBalance}');
-annotate service.generateYearlyTimeEntries with @(Common.Label: '{i18n>action.generateYearlyTimeEntries}');
-annotate service.generateMonthlyTimeEntries with @(Common.Label: '{i18n>action.generateMonthlyTimeEntries}');
 
 ////////////////////////////////////////////////////////////////////////////
 //  Hinweise zu TextArrangement:

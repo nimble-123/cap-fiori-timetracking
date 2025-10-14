@@ -7,7 +7,8 @@ annotate service.TimeEntries with @(restrict: [
   {
     grant: [
       'READ',
-      'WRITE'
+      'WRITE',
+      'recalculateTimeEntry'
     ],
     to   : 'authenticated-user',
     where: 'user_ID = $user'
@@ -15,7 +16,8 @@ annotate service.TimeEntries with @(restrict: [
   {
     grant: [
       'READ',
-      'WRITE'
+      'WRITE',
+      'recalculateTimeEntry'
     ],
     to   : 'Admin'
   }

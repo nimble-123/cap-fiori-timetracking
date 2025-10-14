@@ -38,6 +38,7 @@ import { TimeEntryFactory } from '../factories';
 import {
   CreateTimeEntryCommand,
   UpdateTimeEntryCommand,
+  RecalculateTimeEntryCommand,
   GenerateMonthlyCommand,
   GenerateYearlyCommand,
   GetDefaultParamsCommand,
@@ -200,6 +201,7 @@ export class ServiceContainer {
     };
     this.commands.set('createTimeEntry', new CreateTimeEntryCommand(timeEntryDeps));
     this.commands.set('updateTimeEntry', new UpdateTimeEntryCommand(timeEntryDeps));
+    this.commands.set('recalculateTimeEntry', new RecalculateTimeEntryCommand(timeEntryDeps));
 
     // Generation Commands
     const generationDeps = {

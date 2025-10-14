@@ -9,7 +9,7 @@ using from './annotations/common/field-controls'; // @readonly, @mandatory, @UI.
 using from './annotations/common/capabilities'; // @Capabilities
 using from './annotations/common/value-helps'; // @Common.ValueList
 using from './annotations/common/authorization'; // @restrict
-using from './annotations/common/default-values'; // @Common.DefaultValuesFunction
+using from './annotations/common/actions'; // Action Annotations (@Common.SideEffects, @Core.OperationAvailable)
 
 ////////////////////////////////////////////////////////////////////////////
 //  UI Layout Annotations (Per Entity)

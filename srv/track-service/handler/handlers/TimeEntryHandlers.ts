@@ -1,6 +1,6 @@
 import cds from '@sap/cds';
 import { TimeEntry } from '#cds-models/TrackService';
-import { CreateTimeEntryCommand, UpdateTimeEntryCommand } from '../commands';
+import { CreateTimeEntryCommand, UpdateTimeEntryCommand, RecalculateTimeEntryCommand } from '../commands';
 import { logger } from '../utils';
 
 /**
@@ -13,6 +13,7 @@ export class TimeEntryHandlers {
   constructor(
     private createCommand: CreateTimeEntryCommand,
     private updateCommand: UpdateTimeEntryCommand,
+    private recalculateCommand: RecalculateTimeEntryCommand,
   ) {}
 
   /**
@@ -73,5 +74,33 @@ export class TimeEntryHandlers {
     logger.handlerInvoked('TimeEntry', 'DELETE', { entryId: req.params?.[0] });
     logger.validationWarning('TimeEntry', 'DELETE operation prevented (business rule)', { entryId: req.params?.[0] });
     req.reject(405, 'Löschen von TimeEntries ist nicht erlaubt.');
+  }
+
+  /**
+   * Handler: TimeEntry neu berechnen (Bound Action)
+   *
+   * Berechnet alle Zeitwerte basierend auf aktuellen Daten und User-Sollstunden.
+   */
+  async handleRecalculate(req: any): Promise<TimeEntry> {
+    try {
+      const tx = cds.transaction(req) as any;
+      const entryId = req.params[0]?.ID || req.params[0];
+
+      if (!entryId) {
+        logger.validationWarning('TimeEntry', 'RECALCULATE attempted without ID');
+        return req.reject(400, 'TimeEntry ID ist erforderlich.');
+      }
+
+      logger.handlerInvoked('TimeEntry', 'RECALCULATE', { entryId });
+
+      const updatedEntry = await this.recalculateCommand.execute(tx, entryId);
+
+      logger.handlerCompleted('TimeEntry', 'RECALCULATE', { entryId });
+
+      return updatedEntry;
+    } catch (error: any) {
+      logger.error('TimeEntry RECALCULATE handler failed', error, { entryId: req.params?.[0] });
+      return req.reject(error.code || 400, error.message);
+    }
   }
 }

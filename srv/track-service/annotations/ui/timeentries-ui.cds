@@ -403,12 +403,22 @@ annotate service.TimeEntries with @(
     Description   : {Value: user.name}
   },
 
-  // Facets für Object Page
+  // Facets für Object Page - 5 Gruppen
   UI.Facets                       : [
     {
       $Type : 'UI.ReferenceFacet',
       Target: '@UI.FieldGroup#GeneralInfo',
       Label : '{i18n>facet.generalInfo}'
+    },
+    {
+      $Type : 'UI.ReferenceFacet',
+      Target: '@UI.FieldGroup#LocationTravel',
+      Label : '{i18n>facet.locationTravel}'
+    },
+    {
+      $Type : 'UI.ReferenceFacet',
+      Target: '@UI.FieldGroup#ProjectActivity',
+      Label : '{i18n>facet.projectActivity}'
     },
     {
       $Type : 'UI.ReferenceFacet',
@@ -437,23 +447,29 @@ annotate service.TimeEntries with @(
       $Type: 'UI.DataField'
     },
     {
+      Value: note,
+      $Type: 'UI.DataField'
+    }
+  ]},
+
+  UI.FieldGroup #LocationTravel   : {Data: [
+    {
       Value: workLocation_code,
       $Type: 'UI.DataField'
     },
     {
       Value: travelType_code,
       $Type: 'UI.DataField'
-    },
+    }
+  ]},
+
+  UI.FieldGroup #ProjectActivity  : {Data: [
     {
       Value: project_ID,
       $Type: 'UI.DataField'
     },
     {
       Value: activity_code,
-      $Type: 'UI.DataField'
-    },
-    {
-      Value: note,
       $Type: 'UI.DataField'
     }
   ]},
@@ -474,6 +490,12 @@ annotate service.TimeEntries with @(
   ]},
 
   UI.FieldGroup #CalculatedInfo   : {Data: [
+    {
+      $Type : 'UI.DataFieldForAction',
+      Action: 'TrackService.recalculateTimeEntry',
+      Label : '{i18n>action.recalculateTimeEntry}',
+      Inline: true
+    },
     {
       Value: durationHoursGross,
       $Type: 'UI.DataField'
@@ -546,30 +568,6 @@ annotate service.TimeEntries with @(UI.SelectionPresentationVariant #Advanced: {
   PresentationVariant: ![@UI.PresentationVariant#Advanced]
 });
 
-////////////////////////////////////////////////////////////////////////////
-//  Filter Groups for Filter Bar
-////////////////////////////////////////////////////////////////////////////
-annotate service.TimeEntries with @(UI.FieldGroup #ProjectActivity: {Data: [
-  {
-    $Type: 'UI.DataField',
-    Value: project_ID
-  },
-  {
-    $Type: 'UI.DataField',
-    Value: activity_code
-  }
-]});
-
-annotate service.TimeEntries with @(UI.FieldGroup #LocationTravel: {Data: [
-  {
-    $Type: 'UI.DataField',
-    Value: workLocation_code
-  },
-  {
-    $Type: 'UI.DataField',
-    Value: travelType_code
-  }
-]});
 
 ////////////////////////////////////////////////////////////////////////////
 //  Chart Annotations

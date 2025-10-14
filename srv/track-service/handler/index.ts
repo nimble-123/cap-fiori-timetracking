@@ -25,6 +25,7 @@ export { DateUtils, logger, TrackLogger } from './utils';
 export {
   CreateTimeEntryCommand,
   UpdateTimeEntryCommand,
+  RecalculateTimeEntryCommand,
   GenerateMonthlyCommand,
   GenerateYearlyCommand,
   GetDefaultParamsCommand,

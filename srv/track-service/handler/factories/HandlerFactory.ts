@@ -3,6 +3,7 @@ import { TimeEntryHandlers, GenerationHandlers, BalanceHandlers } from '../handl
 import type {
   CreateTimeEntryCommand,
   UpdateTimeEntryCommand,
+  RecalculateTimeEntryCommand,
   GenerateMonthlyCommand,
   GenerateYearlyCommand,
   GetDefaultParamsCommand,
@@ -27,6 +28,7 @@ export class HandlerFactory {
     return new TimeEntryHandlers(
       this.container.getCommand<CreateTimeEntryCommand>('createTimeEntry'),
       this.container.getCommand<UpdateTimeEntryCommand>('updateTimeEntry'),
+      this.container.getCommand<RecalculateTimeEntryCommand>('recalculateTimeEntry'),
     );
   }
 

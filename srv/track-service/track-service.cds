@@ -47,6 +47,14 @@ service TrackService {
                      then 1 // Negative (Red)
                 else 0 // None (Default)
             end as undertimeCriticality : Integer
+        }
+        actions {
+            /**
+             * Bound Action: Berechnet alle Zeitwerte neu
+             * Nutzt aktuelle User-Sollstunden und berechnet Über-/Unterstunden
+             * Nur im Display Mode verfügbar (nicht im Draft/Edit Mode)
+             */
+            action recalculateTimeEntry() returns TimeEntries;
         };
 
     // Upsert für einen Tag (UI füllt ein Formular)
@@ -60,12 +68,14 @@ service TrackService {
     // Optional: Nur Pause ändern
     action   setBreak(entryID: String, breakMin: Integer)                                                                              returns TimeEntries;
 
-    // Unbound Action: Generiere leere TimeEntries für aktuellen Monat (für aktuellen User)
-    @Common.SideEffects: {TargetEntities: ['/TrackService.EntityContainer/TimeEntries']}
+    /**
+     * Unbound Action: Generiere leere TimeEntries für aktuellen Monat (für aktuellen User)
+     */
     action   generateMonthlyTimeEntries()                                                                                              returns array of TimeEntries;
 
-    // Unbound Action: Generiere TimeEntries für ein ganzes Jahr inkl. Wochenenden und Feiertage
-    @Common.SideEffects: {TargetEntities: ['/TrackService.EntityContainer/TimeEntries']}
+    /**
+     * Unbound Action: Generiere TimeEntries für ein ganzes Jahr inkl. Wochenenden und Feiertage
+     */
     action   generateYearlyTimeEntries(year: DefaultParamsForGenerateYearly:year, stateCode: DefaultParamsForGenerateYearly:stateCode) returns array of TimeEntries;
 
     // ========================================
