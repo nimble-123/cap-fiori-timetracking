@@ -38,8 +38,9 @@ entity ActivityTypes : CodeList {
 }
 
 entity EntryTypes : CodeList {
-  key code : String(1);
-      text : localized String(80);
+  key code        : String(1);
+      text        : localized String(80);
+      criticality : Integer default 0; // UI5 Criticality: 0=neutral, 1=negative(red), 2=critical(orange), 3=positive(green), 5=information(blue)
 }
 
 entity GermanStates : CodeList {

@@ -38,26 +38,6 @@ service TrackService {
         projection on db.TimeEntries {
             *,
             case
-                entryType.code
-                when 'W'
-                     then 0 // Neutral (keine Färbung) - Arbeit
-                when 'B'
-                     then 0 // Neutral - Dienstreise (wie Arbeit)
-                when 'H'
-                     then 5 // Information (blau) - Feiertag
-                when 'O'
-                     then 3 // Information (blau) - Frei/Wochenende
-                when 'V'
-                     then 2 // Critical (orange) - Urlaub
-                when 'F'
-                     then 2 // Critical (orange) - Flexzeitabbau (wie Urlaub)
-                when 'G'
-                     then 2 // Critical (orange) - Gleitzeitabbau (wie Urlaub)
-                when 'S'
-                     then 1 // Negative (rot) - Krankheit
-                else 0
-            end as entryTypeCriticality : Integer,
-            case
                 when overtimeHours > 0
                      then 3 // Positive (Green)
                 else 0 // None (Default)

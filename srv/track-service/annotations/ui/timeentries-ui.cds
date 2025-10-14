@@ -4,7 +4,7 @@ using TrackService as service from '../../../service-model';
 //  TimeEntries - UI Layout
 ////////////////////////////////////////////////////////////////////////////
 annotate service.TimeEntries with @(
-  UI.SelectionFields           : [
+  UI.SelectionFields              : [
     user_ID,
     workDate,
     entryType_code,
@@ -14,7 +14,20 @@ annotate service.TimeEntries with @(
     activity_code
   ],
 
-  UI.LineItem                  : {
+  UI.FilterFacets                 : [
+    {
+      $Type : 'UI.ReferenceFacet',
+      Label : '{i18n>filterGroup.projectActivity}',
+      Target: '@UI.FieldGroup#ProjectActivity'
+    },
+    {
+      $Type : 'UI.ReferenceFacet',
+      Label : '{i18n>filterGroup.locationTravel}',
+      Target: '@UI.FieldGroup#LocationTravel'
+    }
+  ],
+
+  UI.LineItem                     : {
     $value            : [
       // Action Group für Generieren
       {
@@ -77,12 +90,14 @@ annotate service.TimeEntries with @(
         $Type: 'UI.DataField'
       },
       {
-        Value: project.name,
-        $Type: 'UI.DataField'
+        Value            : project.name,
+        ![@UI.Importance]: #Low,
+        $Type            : 'UI.DataField'
       },
       {
-        Value: activity.text,
-        $Type: 'UI.DataField'
+        Value            : activity.text,
+        ![@UI.Importance]: #Low,
+        $Type            : 'UI.DataField'
       },
       {
         Value: startTime,
@@ -97,8 +112,9 @@ annotate service.TimeEntries with @(
         $Type: 'UI.DataField'
       },
       {
-        Value: durationHoursGross,
-        $Type: 'UI.DataField'
+        Value            : durationHoursGross,
+        ![@UI.Importance]: #Low,
+        $Type            : 'UI.DataField'
       },
       {
         Value: durationHoursNet,
@@ -115,18 +131,213 @@ annotate service.TimeEntries with @(
         Criticality: undertimeCriticality,
       },
       {
-        Value: source,
-        $Type: 'UI.DataField'
+        Value            : source,
+        ![@UI.Importance]: #Low,
+        $Type            : 'UI.DataField'
       },
       {
         Value: note,
         $Type: 'UI.DataField'
       }
     ],
-    ![@UI.Criticality]: entryTypeCriticality
+    ![@UI.Criticality]: entryType.criticality
   },
 
-  UI.PresentationVariant       : {
+  // Variant: Simple - Reduced view with essential fields only
+  UI.LineItem #Simple             : {
+    $value            : [
+      // Action Group für Generieren
+      {
+        $Type  : 'UI.DataFieldForActionGroup',
+        Label  : '{i18n>actionGroup.generate}',
+        ID     : 'generateActions',
+        Actions: [
+          {
+            $Type            : 'UI.DataFieldForAction',
+            Action           : 'TrackService.EntityContainer/generateMonthlyTimeEntries',
+            Label            : '{i18n>action.generateMonthlyTimeEntries}',
+            ![@UI.Importance]: #High,
+            Inline           : false
+          },
+          {
+            $Type            : 'UI.DataFieldForAction',
+            Action           : 'TrackService.EntityContainer/generateYearlyTimeEntries',
+            Label            : '{i18n>action.generateYearlyTimeEntries}',
+            ![@UI.Importance]: #High,
+            Inline           : false
+          }
+        ]
+      },
+      // Action Group für Salden
+      {
+        $Type  : 'UI.DataFieldForActionGroup',
+        Label  : '{i18n>actionGroup.balances}',
+        ID     : 'balanceActions',
+        Actions: [
+          {
+            $Type            : 'UI.DataFieldForAction',
+            Action           : 'TrackService.EntityContainer/getMonthlyBalance',
+            Label            : '{i18n>action.getMonthlyBalance}',
+            ![@UI.Importance]: #Medium,
+            Inline           : false
+          },
+          {
+            $Type            : 'UI.DataFieldForAction',
+            Action           : 'TrackService.EntityContainer/getCurrentBalance',
+            Label            : '{i18n>action.getCurrentBalance}',
+            ![@UI.Importance]: #Medium,
+            Inline           : false
+          }
+        ]
+      },
+      // Essential fields only (6 columns)
+      {
+        Value: workDate,
+        $Type: 'UI.DataField'
+      },
+      {
+        Value: entryType.text,
+        $Type: 'UI.DataField'
+      },
+      {
+        Value: startTime,
+        $Type: 'UI.DataField'
+      },
+      {
+        Value: endTime,
+        $Type: 'UI.DataField'
+      },
+      {
+        Value: breakMin,
+        $Type: 'UI.DataField'
+      },
+      {
+        Value: durationHoursNet,
+        $Type: 'UI.DataField'
+      }
+    ],
+    ![@UI.Criticality]: entryType.criticality
+  },
+
+  // Variant: Advanced - Complete view with all fields
+  UI.LineItem #Advanced           : {
+    $value            : [
+      // Action Group für Generieren
+      {
+        $Type  : 'UI.DataFieldForActionGroup',
+        Label  : '{i18n>actionGroup.generate}',
+        ID     : 'generateActions',
+        Actions: [
+          {
+            $Type            : 'UI.DataFieldForAction',
+            Action           : 'TrackService.EntityContainer/generateMonthlyTimeEntries',
+            Label            : '{i18n>action.generateMonthlyTimeEntries}',
+            ![@UI.Importance]: #High,
+            Inline           : false
+          },
+          {
+            $Type            : 'UI.DataFieldForAction',
+            Action           : 'TrackService.EntityContainer/generateYearlyTimeEntries',
+            Label            : '{i18n>action.generateYearlyTimeEntries}',
+            ![@UI.Importance]: #High,
+            Inline           : false
+          }
+        ]
+      },
+      // Action Group für Salden
+      {
+        $Type  : 'UI.DataFieldForActionGroup',
+        Label  : '{i18n>actionGroup.balances}',
+        ID     : 'balanceActions',
+        Actions: [
+          {
+            $Type            : 'UI.DataFieldForAction',
+            Action           : 'TrackService.EntityContainer/getMonthlyBalance',
+            Label            : '{i18n>action.getMonthlyBalance}',
+            ![@UI.Importance]: #Medium,
+            Inline           : false
+          },
+          {
+            $Type            : 'UI.DataFieldForAction',
+            Action           : 'TrackService.EntityContainer/getCurrentBalance',
+            Label            : '{i18n>action.getCurrentBalance}',
+            ![@UI.Importance]: #Medium,
+            Inline           : false
+          }
+        ]
+      },
+      // All fields
+      {
+        Value: workDate,
+        $Type: 'UI.DataField'
+      },
+      {
+        Value: entryType.text,
+        $Type: 'UI.DataField'
+      },
+      {
+        Value: workLocation.text,
+        $Type: 'UI.DataField'
+      },
+      {
+        Value: travelType.text,
+        $Type: 'UI.DataField'
+      },
+      {
+        Value            : project.name,
+        ![@UI.Importance]: #Low,
+        $Type            : 'UI.DataField'
+      },
+      {
+        Value            : activity.text,
+        ![@UI.Importance]: #Low,
+        $Type            : 'UI.DataField'
+      },
+      {
+        Value: startTime,
+        $Type: 'UI.DataField'
+      },
+      {
+        Value: endTime,
+        $Type: 'UI.DataField'
+      },
+      {
+        Value: breakMin,
+        $Type: 'UI.DataField'
+      },
+      {
+        Value            : durationHoursGross,
+        ![@UI.Importance]: #Low,
+        $Type            : 'UI.DataField'
+      },
+      {
+        Value: durationHoursNet,
+        $Type: 'UI.DataField'
+      },
+      {
+        Value      : overtimeHours,
+        $Type      : 'UI.DataField',
+        Criticality: overtimeCriticality
+      },
+      {
+        Value      : undertimeHours,
+        $Type      : 'UI.DataField',
+        Criticality: undertimeCriticality,
+      },
+      {
+        Value            : source,
+        ![@UI.Importance]: #Low,
+        $Type            : 'UI.DataField'
+      },
+      {
+        Value: note,
+        $Type: 'UI.DataField'
+      }
+    ],
+    ![@UI.Criticality]: entryType.criticality
+  },
+
+  UI.PresentationVariant          : {
     SortOrder     : [
       {
         Property  : workDate,
@@ -137,11 +348,45 @@ annotate service.TimeEntries with @(
         Descending: false
       }
     ],
-    MaxItems : 31,
+    MaxItems      : 31,
     Visualizations: ['@UI.LineItem']
   },
 
-  UI.HeaderInfo                : {
+  // Variant: Simple Presentation
+  UI.PresentationVariant #Simple  : {
+    Text          : '{i18n>variant.simple}',
+    SortOrder     : [
+      {
+        Property  : workDate,
+        Descending: true
+      },
+      {
+        Property  : startTime,
+        Descending: false
+      }
+    ],
+    MaxItems      : 31,
+    Visualizations: ['@UI.LineItem#Simple']
+  },
+
+  // Variant: Advanced Presentation
+  UI.PresentationVariant #Advanced: {
+    Text          : '{i18n>variant.advanced}',
+    SortOrder     : [
+      {
+        Property  : workDate,
+        Descending: true
+      },
+      {
+        Property  : startTime,
+        Descending: false
+      }
+    ],
+    MaxItems      : 31,
+    Visualizations: ['@UI.LineItem#Advanced']
+  },
+
+  UI.HeaderInfo                   : {
     TypeName      : '{i18n>headerInfo.timeEntry.typeName}',
     TypeNamePlural: '{i18n>headerInfo.timeEntry.typeNamePlural}',
     Title         : {Value: workDate},
@@ -149,7 +394,7 @@ annotate service.TimeEntries with @(
   },
 
   // Facets für Object Page
-  UI.Facets                    : [
+  UI.Facets                       : [
     {
       $Type : 'UI.ReferenceFacet',
       Target: '@UI.FieldGroup#GeneralInfo',
@@ -168,7 +413,7 @@ annotate service.TimeEntries with @(
   ],
 
   // Field Groups für Object Page Layout
-  UI.FieldGroup #GeneralInfo   : {Data: [
+  UI.FieldGroup #GeneralInfo      : {Data: [
     {
       Value: workDate,
       $Type: 'UI.DataField'
@@ -203,7 +448,7 @@ annotate service.TimeEntries with @(
     }
   ]},
 
-  UI.FieldGroup #TimeInfo      : {Data: [
+  UI.FieldGroup #TimeInfo         : {Data: [
     {
       Value: startTime,
       $Type: 'UI.DataField'
@@ -218,7 +463,7 @@ annotate service.TimeEntries with @(
     }
   ]},
 
-  UI.FieldGroup #CalculatedInfo: {Data: [
+  UI.FieldGroup #CalculatedInfo   : {Data: [
     {
       Value: durationHoursGross,
       $Type: 'UI.DataField'
@@ -253,27 +498,71 @@ annotate service.TimeEntries with @(UI.SelectionPresentationVariant: {
   PresentationVariant: ![@UI.PresentationVariant]
 });
 
-annotate service.TimeEntries with @(UI.SelectionPresentationVariant #HoursPerDay: {
-  Text               : 'Arbeitsstunden pro Tag',
-  PresentationVariant: {Visualizations: ['@UI.Chart#HoursPerDayChart']}
+// Variant: Simple - Reduced view
+annotate service.TimeEntries with @(UI.SelectionPresentationVariant #Simple: {
+  Text               : '{i18n>variant.simple}',
+  SelectionVariant   : {
+    Text         : '{i18n>variant.simple}',
+    SelectOptions: [{
+      PropertyName: workDate,
+      Ranges      : [{
+        Sign  : #I,
+        Option: #GE,
+        Low   : $now
+      }]
+    }]
+  },
+  PresentationVariant: ![@UI.PresentationVariant#Simple]
 });
+
+// Variant: Advanced - Complete view
+annotate service.TimeEntries with @(UI.SelectionPresentationVariant #Advanced: {
+  Text               : '{i18n>variant.advanced}',
+  SelectionVariant   : {
+    Text         : '{i18n>variant.advanced}',
+    SelectOptions: [{
+      PropertyName: workDate,
+      Ranges      : [{
+        Sign  : #I,
+        Option: #GE,
+        Low   : $now
+      }]
+    }]
+  },
+  PresentationVariant: ![@UI.PresentationVariant#Advanced]
+});
+
+////////////////////////////////////////////////////////////////////////////
+//  Filter Groups for Filter Bar
+////////////////////////////////////////////////////////////////////////////
+annotate service.TimeEntries with @(UI.FieldGroup #ProjectActivity: {Data: [
+  {
+    $Type: 'UI.DataField',
+    Value: project_ID
+  },
+  {
+    $Type: 'UI.DataField',
+    Value: activity_code
+  }
+]});
+
+annotate service.TimeEntries with @(UI.FieldGroup #LocationTravel: {Data: [
+  {
+    $Type: 'UI.DataField',
+    Value: workLocation_code
+  },
+  {
+    $Type: 'UI.DataField',
+    Value: travelType_code
+  }
+]});
 
 ////////////////////////////////////////////////////////////////////////////
 //  Chart Annotations
 ////////////////////////////////////////////////////////////////////////////
-annotate service.TimeEntries with @(UI.Chart #HoursPerDayChart: {
-  Title            : 'Arbeitsstunden pro Tag',
-  ChartType        : #Column,
-  Dimensions       : [workDate],
-  Measures         : [durationHoursNet],
-  MeasureAttributes: [{
-    Measure: durationHoursNet,
-    Role   : #Axis1
-  }]
-});
-
 annotate service.TimeEntries with @(UI.Chart #alpChart: {
   $Type          : 'UI.ChartDefinitionType',
+  Title          : '{i18n>title.timeEntry.chart}',
   ChartType      : #Column,
   Dimensions     : [workDate],
   DynamicMeasures: ['@Analytics.AggregatedProperty#durationHoursNet_sum',

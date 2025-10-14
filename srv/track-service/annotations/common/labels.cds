@@ -79,13 +79,16 @@ annotate service.ActivityTypes with {
 //  EntryTypes Entity - Labels & TextArrangements
 ////////////////////////////////////////////////////////////////////////////
 annotate service.EntryTypes with {
-     code @title                 : '{i18n>title.entryType.code}'
-          @Common.Label          : '{i18n>entryType.code}'
-          @Common.Text           : text
-          @Common.TextArrangement: #TextLast;
+     code        @title                 : '{i18n>title.entryType.code}'
+                 @Common.Label          : '{i18n>entryType.code}'
+                 @Common.Text           : text
+                 @Common.TextArrangement: #TextLast;
 
-     text @title                 : '{i18n>title.entryType.text}'
-          @Common.Label          : '{i18n>entryType.text}';
+     text        @title                 : '{i18n>title.entryType.text}'
+                 @Common.Label          : '{i18n>entryType.text}';
+
+     criticality @title                 : '{i18n>title.entryType.criticality}'
+                 @Common.Label          : '{i18n>entryType.criticality}';
 };
 
 ////////////////////////////////////////////////////////////////////////////
@@ -188,9 +191,6 @@ annotate service.TimeEntries with {
                           @Common.Label          : '{i18n>timeEntry.source}';
 
      // Virtual/Calculated Fields
-     entryTypeCriticality @title                 : '{i18n>title.timeEntry.entryTypeCriticality}'
-                          @Common.Label          : '{i18n>timeEntry.entryTypeCriticality}';
-
      overtimeCriticality  @title                 : '{i18n>title.timeEntry.overtimeCriticality}'
                           @Common.Label          : '{i18n>timeEntry.overtimeCriticality}';
 
