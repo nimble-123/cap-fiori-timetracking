@@ -149,6 +149,10 @@
                   "tableSettings": {
                     "type": "ResponsiveTable",
                     "condensedTableLayout": true,
+                    "creationMode": {
+                      "name": "CreationDialog",
+                      "creationFields": "com.sap.vocabularies.UI.v1.FieldGroup#CreationParameters"
+                    },
                     "enableMassEdit": {
                       "visibleFields": "startTime,endTime,breakMin"
                     },

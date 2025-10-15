@@ -4,7 +4,7 @@ using TrackService as service from '../../../service-model';
 //  TimeEntries - UI Layout
 ////////////////////////////////////////////////////////////////////////////
 annotate service.TimeEntries with @(
-  UI.SelectionFields              : [
+  UI.SelectionFields               : [
     user_ID,
     workDate,
     entryType_code,
@@ -14,7 +14,7 @@ annotate service.TimeEntries with @(
     activity_code
   ],
 
-  UI.FilterFacets                 : [
+  UI.FilterFacets                  : [
     {
       $Type : 'UI.ReferenceFacet',
       Label : '{i18n>filterGroup.projectActivity}',
@@ -27,7 +27,7 @@ annotate service.TimeEntries with @(
     }
   ],
 
-  UI.LineItem                     : {
+  UI.LineItem                      : {
     $value            : [
       // Action Group für Generieren
       {
@@ -149,7 +149,7 @@ annotate service.TimeEntries with @(
   },
 
   // Variant: Simple - Reduced view with essential fields only
-  UI.LineItem #Simple             : {
+  UI.LineItem #Simple              : {
     $value            : [
       // Action Group für Generieren
       {
@@ -225,7 +225,7 @@ annotate service.TimeEntries with @(
   },
 
   // Variant: Advanced - Complete view with all fields
-  UI.LineItem #Advanced           : {
+  UI.LineItem #Advanced            : {
     $value            : [
       // Action Group für Generieren
       {
@@ -347,7 +347,7 @@ annotate service.TimeEntries with @(
     ![@UI.Criticality]: entryType.criticality
   },
 
-  UI.PresentationVariant          : {
+  UI.PresentationVariant           : {
     SortOrder     : [
       {
         Property  : workDate,
@@ -363,7 +363,7 @@ annotate service.TimeEntries with @(
   },
 
   // Variant: Simple Presentation
-  UI.PresentationVariant #Simple  : {
+  UI.PresentationVariant #Simple   : {
     Text          : '{i18n>variant.simple}',
     SortOrder     : [
       {
@@ -380,7 +380,7 @@ annotate service.TimeEntries with @(
   },
 
   // Variant: Advanced Presentation
-  UI.PresentationVariant #Advanced: {
+  UI.PresentationVariant #Advanced : {
     Text          : '{i18n>variant.advanced}',
     SortOrder     : [
       {
@@ -396,7 +396,7 @@ annotate service.TimeEntries with @(
     Visualizations: ['@UI.LineItem#Advanced']
   },
 
-  UI.HeaderInfo                   : {
+  UI.HeaderInfo                    : {
     TypeName      : '{i18n>headerInfo.timeEntry.typeName}',
     TypeNamePlural: '{i18n>headerInfo.timeEntry.typeNamePlural}',
     Title         : {Value: workDate},
@@ -404,7 +404,7 @@ annotate service.TimeEntries with @(
   },
 
   // Facets für Object Page - 5 Gruppen
-  UI.Facets                       : [
+  UI.Facets                        : [
     {
       $Type : 'UI.ReferenceFacet',
       Target: '@UI.FieldGroup#GeneralInfo',
@@ -433,7 +433,7 @@ annotate service.TimeEntries with @(
   ],
 
   // Field Groups für Object Page Layout
-  UI.FieldGroup #GeneralInfo      : {Data: [
+  UI.FieldGroup #GeneralInfo       : {Data: [
     {
       Value: workDate,
       $Type: 'UI.DataField'
@@ -452,7 +452,7 @@ annotate service.TimeEntries with @(
     }
   ]},
 
-  UI.FieldGroup #LocationTravel   : {Data: [
+  UI.FieldGroup #LocationTravel    : {Data: [
     {
       Value: workLocation_code,
       $Type: 'UI.DataField'
@@ -463,7 +463,7 @@ annotate service.TimeEntries with @(
     }
   ]},
 
-  UI.FieldGroup #ProjectActivity  : {Data: [
+  UI.FieldGroup #ProjectActivity   : {Data: [
     {
       Value: project_ID,
       $Type: 'UI.DataField'
@@ -474,7 +474,7 @@ annotate service.TimeEntries with @(
     }
   ]},
 
-  UI.FieldGroup #TimeInfo         : {Data: [
+  UI.FieldGroup #TimeInfo          : {Data: [
     {
       Value: startTime,
       $Type: 'UI.DataField'
@@ -489,7 +489,7 @@ annotate service.TimeEntries with @(
     }
   ]},
 
-  UI.FieldGroup #CalculatedInfo   : {Data: [
+  UI.FieldGroup #CalculatedInfo    : {Data: [
     {
       $Type : 'UI.DataFieldForAction',
       Action: 'TrackService.recalculateTimeEntry',
@@ -516,7 +516,50 @@ annotate service.TimeEntries with @(
       Value: undertimeHours,
       $Type: 'UI.DataField'
     },
-  ]}
+  ]},
+
+  UI.FieldGroup #CreationParameters: {Data: [
+    {
+      Value: workDate,
+      $Type: 'UI.DataField'
+    },
+    {
+      Value: entryType_code,
+      $Type: 'UI.DataField'
+    },
+    {
+      Value: workLocation_code,
+      $Type: 'UI.DataField'
+    },
+    {
+      Value: travelType_code,
+      $Type: 'UI.DataField'
+    },
+    {
+      Value: project_ID,
+      $Type: 'UI.DataField'
+    },
+    {
+      Value: activity_code,
+      $Type: 'UI.DataField'
+    },
+    {
+      Value: startTime,
+      $Type: 'UI.DataField'
+    },
+    {
+      Value: endTime,
+      $Type: 'UI.DataField'
+    },
+    {
+      Value: breakMin,
+      $Type: 'UI.DataField'
+    },
+    {
+      Value: note,
+      $Type: 'UI.DataField'
+    }
+  ]},
 );
 
 ////////////////////////////////////////////////////////////////////////////
