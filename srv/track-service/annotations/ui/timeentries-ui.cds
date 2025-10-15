@@ -620,7 +620,9 @@ annotate service.TimeEntries with @(UI.Chart #alpChart: {
   Title          : '{i18n>title.timeEntry.chart}',
   ChartType      : #Column,
   Dimensions     : [workDate],
-  DynamicMeasures: ['@Analytics.AggregatedProperty#durationHoursNet_sum',
+  DynamicMeasures: [
+    '@Analytics.AggregatedProperty#durationHoursNet_sum',
+    '@Analytics.AggregatedProperty#expectedDailyHoursDec_sum'
   ]
 });
 

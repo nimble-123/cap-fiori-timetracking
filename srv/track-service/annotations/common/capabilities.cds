@@ -35,7 +35,10 @@ annotate service.TimeEntries with @Aggregation.ApplySupported: {
     project_ID,
     workDate
   ],
-  AggregatableProperties: [{Property: durationHoursNet, }],
+  AggregatableProperties: [
+    {Property: durationHoursNet},
+    {Property: expectedDailyHoursDec}
+  ],
 };
 
 annotate service.TimeEntries with @(Analytics.AggregatedProperty #durationHoursNet_sum: {
@@ -44,6 +47,14 @@ annotate service.TimeEntries with @(Analytics.AggregatedProperty #durationHoursN
   AggregatableProperty: durationHoursNet,
   AggregationMethod   : 'sum',
   @Common.Label       : '{i18n>analytics.durationHoursNet.sum}',
+});
+
+annotate service.TimeEntries with @(Analytics.AggregatedProperty #expectedDailyHoursDec_sum: {
+  $Type               : 'Analytics.AggregatedPropertyType',
+  Name                : 'expectedDailyHoursDec_sum',
+  AggregatableProperty: expectedDailyHoursDec,
+  AggregationMethod   : 'sum',
+  @Common.Label       : '{i18n>analytics.expectedDailyHoursDec.sum}',
 });
 
 ////////////////////////////////////////////////////////////////////////////
