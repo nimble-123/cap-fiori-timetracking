@@ -521,6 +521,8 @@ sequenceDiagram
 - **CREATE (CRUD):** Handler enriched nur `req.data`, CAP macht automatisch INSERT
 - **Generation (Bulk):** Command erzeugt Array, expliziter `repository.insertBatch()` Call
 
+**Weiterführende Pattern-Dokumentation:** Für detaillierte Beschreibungen der eingesetzten Design-Patterns (ServiceContainer, HandlerRegistry, Commands, Repositories, Factories, Strategies, Validators) siehe das Pattern-Index-Dokument: [Pattern-Index](./patterns/README.md)
+
 ---
 
 ### 5.3 Ebene 3: Business Logic Layer (Whitebox Commands)
@@ -652,7 +654,135 @@ erDiagram
 
 ### 5.5 Ebene 5: Infrastruktur Layer (ServiceContainer & HandlerRegistry)
 
+---
+
 ### 5.6 Ebene 6: User Interface Layer (Fiori Elements & Freestyle Apps)
+
+Wir haben zwei verschiedene UI5-Apps, die zeigen, wie unterschiedlich man an Fiori-Entwicklung rangehen kann:
+
+#### 📋 Timetable App (Fiori Elements) - Der schnelle Weg
+
+Die "No-Code"-Variante! Fiori Elements generiert automatisch eine komplette App aus deinen Annotations:
+
+- **List Report & Object Page** für TimeEntries - alles automatisch generiert
+- **Draft-enabled** für komfortable Bearbeitung mit "Speichern" und "Verwerfen"
+- **Smart Controls** mit automatischer Validierung aus dem Backend
+- **Responsive Design** out-of-the-box für Desktop/Tablet/Mobile
+- **TypeScript Component** für eigene Extensions
+- **Filterbar & Search** automatisch aus Annotations
+
+Die meiste Arbeit passiert in den `annotations.cds` Files. Wenig Code, viel Power! 💪
+
+**Technische Details:**
+
+- **App-Typ**: Fiori Elements List Report & Object Page
+- **UI5 Version**: Latest (definiert in `ui5.yaml`)
+- **TypeScript**: `webapp/Component.ts` für Extensions
+- **Annotations**: `app/timetable/annotations.cds` definiert komplettes UI
+- **Features**: Draft, Filterbar, Search, ValueHelp (F4), Side Effects
+
+**Beispiel Annotations** (aus `annotations.cds`):
+
+```cds
+annotate TrackService.TimeEntries with @(
+    UI.LineItem: [
+        { Value: workDate, Label: '{i18n>workDate}' },
+        { Value: user.name, Label: '{i18n>user}' },
+        { Value: project.name, Label: '{i18n>project}' },
+        { Value: durationHoursNet, Label: '{i18n>netHours}' },
+        { Value: overtimeHours, Label: '{i18n>overtime}' }
+    ],
+    UI.HeaderInfo: {
+        TypeName: '{i18n>timeEntry}',
+        TypeNamePlural: '{i18n>timeEntries}',
+        Title: { Value: workDate }
+    }
+);
+```
+
+#### 📊 Timetracking Dashboard (Custom UI5) - Der flexible Weg
+
+Hier haben wir die volle Kontrolle mit Custom UI5 Development:
+
+- **Übersichtsdashboard** mit KPIs und Statistiken
+- **Custom XML Views** mit spezieller UX
+- **MVC Pattern** mit TypeScript Controllers
+- **Chart Integration** für coole Visualisierungen (sap.viz / sap.suite)
+- **Client-side Models** für Performance
+- **Eigene Navigation** und Routing
+- **TypeScript End-to-End** für Type Safety auch im Frontend
+
+Hier kannst du richtig kreativ werden und UI bauen, wie DU es willst! 🎨
+
+**Technische Details:**
+
+- **App-Typ**: Custom UI5 Application (TypeScript)
+- **MVC Pattern**: Controller in TypeScript, Views in XML
+- **Models**: OData V4 Model + JSON Models für Client-State
+- **Routing**: Manifest-based Routing mit TypeScript Router
+- **Custom Controls**: Eigene Controls für Dashboard-Widgets
+
+**Projekt-Struktur:**
+
+```
+timetracking/webapp/
+├── controller/          # TypeScript Controllers
+│   ├── BaseController.ts
+│   ├── App.controller.ts
+│   └── Home.controller.ts
+├── view/               # XML Views
+│   ├── App.view.xml
+│   └── Home.view.xml
+├── model/              # Client Models & Formatters
+├── css/                # Custom Styles
+├── i18n/               # Internationalization
+├── Component.ts        # UI5 Component
+└── manifest.json       # App Descriptor
+```
+
+**TypeScript Controller Beispiel:**
+
+```typescript
+import BaseController from './BaseController';
+import ODataModel from 'sap/ui/model/odata/v4/ODataModel';
+
+export default class Home extends BaseController {
+  public onInit(): void {
+    const model = this.getOwnerComponent().getModel() as ODataModel;
+    this.loadDashboardData(model);
+  }
+
+  private async loadDashboardData(model: ODataModel): Promise<void> {
+    // Load balance, recent entries, stats...
+  }
+}
+```
+
+#### 🎨 UI5 & Fiori Features
+
+**Responsive & Smart:**
+
+- **Responsive Design** mit sap.m Controls - läuft auf Desktop, Tablet, Phone
+- **Smart Forms** mit automatischer Validierung aus Backend-Annotations
+- **Value Helps (F4)**: Dropdown für Projects, Users, Activities mit Search
+- **Flexible Column Layout**: Fiori 3 Standard für List/Detail Navigation
+- **Device Adaptation**: Passt sich automatisch an Bildschirmgröße an
+
+**UX & Accessibility:**
+
+- **Accessibility (a11y) Compliant**: WCAG 2.1 Standards
+- **Keyboard Navigation**: Alles mit Tab/Enter/Space bedienbar
+- **Screen Reader Support**: ARIA Labels überall
+- **High Contrast Themes**: Automatisch supported
+
+**Fiori Design System:**
+
+- **SAP Fiori Guidelines**: Wir folgen den SAP Design Principles
+- **Semantic Colors**: Green für Überstunden, Red für Unterstunden
+- **Icons & Emojis**: Intuitive Symbolik (🕐 für Zeit, 📊 für Reports)
+- **Consistent UX**: Same Look & Feel wie alle SAP Fiori Apps
+
+---
 
 ## 6. Laufzeitsicht
 
