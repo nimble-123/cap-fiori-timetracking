@@ -10,7 +10,7 @@
     "skipLibCheck": true,
     "sourceMap": true,
     "allowJs": true,
-    "types": ["@cap-js/cds-types", "jest"],
+    "types": ["@cap-js/cds-types"],
     "paths": {
       "#cds-models/*": [
         "./@cds-models/*"
@@ -19,7 +19,6 @@
   },
   "include": [
     "srv/**/*",
-    "test/**/*",
     "@cds-models/**/*"
   ],
   "exclude": [
