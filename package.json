@@ -57,6 +57,9 @@
       "levels": {
         "track-service": "info"
       }
+    },
+    "fiori": {
+      "bypass_draft": true
     }
   },
   "sapux": [
