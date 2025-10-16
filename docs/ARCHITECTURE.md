@@ -219,6 +219,13 @@ Die Top-5-Qualitätsziele nach Priorität:
 **Externe Kommunikationspartner:**
 
 ```mermaid
+---
+config:
+  layout: elk
+  elk:
+    mergeEdges: true
+  theme: neo
+---
 graph LR
     User[👤 Mitarbeiter] -->|erfasst Zeiten| App[⚙️ TimeTracking App]
     App -->|ruft Feiertage ab| API[🎉 feiertage-api.de]
