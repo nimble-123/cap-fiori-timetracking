@@ -1,0 +1,344 @@
+###############################################################################
+# REST Client für TrackService - Manuelle HTTP Tests
+#
+# Voraussetzungen:
+# 1. VS Code Extension "REST Client" von Huachao Mao installieren
+# 2. CAP Server starten: npm run watch
+# 3. Im Browser einloggen: http://localhost:4004
+#
+# Usage:
+# - Klicke auf "Send Request" über jeder ### Zeile
+# - Variablen werden automatisch ersetzt ({{server}}, {{auth}})
+###############################################################################
+
+# ============================================================================
+# CONFIGURATION - Passe Server und Auth an
+# ============================================================================
+
+@server = http://localhost:4004
+@odata = {{server}}/odata/v4/track
+
+# Mock User aus package.json (Basic Auth)
+@maxAuth = Authorization: Basic max.mustermann@test.de:max
+@erikaAuth = Authorization: Basic erika.musterfrau@test.de:erika
+
+# ============================================================================
+# SERVICE METADATA & SCHEMA
+# ============================================================================
+
+### Get Service Metadata
+GET {{odata}}/$metadata
+{{maxAuth}}
+
+### Get Service Document
+GET {{odata}}/
+{{maxAuth}}
+
+# ============================================================================
+# TIMEENTRIES - CRUD OPERATIONS
+# ============================================================================
+
+### Get All TimeEntries
+GET {{odata}}/TimeEntries
+{{maxAuth}}
+
+### Get TimeEntries with Expand User
+GET {{odata}}/TimeEntries?$expand=user
+{{maxAuth}}
+
+### Get TimeEntries with Expand All Associations
+GET {{odata}}/TimeEntries?$expand=user,project,activity,entryType,workLocation,travelType
+{{maxAuth}}
+
+### Get TimeEntries for Current Month (Max)
+GET {{odata}}/TimeEntries?$filter=workDate ge 2025-10-01 and workDate le 2025-10-31 and user_ID eq 'max.mustermann@test.de'&$orderby=workDate desc
+{{maxAuth}}
+
+### Get TimeEntries by Date Range
+GET {{odata}}/TimeEntries?$filter=workDate ge 2025-10-01 and workDate le 2025-10-31
+{{maxAuth}}
+
+### Get Single TimeEntry by ID (Replace with actual ID)
+# @name getTimeEntry
+GET {{odata}}/TimeEntries(REPLACE_WITH_ACTUAL_ID)
+{{maxAuth}}
+
+### Create Work Time Entry (Max)
+# @name createWorkEntry
+POST {{odata}}/TimeEntries
+Content-Type: application/json
+{{maxAuth}}
+
+{
+  "user_ID": "max.mustermann@test.de",
+  "workDate": "2025-10-14",
+  "entryType_code": "W",
+  "startTime": "08:00:00",
+  "endTime": "16:30:00",
+  "breakMin": 30,
+  "project_ID": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "activity_code": "DEV",
+  "note": "Created via REST Client"
+}
+
+### Create Vacation Entry (Erika)
+POST {{odata}}/TimeEntries
+Content-Type: application/json
+{{erikaAuth}}
+
+{
+  "user_ID": "erika.musterfrau@test.de",
+  "workDate": "2025-10-15",
+  "entryType_code": "V",
+  "startTime": "00:00:00",
+  "endTime": "00:00:00",
+  "breakMin": 0,
+  "note": "Urlaub"
+}
+
+### Create Sick Leave Entry
+POST {{odata}}/TimeEntries
+Content-Type: application/json
+{{maxAuth}}
+
+{
+  "user_ID": "max.mustermann@test.de",
+  "workDate": "2025-10-16",
+  "entryType_code": "S",
+  "startTime": "00:00:00",
+  "endTime": "00:00:00",
+  "breakMin": 0,
+  "note": "Krankheit"
+}
+
+### Create Business Trip Entry
+POST {{odata}}/TimeEntries
+Content-Type: application/json
+{{maxAuth}}
+
+{
+  "user_ID": "max.mustermann@test.de",
+  "workDate": "2025-10-17",
+  "entryType_code": "B",
+  "startTime": "06:00:00",
+  "endTime": "20:00:00",
+  "breakMin": 60,
+  "project_ID": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "activity_code": "MEET",
+  "travelType_code": "TR",
+  "workLocation_code": "CLIENT",
+  "note": "Kundenbesuch in München"
+}
+
+### Update TimeEntry (Replace with actual ID)
+PATCH {{odata}}/TimeEntries(REPLACE_WITH_ACTUAL_ID)
+Content-Type: application/json
+{{maxAuth}}
+
+{
+  "endTime": "18:00:00",
+  "breakMin": 60,
+  "note": "Updated via REST Client - Longer workday"
+}
+
+### Delete TimeEntry (Replace with actual ID)
+DELETE {{odata}}/TimeEntries(REPLACE_WITH_ACTUAL_ID)
+{{maxAuth}}
+
+# ============================================================================
+# GENERATION ACTIONS - Bulk Entry Creation
+# ============================================================================
+
+### Get Default Parameters for Generation
+GET {{odata}}/getDefaultParams()
+{{maxAuth}}
+
+### Generate Monthly Time Entries (Current Month)
+POST {{odata}}/generateMonthlyTimeEntries
+Content-Type: application/json
+{{maxAuth}}
+
+{}
+
+### Generate Yearly Time Entries (with State Code)
+POST {{odata}}/generateYearlyTimeEntries
+Content-Type: application/json
+{{maxAuth}}
+
+{
+  "year": 2025,
+  "stateCode": "BY"
+}
+
+# ============================================================================
+# BALANCE FUNCTIONS - Time Tracking Statistics
+# ============================================================================
+
+### Get Monthly Balance (October 2025)
+GET {{odata}}/getMonthlyBalance(month=10,year=2025)
+{{maxAuth}}
+
+### Get Current Total Balance
+GET {{odata}}/getCurrentBalance()
+{{maxAuth}}
+
+### Get Recent Balances (Last 6 Months)
+GET {{odata}}/getRecentBalances(months=6)
+{{maxAuth}}
+
+### Get Vacation Balance (2025)
+GET {{odata}}/getVacationBalance(year=2025)
+{{maxAuth}}
+
+### Get Sick Leave Balance (2025)
+GET {{odata}}/getSickLeaveBalance(year=2025)
+{{maxAuth}}
+
+# ============================================================================
+# BOUND ACTIONS - Entity-Specific Operations
+# ============================================================================
+
+### Recalculate TimeEntry (Replace with actual ID)
+POST {{odata}}/TimeEntries(REPLACE_WITH_ACTUAL_ID)/TrackService.recalculate
+Content-Type: application/json
+{{maxAuth}}
+
+{}
+
+# ============================================================================
+# USERS
+# ============================================================================
+
+### Get All Users
+GET {{odata}}/Users
+{{maxAuth}}
+
+### Get Users with State Information
+GET {{odata}}/Users?$expand=preferredState
+{{maxAuth}}
+
+### Get Single User by ID
+GET {{odata}}/Users('max.mustermann@test.de')
+{{maxAuth}}
+
+### Get Current User (via User Service)
+GET {{odata}}/Users?$filter=ID eq 'max.mustermann@test.de'
+{{maxAuth}}
+
+# ============================================================================
+# PROJECTS
+# ============================================================================
+
+### Get All Projects
+GET {{odata}}/Projects
+{{maxAuth}}
+
+### Get Active Projects Only
+GET {{odata}}/Projects?$filter=active eq true
+{{maxAuth}}
+
+### Get Billable Projects
+GET {{odata}}/Projects?$filter=billable eq true
+{{maxAuth}}
+
+### Get Single Project by ID
+GET {{odata}}/Projects(3fa85f64-5717-4562-b3fc-2c963f66afa6)
+{{maxAuth}}
+
+# ============================================================================
+# CODELISTS - Reference Data
+# ============================================================================
+
+### Get Activity Types
+GET {{odata}}/ActivityTypes
+{{maxAuth}}
+
+### Get Entry Types with Criticality
+GET {{odata}}/EntryTypes
+{{maxAuth}}
+
+### Get German States
+GET {{odata}}/GermanStates
+{{maxAuth}}
+
+### Get Work Locations
+GET {{odata}}/WorkLocations
+{{maxAuth}}
+
+### Get Travel Types
+GET {{odata}}/TravelTypes
+{{maxAuth}}
+
+# ============================================================================
+# ODATA QUERY OPTIONS - Advanced Filtering
+# ============================================================================
+
+### Select Specific Fields
+GET {{odata}}/TimeEntries?$select=ID,workDate,startTime,endTime,durationHoursNet
+{{maxAuth}}
+
+### Order By Date Descending
+GET {{odata}}/TimeEntries?$orderby=workDate desc
+{{maxAuth}}
+
+### Top 10 Latest Entries
+GET {{odata}}/TimeEntries?$top=10&$orderby=workDate desc
+{{maxAuth}}
+
+### Count TimeEntries
+GET {{odata}}/TimeEntries/$count
+{{maxAuth}}
+
+### Filter by Entry Type (Work only)
+GET {{odata}}/TimeEntries?$filter=entryType_code eq 'W'
+{{maxAuth}}
+
+### Filter by Date and User
+GET {{odata}}/TimeEntries?$filter=workDate eq 2025-10-14 and user_ID eq 'max.mustermann@test.de'
+{{maxAuth}}
+
+### Search in Notes (contains)
+GET {{odata}}/TimeEntries?$filter=contains(note,'meeting')
+{{maxAuth}}
+
+# ============================================================================
+# ERROR SCENARIOS - Validation Testing
+# ============================================================================
+
+### Try to Create Duplicate Entry (Should Fail)
+POST {{odata}}/TimeEntries
+Content-Type: application/json
+{{maxAuth}}
+
+{
+  "user_ID": "max.mustermann@test.de",
+  "workDate": "2025-10-14",
+  "entryType_code": "W",
+  "startTime": "08:00:00",
+  "endTime": "16:00:00",
+  "breakMin": 30
+}
+
+### Try Invalid Time Range (End before Start)
+POST {{odata}}/TimeEntries
+Content-Type: application/json
+{{maxAuth}}
+
+{
+  "user_ID": "max.mustermann@test.de",
+  "workDate": "2025-10-25",
+  "entryType_code": "W",
+  "startTime": "16:00:00",
+  "endTime": "08:00:00",
+  "breakMin": 0
+}
+
+### Try Missing Required Fields
+POST {{odata}}/TimeEntries
+Content-Type: application/json
+{{maxAuth}}
+
+{
+  "user_ID": "max.mustermann@test.de",
+  "workDate": "2025-10-26"
+}
