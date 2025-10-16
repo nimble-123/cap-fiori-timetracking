@@ -1,0 +1,146 @@
+name: CI/CD Tests & Build
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [20.x]
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+      
+      - name: Install Dependencies
+        run: npm ci
+      
+      - name: Build TypeScript
+        run: npm run build
+        continue-on-error: false
+      
+      - name: Run Tests
+        run: npm test
+        env:
+          NODE_ENV: test
+      
+      - name: Generate Coverage Report
+        if: success()
+        run: npm run test:coverage
+      
+      - name: Upload Coverage to Codecov
+        if: success()
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage/lcov.info
+          flags: unittests
+          name: cap-fiori-timetracking-coverage
+          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
+      
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: |
+            coverage/
+            junit.xml
+          retention-days: 30
+
+  lint:
+    name: ESLint & Format Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: 'npm'
+      
+      - name: Install Dependencies
+        run: npm ci
+      
+      - name: Run ESLint
+        run: npx eslint . --ext .ts,.js,.cds
+        continue-on-error: true
+      
+      - name: Check Prettier Formatting
+        run: npx prettier --check "{src,app,srv,db,test}/**/*.{js,ts,json,md,yaml,yml,html,css}"
+        continue-on-error: true
+
+  build:
+    name: Build Production
+    runs-on: ubuntu-latest
+    needs: [test, lint]
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: 'npm'
+      
+      - name: Install Dependencies
+        run: npm ci
+      
+      - name: Build Production
+        run: npm run build
+      
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: |
+            gen/
+            @cds-models/
+          retention-days: 7
+
+  # Optional: Deploy to SAP BTP (auskommentiert, kann aktiviert werden)
+  # deploy:
+  #   name: Deploy to SAP BTP
+  #   runs-on: ubuntu-latest
+  #   needs: [build]
+  #   if: github.ref == 'refs/heads/main'
+  #   
+  #   steps:
+  #     - name: Checkout Repository
+  #       uses: actions/checkout@v4
+  #     
+  #     - name: Setup Cloud Foundry CLI
+  #       run: |
+  #         wget -q -O - https://packages.cloudfoundry.org/debian/cli.cloudfoundry.org.key | sudo apt-key add -
+  #         echo "deb https://packages.cloudfoundry.org/debian stable main" | sudo tee /etc/apt/sources.list.d/cloudfoundry-cli.list
+  #         sudo apt-get update
+  #         sudo apt-get install cf8-cli
+  #     
+  #     - name: Deploy to Cloud Foundry
+  #       run: |
+  #         cf api ${{ secrets.CF_API_ENDPOINT }}
+  #         cf auth ${{ secrets.CF_USERNAME }} ${{ secrets.CF_PASSWORD }}
+  #         cf target -o ${{ secrets.CF_ORG }} -s ${{ secrets.CF_SPACE }}
+  #         cf push
