@@ -12,29 +12,36 @@ This is a **100% TypeScript SAP CAP application** with Clean Architecture princi
 ## Critical Setup & Workflow
 
 ### Essential Commands
+
 - `npm run watch` - Development with auto-reload (uses `cds-tsx w`)
 - `npm run build` - TypeScript compilation check
 - `npm run format` - Prettier formatting (mandatory before commits)
 - `npm run generate-entry-point` - Generate entry points with dev-cap-tools
 
 ### Type Generation
+
 The project uses **@cap-js/cds-typer** for auto-generated TypeScript types. Import from `#cds-models/*`:
+
 ```typescript
 import { TimeEntry, User } from '#cds-models/TrackService';
 import { Transaction } from '@sap/cds';
 ```
 
 ### Mock Users
+
 Two test users configured in `package.json` → `cds.requires.auth.users`:
+
 - `max.mustermann@test.de` / password: `max`
 - `erika.musterfrau@test.de` / password: `erika`
 
 ## Core Design Patterns (MANDATORY)
 
 ### 1. ServiceContainer (Dependency Injection)
+
 **Location**: `srv/track-service/handler/container/ServiceContainer.ts`
 
 All dependencies are resolved through the container with **6 categories**:
+
 - `repository`: Data access (TimeEntry, User, Project, ActivityType)
 - `service`: Domain services (UserService, HolidayService, TimeBalanceService)
 - `validator`: Business validation (TimeEntry, Generation, Balance)
@@ -49,17 +56,20 @@ const createCommand = container.get<CreateTimeEntryCommand>('command', 'createTi
 ```
 
 ### 2. Command Pattern (7 Commands)
+
 **Location**: `srv/track-service/handler/commands/**/*`
 
 Commands encapsulate ALL business logic for operations:
+
 - `CreateTimeEntryCommand` / `UpdateTimeEntryCommand` - CRUD
 - `GenerateMonthlyCommand` / `GenerateYearlyCommand` - Bulk generation
 - `GetMonthlyBalanceCommand` / `GetCurrentBalanceCommand` / `GetRecentBalancesCommand` - Balance queries
 
 **Command Structure**:
+
 ```typescript
 class CreateTimeEntryCommand {
-  constructor(dependencies: { userService, validator, repository, factory }) {}
+  constructor(dependencies: { userService; validator; repository; factory }) {}
   async execute(tx: Transaction, entryData: Partial<TimeEntry>): Promise<any> {
     // 1. Validate
     // 2. Fetch dependencies
@@ -70,19 +80,21 @@ class CreateTimeEntryCommand {
 ```
 
 ### 3. Handler Setup (Builder + Registry + Registrar)
+
 **Location**: `srv/track-service/handler/setup/HandlerSetup.ts`
 
 Fluent API for handler initialization:
+
 ```typescript
-HandlerSetup
-  .create(container, registry)
-  .withAllHandlers()  // or selective: .withTimeEntryHandlers().withGenerationHandlers()
+HandlerSetup.create(container, registry)
+  .withAllHandlers() // or selective: .withTimeEntryHandlers().withGenerationHandlers()
   .apply(service);
 ```
 
 **Flow**: HandlerFactory creates handlers → HandlerRegistrar registers to registry → Registry applies to service
 
 ### 4. Factories (Object Creation)
+
 - **TimeEntryFactory**: Creates domain objects with business rules
   - `createWorkTimeData()` - Calculates gross/net/overtime/undertime
   - `createNonWorkTimeData()` - Vacation/sick leave data
@@ -92,9 +104,11 @@ HandlerSetup
 ## Domain-Specific Knowledge
 
 ### Time Calculations
+
 **Service**: `TimeCalculationService` (static utility methods)
 
 Time handling uses **decimal hours** (e.g., 7.5h = 7h 30min):
+
 - `durationHoursGross` = endTime - startTime
 - `durationHoursNet` = gross - breakMin
 - `overtimeHours` = net - expectedDailyHoursDec (if positive)
@@ -103,6 +117,7 @@ Time handling uses **decimal hours** (e.g., 7.5h = 7h 30min):
 **Calculated fields** are `@readonly` in CDS (see `srv/track-service/annotations/common/field-controls.cds`)
 
 ### Entry Types (EntryTypes CodeList)
+
 - `W` = Work (Arbeit)
 - `B` = Business Trip (Dienstreise)
 - `V` = Vacation (Urlaub)
@@ -113,12 +128,15 @@ Time handling uses **decimal hours** (e.g., 7.5h = 7h 30min):
 - `G` = Gleitzeit Reduction (Gleitzeitabbau)
 
 ### Holiday Integration
+
 **Service**: `HolidayService` (uses feiertage-api.de)
 
 Fetches German public holidays with **state-specific** support (e.g., "BY" = Bavaria). Results are **cached** per year/state. Called by `YearlyGenerationStrategy`.
 
 ### Data Source Field
+
 TimeEntries have a `source` field indicating origin:
+
 - `UI` = Created via UI
 - `GENERATED` = Created via bulk generation
 - Used for distinguishing manually entered vs auto-generated entries
@@ -126,6 +144,7 @@ TimeEntries have a `source` field indicating origin:
 ## CDS Annotations Structure
 
 Annotations are **modular** in `srv/track-service/annotations/`:
+
 - `common/` - Cross-cutting: authorization, capabilities, field-controls, labels, value-helps
 - `ui/` - Entity-specific UI annotations: timeentries-ui, users-ui, projects-ui, etc.
 
@@ -134,9 +153,11 @@ Use `@readonly` for calculated fields, `@mandatory` for required fields.
 ## Frontend Apps
 
 ### Fiori Elements App: `app/timetable/`
+
 List Report with annotations-driven UI, TypeScript Component
 
 ### Custom UI5 App: `app/timetracking/`
+
 Custom dashboard with SinglePlanningCalendar, TypeScript controllers/models/views
 
 Both use OData V4 service at `/odata/v4/track/`
@@ -146,6 +167,7 @@ Both use OData V4 service at `/odata/v4/track/`
 **Logger**: `srv/track-service/handler/utils/logger.ts`
 
 Standardized categories with prefixes:
+
 ```typescript
 logger.commandStart('CreateTimeEntry', context);
 logger.validationSuccess('TimeEntry', message, context);
@@ -165,6 +187,7 @@ Log levels configured in `package.json` → `cds.log.levels['track-service']`
 ## Testing & Validation
 
 Before ANY database operation:
+
 1. **Validate references** (user, project, activity exist)
 2. **Check uniqueness** (one entry per user per day)
 3. **Validate business rules** (entryType-specific validations)
