@@ -39,6 +39,7 @@ Zeiterfassungsanwendung auf Basis von SAP Cloud Application Programming Model mi
 - [5.3 Ebene 3: Business Logic Layer](#53-ebene-3-business-logic-layer)
 - [5.4 Ebene 4: Data Model](#54-ebene-4-data-model)
 - [5.5 Ebene 5: Infrastructure Layer](#55-ebene-5-infrastructure-layer)
+- [5.6 Ebene 6: User Interface Layer](#56-ebene-6-user-interface-layer)
 
 ### [6. Laufzeitsicht](#6-laufzeitsicht)
 
@@ -550,7 +551,7 @@ sequenceDiagram
 
 ---
 
-### 5.4 Datenmodell (Domain Model)
+### 5.4 Ebene 4: Datenmodell (Domain Model)
 
 **ER-Diagramm:**
 
@@ -648,6 +649,10 @@ erDiagram
 - **Source-Feld:** Unterscheidet UI-Eingabe (`UI`) von generierten Entries (`GENERATED`)
 
 ---
+
+### 5.5 Ebene 5: Infrastruktur Layer (ServiceContainer & HandlerRegistry)
+
+### 5.6 Ebene 6: User Interface Layer (Fiori Elements & Freestyle Apps)
 
 ## 6. Laufzeitsicht
 
