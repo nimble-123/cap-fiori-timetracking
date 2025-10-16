@@ -10,7 +10,7 @@ import { ServiceContainer, HandlerRegistry, HandlerSetup, logger } from './handl
  * - Handler-Setup via Builder Pattern
  * - Service-Lifecycle Management
  */
-export default class TrackService extends ApplicationService {
+export class TrackService extends ApplicationService {
   private container!: ServiceContainer;
   private registry!: HandlerRegistry;
 
