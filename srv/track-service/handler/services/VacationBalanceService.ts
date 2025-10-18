@@ -1,6 +1,7 @@
 import { Transaction } from '@sap/cds';
 import { TimeEntryRepository } from '../repositories';
 import { UserRepository } from '../repositories';
+import { CustomizingService } from './CustomizingService';
 import { logger } from '../utils';
 
 export interface VacationBalance {
@@ -19,6 +20,7 @@ export class VacationBalanceService {
   constructor(
     private timeEntryRepo: TimeEntryRepository,
     private userRepo: UserRepository,
+    private customizingService: CustomizingService,
   ) {}
 
   /**
@@ -38,7 +40,10 @@ export class VacationBalanceService {
       throw new Error(`User ${userId} not found`);
     }
 
-    const totalDays = user.annualVacationDays || 30.0;
+    const userDefaults = this.customizingService.getUserDefaults();
+    const vacationSettings = this.customizingService.getVacationSettings();
+
+    const totalDays = Number(user.annualVacationDays ?? userDefaults.fallbackAnnualVacationDays);
     logger.calculationResult('VacationBalance', 'User annual vacation days loaded', {
       userId,
       totalDays,
@@ -56,9 +61,9 @@ export class VacationBalanceService {
 
     // Criticality
     let criticality = 0; // neutral
-    if (remainingDays < 5) {
+    if (remainingDays < vacationSettings.criticalRemainingDays) {
       criticality = 1; // wenig übrig → rot
-    } else if (remainingDays < 10) {
+    } else if (remainingDays < vacationSettings.warningRemainingDays) {
       criticality = 2; // mittel → gelb
     } else {
       criticality = 3; // viel übrig → grün

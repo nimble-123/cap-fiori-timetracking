@@ -1,5 +1,6 @@
 import { Transaction } from '@sap/cds';
 import { TimeEntryRepository } from '../repositories';
+import { CustomizingService } from './CustomizingService';
 import { logger } from '../utils';
 
 export interface SickLeaveBalance {
@@ -13,7 +14,10 @@ export interface SickLeaveBalance {
  * Zählt Krankheitstage basierend auf TimeEntries
  */
 export class SickLeaveBalanceService {
-  constructor(private timeEntryRepo: TimeEntryRepository) {}
+  constructor(
+    private timeEntryRepo: TimeEntryRepository,
+    private customizingService: CustomizingService,
+  ) {}
 
   /**
    * Berechnet Krankheitssaldo für ein Jahr
@@ -33,11 +37,13 @@ export class SickLeaveBalanceService {
 
     const totalDays = sickEntries.length;
 
+    const sickLeaveSettings = this.customizingService.getSickLeaveSettings();
+
     // Criticality
     let criticality = 0; // ok
-    if (totalDays > 30) {
+    if (totalDays > sickLeaveSettings.criticalDays) {
       criticality = 2; // sehr viel → rot
-    } else if (totalDays > 10) {
+    } else if (totalDays > sickLeaveSettings.warningDays) {
       criticality = 1; // viel → gelb
     }
 

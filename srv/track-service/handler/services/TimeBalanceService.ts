@@ -2,6 +2,7 @@ import { Transaction } from '@sap/cds';
 import type { MonthlyBalance } from '#cds-models/TrackService';
 import { TimeEntryRepository } from '../repositories';
 import { logger } from '../utils';
+import { CustomizingService } from './CustomizingService';
 
 export interface YearBalance {
   year: number;
@@ -18,9 +19,11 @@ export interface YearBalance {
  */
 export class TimeBalanceService {
   private repository: TimeEntryRepository;
+  private customizingService: CustomizingService;
 
-  constructor(repository: TimeEntryRepository) {
+  constructor(repository: TimeEntryRepository, customizingService: CustomizingService) {
     this.repository = repository;
+    this.customizingService = customizingService;
   }
 
   /**
@@ -51,12 +54,17 @@ export class TimeBalanceService {
     });
 
     // Criticality: 3=positive(grün), 2=critical(gelb), 1=negative(rot), 0=neutral
+    const balanceSettings = this.customizingService.getBalanceSettings();
+    const undertimeCriticalLimit = -Math.abs(balanceSettings.undertimeCriticalHours);
+
     let criticality = 0;
-    if (balance > 0)
+    if (balance > 0) {
       criticality = 3; // Grün - Überstunden
-    else if (balance < -5)
-      criticality = 1; // Rot - Mehr als 5h Unterzeit
-    else if (balance < 0) criticality = 2; // Gelb - Leichte Unterzeit
+    } else if (balance < undertimeCriticalLimit) {
+      criticality = 1; // Rot - Kritische Unterzeit
+    } else if (balance < 0) {
+      criticality = 2; // Gelb - Leichte Unterzeit
+    }
 
     return {
       month: `${year}-${month.toString().padStart(2, '0')}`,
@@ -106,11 +114,13 @@ export class TimeBalanceService {
    * @param numberOfMonths - Anzahl Monate (default: 6)
    * @returns Array mit Monats-Salden (neueste zuerst)
    */
-  async getRecentMonthsBalance(tx: Transaction, userId: string, numberOfMonths: number = 6): Promise<MonthlyBalance[]> {
+  async getRecentMonthsBalance(tx: Transaction, userId: string, numberOfMonths?: number): Promise<MonthlyBalance[]> {
     const balances: MonthlyBalance[] = [];
     const now = new Date();
+    const balanceSettings = this.customizingService.getBalanceSettings();
+    const monthsToFetch = numberOfMonths ?? balanceSettings.recentMonthsDefault;
 
-    for (let i = 0; i < numberOfMonths; i++) {
+    for (let i = 0; i < monthsToFetch; i++) {
       const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
       const balance = await this.getMonthBalance(tx, userId, date.getFullYear(), date.getMonth() + 1);
       balances.push(balance);

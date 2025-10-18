@@ -1,5 +1,6 @@
 import { TimeEntry, User } from '#cds-models/TrackService';
 import { TimeEntryFactory } from '../factories';
+import { CustomizingService } from '../services/CustomizingService';
 import { DateUtils, logger } from '../utils';
 
 /**
@@ -7,6 +8,10 @@ import { DateUtils, logger } from '../utils';
  * Verwaltet die Logik zur automatischen Erstellung von monatlichen Einträgen
  */
 export class MonthlyGenerationStrategy {
+  constructor(
+    private timeEntryFactory: TimeEntryFactory,
+    private customizingService: CustomizingService,
+  ) {}
   /**
    * Generiert fehlende TimeEntries für den aktuellen Monat
    * @param userID - User ID
@@ -22,7 +27,8 @@ export class MonthlyGenerationStrategy {
       { year: monthData.year, month: monthData.month + 1, daysInMonth: monthData.daysInMonth },
     );
 
-    const workingDaysPerWeek = user.workingDaysPerWeek || 5;
+    const userDefaults = this.customizingService.getUserDefaults();
+    const workingDaysPerWeek = user.workingDaysPerWeek ?? userDefaults.fallbackWorkingDays;
     const newEntries: TimeEntry[] = [];
 
     for (let day = 1; day <= monthData.daysInMonth; day++) {
@@ -39,7 +45,7 @@ export class MonthlyGenerationStrategy {
         continue;
       }
 
-      const entry = TimeEntryFactory.createDefaultEntry(userID, currentDate, user);
+      const entry = this.timeEntryFactory.createDefaultEntry(userID, currentDate, user);
       newEntries.push(entry);
     }
 

@@ -5,7 +5,6 @@ using TrackService as service from '../../../service-model';
 ////////////////////////////////////////////////////////////////////////////
 annotate service.TimeEntries with @(
   UI.SelectionFields               : [
-    user_ID,
     workDate,
     entryType_code,
     workLocation_code,

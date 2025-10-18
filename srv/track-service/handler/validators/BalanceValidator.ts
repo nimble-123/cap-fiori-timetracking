@@ -1,4 +1,5 @@
 import { logger } from '../utils';
+import { CustomizingService } from '../services/CustomizingService';
 
 /**
  * Validator für Balance-Operationen
@@ -9,6 +10,8 @@ import { logger } from '../utils';
  * - Plausibilität von Balance-Berechnungen
  */
 export class BalanceValidator {
+  constructor(private customizingService: CustomizingService) {}
+
   /**
    * Validiert Jahr für Saldo-Abfrage
    * @param year - Zieljahr
@@ -16,8 +19,9 @@ export class BalanceValidator {
    */
   validateYear(year: number): void {
     const currentYear = new Date().getFullYear();
-    const minYear = currentYear - 10; // Max 10 Jahre zurück
-    const maxYear = currentYear + 1; // Max 1 Jahr voraus (für Planung)
+    const balanceSettings = this.customizingService.getBalanceSettings();
+    const minYear = currentYear - balanceSettings.yearPastLimit;
+    const maxYear = currentYear + balanceSettings.yearFutureLimit;
 
     if (year < minYear || year > maxYear) {
       throw new Error(
@@ -63,9 +67,10 @@ export class BalanceValidator {
       throw new Error(`Monats-Anzahl ${monthsCount} muss mindestens 1 sein.`);
     }
 
-    if (monthsCount > 24) {
+    const balanceSettings = this.customizingService.getBalanceSettings();
+    if (monthsCount > balanceSettings.maxMonths) {
       throw new Error(
-        `Monats-Anzahl ${monthsCount} ist zu groß. Maximum: 24 Monate (2 Jahre). Bitte kleineren Zeitraum wählen.`,
+        `Monats-Anzahl ${monthsCount} ist zu groß. Maximum: ${balanceSettings.maxMonths} Monate. Bitte kleineren Zeitraum wählen.`,
       );
     }
 
@@ -85,7 +90,8 @@ export class BalanceValidator {
     // Zusätzliche Prüfung: Datum nicht zu weit in der Zukunft
     const targetDate = new Date(year, month - 1, 1);
     const now = new Date();
-    const futureLimit = new Date(now.getFullYear(), now.getMonth() + 2, 1); // Max 2 Monate voraus
+    const balanceSettings = this.customizingService.getBalanceSettings();
+    const futureLimit = new Date(now.getFullYear(), now.getMonth() + balanceSettings.futureMonthBuffer, 1);
 
     if (targetDate > futureLimit) {
       throw new Error(
@@ -108,7 +114,8 @@ export class BalanceValidator {
     }
 
     // Plausibilitätsprüfung: Werte über 500h oder unter -500h sind unrealistisch
-    const MAX_REALISTIC_HOURS = 500;
+    const balanceSettings = this.customizingService.getBalanceSettings();
+    const MAX_REALISTIC_HOURS = balanceSettings.maxHoursAbsolute;
 
     if (Math.abs(balance) > MAX_REALISTIC_HOURS) {
       logger.validationWarning(
@@ -137,11 +144,12 @@ export class BalanceValidator {
       throw new Error(`Arbeitstage-Anzahl ${workingDays} darf nicht negativ sein.`);
     }
 
-    // Max 23 Arbeitstage pro Monat (realistischer Wert)
-    if (workingDays > 23) {
+    const balanceSettings = this.customizingService.getBalanceSettings();
+
+    if (workingDays > balanceSettings.maxWorkingDaysPerMonth) {
       logger.validationWarning(
         'WorkingDays',
-        `${workingDays} working days for ${context} is unusually high. Normally max 23/month.`,
+        `${workingDays} working days for ${context} is unusually high. Normally max ${balanceSettings.maxWorkingDaysPerMonth}/month.`,
         { workingDays, context },
       );
     }

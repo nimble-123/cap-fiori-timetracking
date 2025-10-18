@@ -11,7 +11,7 @@ interface Dependencies {
   userService: UserService;
   validator: TimeEntryValidator;
   repository: TimeEntryRepository;
-  factory: typeof TimeEntryFactory;
+  factory: TimeEntryFactory;
 }
 
 /**
@@ -22,7 +22,7 @@ export class UpdateTimeEntryCommand {
   private userService: UserService;
   private validator: TimeEntryValidator;
   private repository: TimeEntryRepository;
-  private factory: typeof TimeEntryFactory;
+  private factory: TimeEntryFactory;
 
   constructor(dependencies: Dependencies) {
     this.userService = dependencies.userService;

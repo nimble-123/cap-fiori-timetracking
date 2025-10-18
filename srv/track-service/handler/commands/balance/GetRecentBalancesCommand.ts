@@ -1,6 +1,7 @@
 import { Transaction } from '@sap/cds';
 import type { MonthlyBalance } from '#cds-models/TrackService';
 import { TimeBalanceService, UserService } from '../../services';
+import { CustomizingService } from '../../services/CustomizingService';
 import { BalanceValidator } from '../../validators';
 import { logger } from '../../utils';
 
@@ -9,6 +10,7 @@ interface BalanceDependencies {
   balanceService: TimeBalanceService;
   userService: UserService;
   validator: BalanceValidator;
+  customizingService: CustomizingService;
 }
 
 /**
@@ -24,11 +26,13 @@ export class GetRecentBalancesCommand {
   private balanceService: TimeBalanceService;
   private userService: UserService;
   private validator: BalanceValidator;
+  private customizingService: CustomizingService;
 
   constructor(dependencies: BalanceDependencies) {
     this.balanceService = dependencies.balanceService;
     this.userService = dependencies.userService;
     this.validator = dependencies.validator;
+    this.customizingService = dependencies.customizingService;
   }
 
   /**
@@ -38,20 +42,23 @@ export class GetRecentBalancesCommand {
    * @param monthsCount - Anzahl der Monate (default: 6)
    * @returns Array von Monatssalden
    */
-  async execute(req: any, tx: Transaction, monthsCount: number = 6): Promise<MonthlyBalance[]> {
-    logger.commandStart('GetRecentBalances', { monthsCount });
+  async execute(req: any, tx: Transaction, monthsCount?: number): Promise<MonthlyBalance[]> {
+    const balanceSettings = this.customizingService.getBalanceSettings();
+    const effectiveMonths = monthsCount ?? balanceSettings.recentMonthsDefault;
+
+    logger.commandStart('GetRecentBalances', { monthsCount: effectiveMonths });
 
     // 1. Anzahl Monate validieren
-    this.validator.validateMonthsCount(monthsCount);
+    this.validator.validateMonthsCount(effectiveMonths);
 
-    logger.commandData('GetRecentBalances', 'Months count validated', { monthsCount });
+    logger.commandData('GetRecentBalances', 'Months count validated', { monthsCount: effectiveMonths });
 
     // 2. User auflösen
     const { userID } = await this.userService.resolveUserForGeneration(req);
     logger.commandData('GetRecentBalances', 'User resolved', { userID });
 
     // 3. Salden vom Service berechnen lassen
-    const balances = await this.balanceService.getRecentMonthsBalance(tx, userID, monthsCount);
+    const balances = await this.balanceService.getRecentMonthsBalance(tx, userID, effectiveMonths);
 
     logger.commandEnd('GetRecentBalances', { count: balances.length });
 

@@ -1,4 +1,5 @@
 import { logger } from '../utils';
+import { CustomizingService } from './CustomizingService';
 
 /**
  * Service zur Ermittlung von deutschen Feiertagen
@@ -19,6 +20,11 @@ interface HolidayApiResponse {
 
 export class HolidayService {
   private cache: Map<string, Map<string, Holiday>> = new Map();
+  private customizingService: CustomizingService;
+
+  constructor(customizingService: CustomizingService) {
+    this.customizingService = customizingService;
+  }
 
   /**
    * Ermittelt Feiertage für ein Jahr und Bundesland
@@ -37,7 +43,7 @@ export class HolidayService {
 
     try {
       logger.serviceCall('Holiday', `Fetching holidays from API for ${year}/${stateCode}`, { year, stateCode });
-      const url = `https://feiertage-api.de/api/?jahr=${year}&nur_land=${stateCode}`;
+      const url = this.buildHolidayUrl(year, stateCode);
 
       const response = await fetch(url);
 
@@ -66,6 +72,24 @@ export class HolidayService {
       logger.error('Error loading holidays', error, { year, stateCode });
       return new Map();
     }
+  }
+
+  private buildHolidayUrl(year: number, stateCode: string): string {
+    const config = this.customizingService.getHolidayApiConfig();
+    const baseUrl = config.baseUrl || 'https://feiertage-api.de/api/';
+    let url: URL;
+
+    try {
+      url = new URL(baseUrl);
+    } catch (error) {
+      logger.error('Invalid holiday API base URL', error as Error, { baseUrl });
+      url = new URL('https://feiertage-api.de/api/');
+    }
+
+    url.searchParams.set('jahr', String(year));
+    url.searchParams.set(config.countryParameter || 'nur_land', stateCode);
+
+    return url.toString();
   }
 
   /**

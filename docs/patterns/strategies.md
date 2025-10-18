@@ -9,23 +9,32 @@ Das **Strategy Pattern** ermöglicht austauschbare Algorithmen für unterschiedl
  * MonthlyGenerationStrategy - Generiert alle Arbeitstage eines Monats
  */
 export class MonthlyGenerationStrategy {
+  constructor(
+    private timeEntryFactory: TimeEntryFactory,
+    private customizingService: CustomizingService,
+  ) {}
+  
   generateMissingEntries(userID: string, user: User, existingDates: Set<string>): TimeEntry[] {
     const monthData = DateUtils.getCurrentMonthData();
+
+    const userDefaults = this.customizingService.getUserDefaults();
+    const workingDaysPerWeek = user.workingDaysPerWeek ?? userDefaults.fallbackWorkingDays;
     const newEntries: TimeEntry[] = [];
 
     for (let day = 1; day <= monthData.daysInMonth; day++) {
       const currentDate = new Date(monthData.year, monthData.month, day);
 
       // Skip Wochenenden & existierende Einträge
-      if (!DateUtils.isWorkingDay(currentDate, user.workingDaysPerWeek)) {
+      if (!DateUtils.isWorkingDay(currentDate, workingDaysPerWeek)) {
         continue;
       }
 
-      const dateStr = DateUtils.formatDate(currentDate);
-      if (existingDates.has(dateStr)) continue;
+      const dateString = DateUtils.toLocalDateString(currentDate);
+      if (existingDates.has(dateString))  continue;
 
       // Factory erstellt perfekt berechnete Entries
-      newEntries.push(TimeEntryFactory.createDefaultEntry(userID, dateStr, user));
+      const entry = this.timeEntryFactory.createDefaultEntry(userID, currentDate, user);
+      newEntries.push(entry);
     }
 
     return newEntries;

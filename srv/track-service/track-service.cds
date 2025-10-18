@@ -33,6 +33,9 @@ service TrackService {
     @readonly
     entity TravelTypes   as projection on db.TravelTypes;
 
+    @odata.singleton
+    entity Customizing   as projection on db.Customizing;
+
     @odata.draft.enabled
     entity TimeEntries   as
         projection on db.TimeEntries {

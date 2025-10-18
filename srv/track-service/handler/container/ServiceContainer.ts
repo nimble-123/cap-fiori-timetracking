@@ -6,6 +6,7 @@ import {
   TimeEntryRepository,
   WorkLocationRepository,
   TravelTypeRepository,
+  CustomizingRepository,
 } from '../repositories';
 
 // Services
@@ -15,6 +16,7 @@ import {
   TimeBalanceService,
   VacationBalanceService,
   SickLeaveBalanceService,
+  CustomizingService,
 } from '../services';
 
 // Validators
@@ -71,8 +73,8 @@ export class ServiceContainer {
     this.buildRepositories(entities);
     this.buildServices();
     this.buildValidators();
-    this.buildStrategies();
     this.buildFactories();
+    this.buildStrategies();
     this.buildCommands();
   }
 
@@ -145,27 +147,40 @@ export class ServiceContainer {
     this.repositories.set('timeEntry', new TimeEntryRepository(entities));
     this.repositories.set('workLocation', new WorkLocationRepository(entities));
     this.repositories.set('travelType', new TravelTypeRepository(entities));
+    this.repositories.set('customizing', new CustomizingRepository(entities));
   }
 
   private buildServices(): void {
-    this.services.set('user', new UserService(this.getRepository('user')));
-    this.services.set('holiday', new HolidayService());
-    this.services.set('balance', new TimeBalanceService(this.getRepository('timeEntry')));
+    const customizingRepository = this.getRepository<CustomizingRepository>('customizing');
+    const customizingService = new CustomizingService(customizingRepository);
+    const userRepository = this.getRepository<UserRepository>('user');
+    const timeEntryRepository = this.getRepository<TimeEntryRepository>('timeEntry');
+
+    this.services.set('customizing', customizingService);
+    this.services.set('user', new UserService(userRepository, customizingService));
+    this.services.set('holiday', new HolidayService(customizingService));
+    this.services.set('balance', new TimeBalanceService(timeEntryRepository, customizingService));
     this.services.set(
       'vacationBalance',
-      new VacationBalanceService(this.getRepository('timeEntry'), this.getRepository('user')),
+      new VacationBalanceService(timeEntryRepository, userRepository, customizingService),
     );
-    this.services.set('sickLeaveBalance', new SickLeaveBalanceService(this.getRepository('timeEntry')));
+    this.services.set('sickLeaveBalance', new SickLeaveBalanceService(timeEntryRepository, customizingService));
   }
 
   private buildValidators(): void {
+    const projectRepository = this.getRepository<ProjectRepository>('project');
+    const activityTypeRepository = this.getRepository<ActivityTypeRepository>('activityType');
+    const workLocationRepository = this.getRepository<WorkLocationRepository>('workLocation');
+    const travelTypeRepository = this.getRepository<TravelTypeRepository>('travelType');
+    const customizingService = this.getService<CustomizingService>('customizing');
+
     // Zuerst Project und ActivityType Validators erstellen
-    this.validators.set('project', new ProjectValidator(this.getRepository('project')));
-    this.validators.set('activityType', new ActivityTypeValidator(this.getRepository('activityType')));
+    this.validators.set('project', new ProjectValidator(projectRepository));
+    this.validators.set('activityType', new ActivityTypeValidator(activityTypeRepository));
 
     // WorkLocation und TravelType Validators
-    this.validators.set('workLocation', new WorkLocationValidator(this.getRepository('workLocation')));
-    this.validators.set('travelType', new TravelTypeValidator(this.getRepository('travelType')));
+    this.validators.set('workLocation', new WorkLocationValidator(workLocationRepository));
+    this.validators.set('travelType', new TravelTypeValidator(travelTypeRepository));
 
     // TimeEntryValidator mit allen Validators
     this.validators.set(
@@ -178,48 +193,71 @@ export class ServiceContainer {
         this.getValidator('travelType'),
       ),
     );
-    this.validators.set('generation', new GenerationValidator());
-    this.validators.set('balance', new BalanceValidator());
+    this.validators.set('generation', new GenerationValidator(customizingService));
+    this.validators.set('balance', new BalanceValidator(customizingService));
   }
 
   private buildStrategies(): void {
-    this.strategies.set('monthly', new MonthlyGenerationStrategy());
-    this.strategies.set('yearly', new YearlyGenerationStrategy(this.getService('holiday')));
+    const timeEntryFactory = this.getFactory<TimeEntryFactory>('timeEntry');
+    const customizingService = this.getService<CustomizingService>('customizing');
+    const holidayService = this.getService<HolidayService>('holiday');
+
+    this.strategies.set('monthly', new MonthlyGenerationStrategy(timeEntryFactory, customizingService));
+    this.strategies.set('yearly', new YearlyGenerationStrategy(holidayService, timeEntryFactory));
   }
 
   private buildFactories(): void {
-    this.factories.set('timeEntry', TimeEntryFactory);
+    const customizingService = this.getService<CustomizingService>('customizing');
+
+    this.factories.set('timeEntry', new TimeEntryFactory(customizingService));
   }
 
   private buildCommands(): void {
     // TimeEntry CRUD Commands
-    const timeEntryDeps = {
-      userService: this.getService<UserService>('user'),
-      validator: this.getValidator<TimeEntryValidator>('timeEntry'),
-      repository: this.getRepository<TimeEntryRepository>('timeEntry'),
-      factory: this.getFactory<typeof TimeEntryFactory>('timeEntry'),
+    const userService = this.getService<UserService>('user');
+    const timeEntryValidator = this.getValidator<TimeEntryValidator>('timeEntry');
+    const timeEntryRepository = this.getRepository<TimeEntryRepository>('timeEntry');
+    const timeEntryFactory = this.getFactory<TimeEntryFactory>('timeEntry');
+    const customizingService = this.getService<CustomizingService>('customizing');
+
+    this.commands.set(
+      'createTimeEntry',
+      new CreateTimeEntryCommand({
+        userService,
+        validator: timeEntryValidator,
+        repository: timeEntryRepository,
+        factory: timeEntryFactory,
+        customizingService,
+      }),
+    );
+
+    const updateDeps = {
+      userService,
+      validator: timeEntryValidator,
+      repository: timeEntryRepository,
+      factory: timeEntryFactory,
     };
-    this.commands.set('createTimeEntry', new CreateTimeEntryCommand(timeEntryDeps));
-    this.commands.set('updateTimeEntry', new UpdateTimeEntryCommand(timeEntryDeps));
-    this.commands.set('recalculateTimeEntry', new RecalculateTimeEntryCommand(timeEntryDeps));
+    this.commands.set('updateTimeEntry', new UpdateTimeEntryCommand(updateDeps));
+    this.commands.set('recalculateTimeEntry', new RecalculateTimeEntryCommand({ ...updateDeps, customizingService }));
 
     // Generation Commands
     const generationDeps = {
-      userService: this.getService<UserService>('user'),
+      userService,
       validator: this.getValidator<GenerationValidator>('generation'),
-      repository: this.getRepository<TimeEntryRepository>('timeEntry'),
+      repository: timeEntryRepository,
       monthlyStrategy: this.getStrategy<MonthlyGenerationStrategy>('monthly'),
       yearlyStrategy: this.getStrategy<YearlyGenerationStrategy>('yearly'),
     };
     this.commands.set('generateMonthly', new GenerateMonthlyCommand(generationDeps));
-    this.commands.set('generateYearly', new GenerateYearlyCommand(generationDeps));
-    this.commands.set('getDefaultParams', new GetDefaultParamsCommand(this.getService<UserService>('user')));
+    this.commands.set('generateYearly', new GenerateYearlyCommand({ ...generationDeps, customizingService }));
+    this.commands.set('getDefaultParams', new GetDefaultParamsCommand(userService));
 
     // Balance Commands
     const balanceDeps = {
       balanceService: this.getService<TimeBalanceService>('balance'),
-      userService: this.getService<UserService>('user'),
+      userService,
       validator: this.getValidator<BalanceValidator>('balance'),
+      customizingService,
     };
     this.commands.set('getMonthlyBalance', new GetMonthlyBalanceCommand(balanceDeps));
     this.commands.set('getCurrentBalance', new GetCurrentBalanceCommand(balanceDeps));
@@ -228,14 +266,14 @@ export class ServiceContainer {
     // Vacation Balance Command
     const vacationBalanceDeps = {
       vacationBalanceService: this.getService<VacationBalanceService>('vacationBalance'),
-      userService: this.getService<UserService>('user'),
+      userService,
     };
     this.commands.set('getVacationBalance', new GetVacationBalanceCommand(vacationBalanceDeps));
 
     // Sick Leave Balance Command
     const sickLeaveBalanceDeps = {
       sickLeaveBalanceService: this.getService<SickLeaveBalanceService>('sickLeaveBalance'),
-      userService: this.getService<UserService>('user'),
+      userService,
     };
     this.commands.set('getSickLeaveBalance', new GetSickLeaveBalanceCommand(sickLeaveBalanceDeps));
   }

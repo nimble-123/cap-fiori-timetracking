@@ -4,6 +4,7 @@ import { UserService } from '../../services';
 import { TimeEntryValidator } from '../../validators';
 import { TimeEntryRepository } from '../../repositories';
 import { TimeEntryFactory } from '../../factories';
+import { CustomizingService } from '../../services/CustomizingService';
 import { logger } from '../../utils';
 
 // Type definitions
@@ -11,7 +12,8 @@ interface Dependencies {
   userService: UserService;
   validator: TimeEntryValidator;
   repository: TimeEntryRepository;
-  factory: typeof TimeEntryFactory;
+  factory: TimeEntryFactory;
+  customizingService: CustomizingService;
 }
 
 /**
@@ -22,13 +24,15 @@ export class CreateTimeEntryCommand {
   private userService: UserService;
   private validator: TimeEntryValidator;
   private repository: TimeEntryRepository;
-  private factory: typeof TimeEntryFactory;
+  private factory: TimeEntryFactory;
+  private customizingService: CustomizingService;
 
   constructor(dependencies: Dependencies) {
     this.userService = dependencies.userService;
     this.validator = dependencies.validator;
     this.repository = dependencies.repository;
     this.factory = dependencies.factory;
+    this.customizingService = dependencies.customizingService;
   }
 
   /**
@@ -39,6 +43,11 @@ export class CreateTimeEntryCommand {
    */
   async execute(tx: Transaction, entryData: Partial<TimeEntry>): Promise<any> {
     logger.commandStart('CreateTimeEntry', { workDate: entryData.workDate, entryType: entryData.entryType_code });
+
+    const timeEntryDefaults = this.customizingService.getTimeEntryDefaults();
+    const manualSource = timeEntryDefaults.manualSourceCode;
+    const generatedSource = timeEntryDefaults.generatedSourceCode;
+    const effectiveBreakMinutes = entryData.breakMin ?? timeEntryDefaults.defaultBreakMinutes;
 
     // Validierung der Pflichtfelder
     const entryType = this.validator.validateRequiredFieldsForCreate(entryData);
@@ -55,10 +64,13 @@ export class CreateTimeEntryCommand {
     logger.commandData('CreateTimeEntry', 'Validations passed', { user_ID, workDate });
 
     // Für generierte Einträge (Wochenenden/Feiertage): Bereits berechnete Werte übernehmen
-    const isGeneratedNonWork = entryData.source === 'GENERATED' && (entryType_code === 'O' || entryType_code === 'H');
+    const isGeneratedNonWork =
+      entryData.source === generatedSource &&
+      (entryType_code === timeEntryDefaults.weekendEntryTypeCode ||
+        entryType_code === timeEntryDefaults.holidayEntryTypeCode);
 
     if (isGeneratedNonWork && entryData.durationHoursGross !== undefined) {
-      logger.commandEnd('CreateTimeEntry', { source: 'GENERATED', entryType: entryType_code });
+      logger.commandEnd('CreateTimeEntry', { source: generatedSource, entryType: entryType_code });
       // Bereits berechnete Werte aus der Strategie übernehmen
       return {
         breakMin: entryData.breakMin,
@@ -80,7 +92,7 @@ export class CreateTimeEntryCommand {
         user_ID!,
         startTime,
         endTime,
-        entryData.breakMin || 0,
+        effectiveBreakMinutes,
       );
     } else {
       logger.commandData('CreateTimeEntry', 'Calculating non-work time', { entryType });
@@ -88,13 +100,13 @@ export class CreateTimeEntryCommand {
     }
 
     logger.commandEnd('CreateTimeEntry', {
-      source: entryData.source || 'UI',
+      source: entryData.source || manualSource,
       netHours: durationData.durationHoursNet,
     });
 
     return {
       ...durationData,
-      source: entryData.source || 'UI',
+      source: entryData.source || manualSource,
     };
   }
 }

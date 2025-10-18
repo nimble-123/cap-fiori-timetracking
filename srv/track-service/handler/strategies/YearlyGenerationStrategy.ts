@@ -10,9 +10,11 @@ import { DateUtils, logger } from '../utils';
  */
 export class YearlyGenerationStrategy {
   private holidayService: HolidayService;
+  private timeEntryFactory: TimeEntryFactory;
 
-  constructor(holidayService: HolidayService) {
+  constructor(holidayService: HolidayService, timeEntryFactory: TimeEntryFactory) {
     this.holidayService = holidayService;
+    this.timeEntryFactory = timeEntryFactory;
   }
 
   /**
@@ -60,7 +62,7 @@ export class YearlyGenerationStrategy {
       // Prüfen ob Feiertag
       const holiday = holidays.get(dateString);
       if (holiday) {
-        const entry = TimeEntryFactory.createHolidayEntry(userID, currentDate, holiday.name);
+        const entry = this.timeEntryFactory.createHolidayEntry(userID, currentDate, holiday.name);
         newEntries.push(entry);
         logger.strategyEvent('YearlyGeneration', `Holiday: ${dateString} - ${holiday.name}`, {
           date: dateString,
@@ -71,13 +73,13 @@ export class YearlyGenerationStrategy {
 
       // Prüfen ob Wochenende
       if (DateUtils.isWeekend(currentDate)) {
-        const entry = TimeEntryFactory.createWeekendEntry(userID, currentDate);
+        const entry = this.timeEntryFactory.createWeekendEntry(userID, currentDate);
         newEntries.push(entry);
         continue;
       }
 
       // Normaler Arbeitstag
-      const entry = TimeEntryFactory.createDefaultEntry(userID, currentDate, user);
+      const entry = this.timeEntryFactory.createDefaultEntry(userID, currentDate, user);
       newEntries.push(entry);
     }
 

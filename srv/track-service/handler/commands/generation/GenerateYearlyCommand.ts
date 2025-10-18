@@ -4,6 +4,7 @@ import { TimeEntryRepository } from '../../repositories';
 import { UserService } from '../../services';
 import { GenerationValidator } from '../../validators';
 import { DateUtils, logger } from '../../utils';
+import { CustomizingService } from '../../services/CustomizingService';
 
 // Type definitions
 interface GenerationDependencies {
@@ -12,6 +13,7 @@ interface GenerationDependencies {
   repository: TimeEntryRepository;
   monthlyStrategy: any; // Not used in this command
   yearlyStrategy: YearlyGenerationStrategy;
+  customizingService: CustomizingService;
 }
 
 export interface YearlyGenerationResult {
@@ -44,12 +46,14 @@ export class GenerateYearlyCommand {
   private validator: GenerationValidator;
   private repository: TimeEntryRepository;
   private strategy: YearlyGenerationStrategy;
+  private customizingService: CustomizingService;
 
   constructor(dependencies: GenerationDependencies) {
     this.userService = dependencies.userService;
     this.validator = dependencies.validator;
     this.repository = dependencies.repository;
     this.strategy = dependencies.yearlyStrategy;
+    this.customizingService = dependencies.customizingService;
   }
 
   /**
@@ -134,19 +138,20 @@ export class GenerateYearlyCommand {
    * @returns Stats mit Workdays, Weekends, Holidays
    */
   private calculateYearlyStats(entries: TimeEntry[], existingCount: number): YearlyGenerationResult['stats'] {
+    const defaults = this.customizingService.getTimeEntryDefaults();
     let workdays = 0;
     let weekends = 0;
     let holidays = 0;
 
     for (const entry of entries) {
       switch (entry.entryType_code) {
-        case 'W': // Work
+        case defaults.workEntryTypeCode:
           workdays++;
           break;
-        case 'O': // Off (Weekend)
+        case defaults.weekendEntryTypeCode:
           weekends++;
           break;
-        case 'H': // Holiday
+        case defaults.holidayEntryTypeCode:
           holidays++;
           break;
       }

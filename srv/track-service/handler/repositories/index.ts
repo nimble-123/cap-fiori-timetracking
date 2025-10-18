@@ -4,3 +4,4 @@ export { ActivityTypeRepository } from './ActivityTypeRepository';
 export { TimeEntryRepository } from './TimeEntryRepository';
 export { WorkLocationRepository } from './WorkLocationRepository';
 export { TravelTypeRepository } from './TravelTypeRepository';
+export { CustomizingRepository } from './CustomizingRepository';

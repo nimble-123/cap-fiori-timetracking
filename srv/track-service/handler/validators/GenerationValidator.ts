@@ -1,5 +1,6 @@
 import { TimeEntry, User } from '#cds-models/TrackService';
 import { logger } from '../utils';
+import { CustomizingService } from '../services/CustomizingService';
 
 /**
  * Validator für Generierungs-Operationen
@@ -32,6 +33,8 @@ export class GenerationValidator {
     'SH', // Schleswig-Holstein
     'TH', // Thüringen
   ]);
+
+  constructor(private customizingService: CustomizingService) {}
 
   /**
    * Validiert, ob ein User existiert und aktiv ist
@@ -104,6 +107,16 @@ export class GenerationValidator {
     }
 
     // Prüfe, ob alle Einträge grundlegende Felder haben
+    const timeEntryDefaults = this.customizingService.getTimeEntryDefaults();
+    const workEntryType = timeEntryDefaults.workEntryTypeCode;
+    const allowedCodes = new Set([
+      workEntryType,
+      timeEntryDefaults.holidayEntryTypeCode,
+      timeEntryDefaults.weekendEntryTypeCode,
+      'V',
+      'S',
+    ]);
+
     for (let i = 0; i < entries.length; i++) {
       const entry = entries[i];
 
@@ -120,12 +133,14 @@ export class GenerationValidator {
       }
 
       // Prüfe auf valide Entry Types
-      if (!['W', 'V', 'S', 'H', 'O'].includes(entry.entryType_code)) {
-        throw new Error(`Entry ${i}: Ungültiger entryType_code '${entry.entryType_code}'. Erlaubt: W, V, S, H, O`);
+      if (!allowedCodes.has(entry.entryType_code)) {
+        throw new Error(
+          `Entry ${i}: Ungültiger entryType_code '${entry.entryType_code}'. Erlaubt sind ${Array.from(allowedCodes).join(', ')}`,
+        );
       }
 
       // Prüfe Zeitfelder (nur für Work Entries erforderlich)
-      if (entry.entryType_code === 'W') {
+      if (entry.entryType_code === workEntryType) {
         if (!entry.startTime || !entry.endTime) {
           throw new Error(`Entry ${i}: Work Entry benötigt startTime und endTime`);
         }

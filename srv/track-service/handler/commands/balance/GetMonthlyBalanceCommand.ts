@@ -1,6 +1,7 @@
 import { Transaction } from '@sap/cds';
 import type { MonthlyBalance } from '#cds-models/TrackService';
 import { TimeBalanceService, UserService } from '../../services';
+import { CustomizingService } from '../../services/CustomizingService';
 import { BalanceValidator } from '../../validators';
 import { logger } from '../../utils';
 
@@ -9,6 +10,7 @@ interface BalanceDependencies {
   balanceService: TimeBalanceService;
   userService: UserService;
   validator: BalanceValidator;
+  customizingService: CustomizingService;
 }
 
 interface BalanceStatusInfo {
@@ -31,11 +33,13 @@ export class GetMonthlyBalanceCommand {
   private balanceService: TimeBalanceService;
   private userService: UserService;
   private validator: BalanceValidator;
+  private customizingService: CustomizingService;
 
   constructor(dependencies: BalanceDependencies) {
     this.balanceService = dependencies.balanceService;
     this.userService = dependencies.userService;
     this.validator = dependencies.validator;
+    this.customizingService = dependencies.customizingService;
   }
 
   /**
@@ -93,13 +97,16 @@ export class GetMonthlyBalanceCommand {
    * @returns Status-Informationen mit Emoji und formatiertem Text
    */
   private getBalanceStatus(balanceValue: number): BalanceStatusInfo {
+    const { undertimeCriticalHours } = this.customizingService.getBalanceSettings();
+    const undertimeLimit = -Math.abs(undertimeCriticalHours);
+
     let emoji = '🔵';
     let status = 'Neutral';
 
     if (balanceValue > 0) {
       emoji = '💚';
       status = 'Positiv';
-    } else if (balanceValue < -5) {
+    } else if (balanceValue < undertimeLimit) {
       emoji = '🔴';
       status = 'Kritisch';
     } else if (balanceValue < 0) {

@@ -7,17 +7,19 @@
 Kennt alle Business Rules und erstellt perfekt berechnete TimeEntry-Objekte:
 
 ```typescript
+const factory = container.getFactory<TimeEntryFactory>('timeEntry');
+
 // Work-Time Data (wird im Command verwendet)
-const workData = await TimeEntryFactory.createWorkTimeData(userService, tx, userId, startTime, endTime, breakMin);
-// → Berechnet automatisch: gross, net, overtime, undertime
+const workData = await factory.createWorkTimeData(userService, tx, userId, startTime, endTime, breakMin);
+// → Berechnet automatisch: gross, net, overtime, undertime, nutzt Customizing-Fallbacks
 
 // Non-Work-Time Data (Urlaub, Krankheit)
-const nonWorkData = await TimeEntryFactory.createNonWorkTimeData(userService, tx, userId);
+const nonWorkData = await factory.createNonWorkTimeData(userService, tx, userId);
 
-// Komplette Entries für Generierung
-const workEntry = TimeEntryFactory.createDefaultEntry(userId, date, user);
-const weekendEntry = TimeEntryFactory.createWeekendEntry(userId, date);
-const holidayEntry = TimeEntryFactory.createHolidayEntry(userId, date, 'Neujahr');
+// Komplette Entries für Generierung (nutzen Customizing Defaults)
+const workEntry = factory.createDefaultEntry(userId, date, user);
+const weekendEntry = factory.createWeekendEntry(userId, date);
+const holidayEntry = factory.createHolidayEntry(userId, date, 'Neujahr');
 ```
 
 ## **HandlerFactory** - Handler Instance Creation

@@ -2,6 +2,7 @@ import { Request, Transaction } from '@sap/cds';
 import { User } from '#cds-models/TrackService';
 import { TimeCalculationService } from './TimeCalculationService';
 import { UserRepository } from '../repositories';
+import { CustomizingService } from './CustomizingService';
 import { logger } from '../utils';
 
 // Type definitions
@@ -16,9 +17,11 @@ interface UserResolveResult {
  */
 export class UserService {
   private userRepository: UserRepository;
+  private customizingService: CustomizingService;
 
-  constructor(userRepository: UserRepository) {
+  constructor(userRepository: UserRepository, customizingService: CustomizingService) {
     this.userRepository = userRepository;
+    this.customizingService = customizingService;
   }
 
   /**
@@ -30,8 +33,9 @@ export class UserService {
   async getExpectedDailyHours(tx: Transaction, userId: string): Promise<number> {
     const user = await this.userRepository.findByIdActiveOrThrow(tx, userId);
 
-    const weeklyHours = Number(user.weeklyHoursDec ?? 0);
-    const workingDays = Math.max(1, Number(user.workingDaysPerWeek ?? 5));
+    const userDefaults = this.customizingService.getUserDefaults();
+    const weeklyHours = Number(user.weeklyHoursDec ?? userDefaults.fallbackWeeklyHours);
+    const workingDays = Math.max(1, Number(user.workingDaysPerWeek ?? userDefaults.fallbackWorkingDays));
     const expectedDaily = TimeCalculationService.roundToTwoDecimals(weeklyHours / workingDays);
 
     // Update falls sich erwartete Tagesstunden geändert haben
@@ -50,14 +54,19 @@ export class UserService {
   async resolveUserForGeneration(req: Request): Promise<UserResolveResult> {
     const TEST_USER_IDS = ['max.mustermann@test.de', 'erika.musterfrau@test.de', 'testuser1', 'user1'];
 
-    const DEMO_USER_ID = 'max.mustermann@test.de';
-    const DEMO_USER = {
+    const userDefaults = this.customizingService.getUserDefaults();
+    const demoWeeklyHours = userDefaults.fallbackWeeklyHours;
+    const demoWorkingDays = Math.max(1, userDefaults.fallbackWorkingDays);
+    const demoExpectedDaily = TimeCalculationService.roundToTwoDecimals(demoWeeklyHours / demoWorkingDays);
+
+    const DEMO_USER_ID = userDefaults.demoUserId;
+    const demoUser = {
       ID: DEMO_USER_ID,
-      name: 'Max Mustermann (Demo)',
+      name: 'Demo User',
       active: true,
-      workingDaysPerWeek: 5,
-      weeklyHoursDec: 36.0,
-      expectedDailyHoursDec: 7.2,
+      workingDaysPerWeek: demoWorkingDays,
+      weeklyHoursDec: demoWeeklyHours,
+      expectedDailyHoursDec: demoExpectedDaily,
     } as User;
 
     let userID: string = req.user?.id;
@@ -74,7 +83,7 @@ export class UserService {
       }
 
       logger.userOperation('Fallback', 'Using demo user (no authenticated user)');
-      return { userID: DEMO_USER_ID, user: DEMO_USER };
+      return { userID: DEMO_USER_ID, user: demoUser };
     }
 
     logger.userOperation('Auth', `Authenticated user: ${userID}`, { userID });
@@ -83,12 +92,12 @@ export class UserService {
       const user = await this.userRepository.findByIdWithoutTx(userID);
       if (!user) {
         logger.userOperation('Fallback', `Authenticated user ${userID} not in DB, using demo user`, { userID });
-        return { userID: DEMO_USER_ID, user: DEMO_USER };
+        return { userID: DEMO_USER_ID, user: demoUser };
       }
       return { userID, user };
     } catch (error: any) {
       logger.userOperation('Fallback', `Error loading user, using demo user: ${error.message}`, { userID });
-      return { userID: DEMO_USER_ID, user: DEMO_USER };
+      return { userID: DEMO_USER_ID, user: demoUser };
     }
   }
 }

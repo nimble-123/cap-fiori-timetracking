@@ -4,12 +4,14 @@ import { UserService } from '../../services';
 import { TimeEntryRepository } from '../../repositories';
 import { TimeEntryFactory } from '../../factories';
 import { logger } from '../../utils';
+import { CustomizingService } from '../../services/CustomizingService';
 
 // Type definitions
 interface Dependencies {
   userService: UserService;
   repository: TimeEntryRepository;
-  factory: typeof TimeEntryFactory;
+  factory: TimeEntryFactory;
+  customizingService: CustomizingService;
 }
 
 /**
@@ -19,12 +21,14 @@ interface Dependencies {
 export class RecalculateTimeEntryCommand {
   private userService: UserService;
   private repository: TimeEntryRepository;
-  private factory: typeof TimeEntryFactory;
+  private factory: TimeEntryFactory;
+  private customizingService: CustomizingService;
 
   constructor(dependencies: Dependencies) {
     this.userService = dependencies.userService;
     this.repository = dependencies.repository;
     this.factory = dependencies.factory;
+    this.customizingService = dependencies.customizingService;
   }
 
   /**
@@ -45,9 +49,11 @@ export class RecalculateTimeEntryCommand {
 
     // 2. Zeitdaten neu berechnen
     let calculatedData;
-    const entryType = existingEntry.entryType_code || 'W';
+    const defaults = this.customizingService.getTimeEntryDefaults();
+    const entryType = existingEntry.entryType_code || defaults.workEntryTypeCode;
+    const breakMinutes = existingEntry.breakMin ?? defaults.defaultBreakMinutes;
 
-    if (entryType === 'W' || entryType === 'B') {
+    if (entryType === defaults.workEntryTypeCode || entryType === 'B') {
       // Work/Business Trip: Berechnung mit Start-/Endzeit
       calculatedData = await this.factory.createWorkTimeData(
         this.userService,
@@ -55,7 +61,7 @@ export class RecalculateTimeEntryCommand {
         existingEntry.user_ID!,
         existingEntry.startTime!,
         existingEntry.endTime!,
-        existingEntry.breakMin || 0,
+        breakMinutes,
       );
     } else {
       // Non-Work (Urlaub, Krankheit, etc.): Sollstunden ohne Über-/Unterzeit

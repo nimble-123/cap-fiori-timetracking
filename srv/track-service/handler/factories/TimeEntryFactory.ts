@@ -2,6 +2,7 @@ import { randomUUID } from 'crypto';
 import { Transaction } from '@sap/cds';
 import { TimeEntry, User } from '#cds-models/TrackService';
 import { TimeCalculationService, UserService } from '../services';
+import { CustomizingService } from '../services/CustomizingService';
 import { DateUtils, logger } from '../utils';
 
 // Type definitions
@@ -19,6 +20,8 @@ interface WorkTimeData {
  * Zentrale Stelle für die Erzeugung von TimeEntry-Objekten
  */
 export class TimeEntryFactory {
+  constructor(private customizingService: CustomizingService) {}
+
   /**
    * Erstellt Work-Time Entry Daten
    * @param userService - UserService Instanz
@@ -29,7 +32,7 @@ export class TimeEntryFactory {
    * @param breakMinutes - Pausenzeit
    * @returns Berechnete Zeitdaten
    */
-  static async createWorkTimeData(
+  async createWorkTimeData(
     userService: UserService,
     tx: Transaction,
     userId: string,
@@ -75,7 +78,7 @@ export class TimeEntryFactory {
    * @param userId - User ID
    * @returns Standard-Zeitdaten
    */
-  static async createNonWorkTimeData(userService: UserService, tx: Transaction, userId: string): Promise<WorkTimeData> {
+  async createNonWorkTimeData(userService: UserService, tx: Transaction, userId: string): Promise<WorkTimeData> {
     const expectedDaily = await userService.getExpectedDailyHours(tx, userId);
 
     return {
@@ -95,22 +98,29 @@ export class TimeEntryFactory {
    * @param user - User Objekt mit Konfiguration
    * @returns Vollständiges TimeEntry Objekt
    */
-  static createDefaultEntry(userID: string, date: Date, user: User): TimeEntry {
+  createDefaultEntry(userID: string, date: Date, user: User): TimeEntry {
+    const timeDefaults = this.customizingService.getTimeEntryDefaults();
+    const userDefaults = this.customizingService.getUserDefaults();
     const dateString = DateUtils.toLocalDateString(date);
     const displayDate = DateUtils.toGermanDateString(date);
-    const workingDaysPerWeek = user.workingDaysPerWeek || 5;
-    const expected = user.expectedDailyHoursDec || (user.weeklyHoursDec || 36) / workingDaysPerWeek;
+    const workingDaysPerWeek = user.workingDaysPerWeek ?? userDefaults.fallbackWorkingDays;
+    const weeklyHours = Number(user.weeklyHoursDec ?? userDefaults.fallbackWeeklyHours);
+    const expected =
+      user.expectedDailyHoursDec ?? TimeCalculationService.roundToTwoDecimals(weeklyHours / workingDaysPerWeek);
 
     // Berechne Start- und Endzeit basierend auf erwarteten Stunden
-    const breakMinutes = 30;
-    const startHour = 8; // Standard-Startzeit 08:00
+    const breakMinutes = timeDefaults.defaultBreakMinutes;
+    const startHour = timeDefaults.startHour;
+    const startMinute = timeDefaults.startMinute;
     const grossMinutes = expected * 60 + breakMinutes; // Brutto-Arbeitszeit inkl. Pause
     const grossHours = grossMinutes / 60;
 
-    const endHour = startHour + Math.floor(grossHours);
-    const endMinute = Math.round((grossHours - Math.floor(grossHours)) * 60);
+    const totalStartMinutes = startHour * 60 + startMinute;
+    const totalEndMinutes = totalStartMinutes + grossMinutes;
+    const endHour = Math.floor(totalEndMinutes / 60);
+    const endMinute = totalEndMinutes % 60;
 
-    const startTime = `${String(startHour).padStart(2, '0')}:00:00`;
+    const startTime = `${String(startHour).padStart(2, '0')}:${String(startMinute).padStart(2, '0')}:00`;
     const endTime = `${String(endHour).padStart(2, '0')}:${String(endMinute).padStart(2, '0')}:00`;
 
     logger.factoryCreated('DefaultEntry', 'Default work entry created', {
@@ -122,7 +132,7 @@ export class TimeEntryFactory {
       ID: randomUUID(),
       user_ID: userID,
       workDate: dateString,
-      entryType_code: 'W',
+      entryType_code: timeDefaults.workEntryTypeCode,
       startTime: startTime,
       endTime: endTime,
       breakMin: breakMinutes,
@@ -131,7 +141,7 @@ export class TimeEntryFactory {
       overtimeHours: 0,
       undertimeHours: 0,
       expectedDailyHoursDec: expected,
-      source: 'GENERATED',
+      source: timeDefaults.generatedSourceCode,
       note: `Automatisch generiert für ${displayDate}`,
       workLocation_code: user.defaultWorkLocation_code || null,
       travelType_code: null,
@@ -144,7 +154,8 @@ export class TimeEntryFactory {
    * @param date - Datum
    * @returns TimeEntry für Wochenende
    */
-  static createWeekendEntry(userID: string, date: Date): TimeEntry {
+  createWeekendEntry(userID: string, date: Date): TimeEntry {
+    const timeDefaults = this.customizingService.getTimeEntryDefaults();
     const dateString = DateUtils.toLocalDateString(date);
     const dayName = DateUtils.getWeekdayName(date);
 
@@ -154,7 +165,7 @@ export class TimeEntryFactory {
       ID: randomUUID(),
       user_ID: userID,
       workDate: dateString,
-      entryType_code: 'O', // O = Frei/Wochenende
+      entryType_code: timeDefaults.weekendEntryTypeCode,
       startTime: '00:00:00',
       endTime: '00:00:00',
       breakMin: 0,
@@ -163,7 +174,7 @@ export class TimeEntryFactory {
       overtimeHours: 0,
       undertimeHours: 0,
       expectedDailyHoursDec: 0,
-      source: 'GENERATED',
+      source: timeDefaults.generatedSourceCode,
       note: `${dayName}`,
       workLocation_code: null,
       travelType_code: null,
@@ -177,7 +188,8 @@ export class TimeEntryFactory {
    * @param holidayName - Name des Feiertags
    * @returns TimeEntry für Feiertag
    */
-  static createHolidayEntry(userID: string, date: Date, holidayName: string): TimeEntry {
+  createHolidayEntry(userID: string, date: Date, holidayName: string): TimeEntry {
+    const timeDefaults = this.customizingService.getTimeEntryDefaults();
     const dateString = DateUtils.toLocalDateString(date);
 
     logger.factoryCreated('HolidayEntry', 'Holiday entry created', { workDate: dateString, holidayName });
@@ -186,7 +198,7 @@ export class TimeEntryFactory {
       ID: randomUUID(),
       user_ID: userID,
       workDate: dateString,
-      entryType_code: 'H', // H = Feiertag
+      entryType_code: timeDefaults.holidayEntryTypeCode,
       startTime: '00:00:00',
       endTime: '00:00:00',
       breakMin: 0,
@@ -195,7 +207,7 @@ export class TimeEntryFactory {
       overtimeHours: 0,
       undertimeHours: 0,
       expectedDailyHoursDec: 0,
-      source: 'GENERATED',
+      source: timeDefaults.generatedSourceCode,
       note: holidayName,
       workLocation_code: null,
       travelType_code: null,

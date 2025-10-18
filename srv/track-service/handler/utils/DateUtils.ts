@@ -11,7 +11,24 @@ export class DateUtils {
   /**
    * Standard-Locale für alle Datumsformatierungen
    */
-  private static readonly LOCALE = 'de-DE';
+  private static locale = 'de-DE';
+
+  /**
+   * Default Anzahl Arbeitstage pro Woche
+   */
+  private static defaultWorkingDaysPerWeek = 5;
+
+  /**
+   * Konfiguriert globale Datums-Defaults
+   */
+  static configure(options: { locale?: string; defaultWorkingDaysPerWeek?: number }): void {
+    if (options.locale) {
+      this.locale = options.locale;
+    }
+    if (options.defaultWorkingDaysPerWeek && options.defaultWorkingDaysPerWeek > 0) {
+      this.defaultWorkingDaysPerWeek = options.defaultWorkingDaysPerWeek;
+    }
+  }
 
   /**
    * Konvertiert ein Date-Objekt zu YYYY-MM-DD String (lokal, ohne UTC-Konvertierung)
@@ -112,7 +129,7 @@ export class DateUtils {
       throw new Error(`Ungültiges Date-Objekt: ${date}`);
     }
 
-    return date.toLocaleDateString(this.LOCALE, {
+    return date.toLocaleDateString(this.locale, {
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
@@ -134,7 +151,7 @@ export class DateUtils {
       throw new Error(`Ungültiges Date-Objekt: ${date}`);
     }
 
-    return date.toLocaleDateString(this.LOCALE, { weekday: 'long' });
+    return date.toLocaleDateString(this.locale, { weekday: 'long' });
   }
 
   /**
@@ -152,7 +169,7 @@ export class DateUtils {
       throw new Error(`Ungültiges Date-Objekt: ${date}`);
     }
 
-    return date.toLocaleDateString(this.LOCALE, { weekday: 'short' });
+    return date.toLocaleDateString(this.locale, { weekday: 'short' });
   }
 
   /**
@@ -201,7 +218,7 @@ export class DateUtils {
    * DateUtils.isWorkingDay(new Date(2025, 0, 18)); // false (Samstag)
    * DateUtils.isWorkingDay(new Date(2025, 0, 18), 6); // true (Samstag ist Arbeitstag bei 6-Tage-Woche)
    */
-  static isWorkingDay(date: Date, workingDaysPerWeek: number = 5): boolean {
+  static isWorkingDay(date: Date, workingDaysPerWeek: number = this.defaultWorkingDaysPerWeek): boolean {
     if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
       throw new Error(`Ungültiges Date-Objekt: ${date}`);
     }

@@ -11,8 +11,8 @@ entity Users : managed {
       name                  : String(111);
       active                : Boolean default true;
 
-      weeklyHoursDec        : Decimal(4, 2) default 36.00;
-      workingDaysPerWeek    : Integer default 5;
+      weeklyHoursDec        : Decimal(4, 2);
+      workingDaysPerWeek    : Integer;
 
       // Server berechnet/aktualisiert in Service-Logic
       expectedDailyHoursDec : Decimal(4, 2);
@@ -21,7 +21,7 @@ entity Users : managed {
       preferredState        : Association to GermanStates;
 
       // Urlaubstage pro Jahr
-      annualVacationDays    : Decimal(4, 1) default 30.0;
+      annualVacationDays    : Decimal(4, 1);
 
       // Standard-Arbeitsort (Dienstsitz)
       defaultWorkLocation   : Association to WorkLocations;
@@ -75,7 +75,7 @@ entity TimeEntries : managed, cuid {
 
   startTime             : Time not null;
   endTime               : Time not null;
-  breakMin              : Integer default 0;
+  breakMin              : Integer;
 
   // Abgeleitete Felder – ausschließlich Server-seitig setzen (berechnet in Service-Logic)
   durationHoursGross    : Decimal(4, 2); // 7.50 = 7h30
@@ -88,4 +88,45 @@ entity TimeEntries : managed, cuid {
 
   source                : String(20);
   note                  : String(500);
+}
+
+entity Customizing : managed {
+  key ID                             : Integer default 1;
+
+  // Time entry generation defaults
+      workStartHour                  : Integer default 8;
+      workStartMinute                : Integer default 0;
+      defaultBreakMinutes            : Integer default 30;
+      generatedSourceCode            : String(20) default 'GENERATED';
+      manualSourceCode               : String(20) default 'UI';
+      workEntryTypeCode              : String(1) default 'W';
+      weekendEntryTypeCode           : String(1) default 'O';
+      holidayEntryTypeCode           : String(1) default 'H';
+
+  // User fallback defaults
+      fallbackWeeklyHours            : Decimal(4, 2) default 36.00;
+      fallbackWorkingDays            : Integer default 5;
+      fallbackAnnualVacationDays     : Decimal(4, 1) default 30.0;
+      demoUserId                     : String(255) default 'max.mustermann@test.de';
+
+  // Balance settings
+      balanceUndertimeCriticalHours  : Decimal(4, 2) default 5.00;
+      recentMonthsDefault            : Integer default 6;
+      balanceYearPastLimit           : Integer default 10;
+      balanceYearFutureLimit         : Integer default 1;
+      balanceFutureMonthBuffer       : Integer default 2;
+      balanceMaxMonths               : Integer default 24;
+      balanceMaxHoursAbsolute        : Integer default 500;
+      balanceMaxWorkingDaysPerMonth  : Integer default 23;
+
+  // Vacation & sick leave thresholds
+      vacationWarningRemainingDays   : Decimal(4, 1) default 10.0;
+      vacationCriticalRemainingDays  : Decimal(4, 1) default 5.0;
+      sickLeaveWarningDays           : Integer default 10;
+      sickLeaveCriticalDays          : Integer default 30;
+
+  // Integrations & locale
+      holidayApiBaseUrl              : String(255) default 'https://feiertage-api.de/api/';
+      holidayApiCountryParameter     : String(20) default 'nur_land';
+      locale                         : String(10) default 'de-DE';
 }

@@ -584,7 +584,7 @@ erDiagram
         integer workingDaysPerWeek
         decimal expectedDailyHoursDec "calculated"
         string preferredState_code FK "optional"
-        decimal annualVacationDays "default 30.0"
+        decimal annualVacationDays "per user"
         string defaultWorkLocation_code FK "optional"
     }
 
@@ -604,7 +604,7 @@ erDiagram
         decimal durationHoursNet "calculated"
         decimal overtimeHours "calculated"
         decimal undertimeHours "calculated"
-        string source "UI|GENERATED"
+        string source "UI|GENERATED (configurable)"
         string note
     }
 
@@ -643,12 +643,19 @@ erDiagram
     }
 ```
 
+**Global Defaults (Customizing Singleton):**
+
+- Die Entity `Customizing` liefert alle zentralen Defaults (Arbeitsbeginn, Pausenlänge, EntryType- und Source-Codes).
+- Balance-, Urlaubs- und Krankheitsschwellen werden hier gepflegt und von Services/Validatoren konsumiert.
+- Enthält Integrationsparameter (Feiertags-API, Locale) und Fallback-Werte für Benutzer (Wochenstunden, Arbeitstage, Demo-User).
+- `CustomizingService` cached den Datensatz und wird im `TrackService` beim Start initialisiert.
+
 **Wichtige Designentscheidungen:**
 
 - **Calculated Fields:** `durationHoursGross`, `durationHoursNet`, `overtimeHours`, `undertimeHours` werden server-seitig berechnet und sind `@readonly`
 - **Eindeutigkeit:** Nur ein TimeEntry pro User+Datum (validiert im Repository)
 - **EntryTypes:** CodeList mit 8 Typen (W=Work, V=Vacation, S=Sick, H=Holiday, O=Off, B=Business Trip, F=Flextime, G=Gleitzeit)
-- **Source-Feld:** Unterscheidet UI-Eingabe (`UI`) von generierten Entries (`GENERATED`)
+- **Source-Feld:** Unterscheidet UI-Eingabe (`UI`) von generierten Entries (`GENERATED`), beide Codes sind im Customizing pflegbar
 
 ---
 
@@ -1302,12 +1309,14 @@ undertimeHours = max(0, expectedDailyHours - net);
 **Factory-Methoden:**
 
 ```typescript
+const factory = container.getFactory<TimeEntryFactory>('timeEntry');
+
 // Work-Time Data
-const workData = await TimeEntryFactory.createWorkTimeData(userService, tx, userId, startTime, endTime, breakMin);
+const workData = await factory.createWorkTimeData(userService, tx, userId, startTime, endTime, breakMin);
 // → Returns: { breakMin, durationHoursGross, durationHoursNet, overtimeHours, undertimeHours }
 
 // Non-Work-Time Data (Vacation, Sick Leave)
-const nonWorkData = await TimeEntryFactory.createNonWorkTimeData(userService, tx, userId);
+const nonWorkData = await factory.createNonWorkTimeData(userService, tx, userId);
 // → Returns: { zeros for all time fields }
 ```
 

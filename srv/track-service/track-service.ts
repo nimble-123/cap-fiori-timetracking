@@ -1,6 +1,8 @@
 import { ApplicationService } from '@sap/cds';
 
 import { ServiceContainer, HandlerRegistry, HandlerSetup, logger } from './handler';
+import { CustomizingService } from './handler/services/CustomizingService';
+import { DateUtils } from './handler/utils';
 
 /**
  * TrackService - Hauptorchestrierungsklasse
@@ -17,7 +19,7 @@ export class TrackService extends ApplicationService {
   async init(): Promise<void> {
     logger.serviceInit('Initializing TrackService...');
 
-    this.setupContainer();
+    await this.setupContainer();
     this.setupHandlers();
 
     await super.init();
@@ -27,10 +29,19 @@ export class TrackService extends ApplicationService {
   /**
    * Initialisiert den Dependency Container
    */
-  private setupContainer(): void {
+  private async setupContainer(): Promise<void> {
     this.container = new ServiceContainer();
     this.container.build(this.entities);
     logger.serviceRegistered('ServiceContainer', 'initialized');
+
+    const customizingService = this.container.getService<CustomizingService>('customizing');
+    await customizingService.initialize();
+
+    const userDefaults = customizingService.getUserDefaults();
+    DateUtils.configure({
+      locale: customizingService.getLocale(),
+      defaultWorkingDaysPerWeek: userDefaults.fallbackWorkingDays,
+    });
   }
 
   /**
