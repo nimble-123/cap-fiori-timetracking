@@ -281,6 +281,94 @@ month                                         @title: '{i18n>title.parameter.mon
 );
 
 ////////////////////////////////////////////////////////////////////////////
+//  Customizing Entity - Labels & TextArrangements
+////////////////////////////////////////////////////////////////////////////
+annotate service.Customizing with {
+     workStartHour                 @title        : '{i18n>title.customizing.workStartHour}'
+                                   @Common.Label : '{i18n>customizing.workStartHour}';
+
+     workStartMinute               @title        : '{i18n>title.customizing.workStartMinute}'
+                                   @Common.Label : '{i18n>customizing.workStartMinute}';
+
+     defaultBreakMinutes           @title        : '{i18n>title.customizing.defaultBreakMinutes}'
+                                   @Common.Label : '{i18n>customizing.defaultBreakMinutes}';
+
+     generatedSourceCode           @title        : '{i18n>title.customizing.generatedSourceCode}'
+                                   @Common.Label : '{i18n>customizing.generatedSourceCode}';
+
+     manualSourceCode              @title        : '{i18n>title.customizing.manualSourceCode}'
+                                   @Common.Label : '{i18n>customizing.manualSourceCode}';
+
+     workEntryTypeCode             @title        : '{i18n>title.customizing.workEntryTypeCode}'
+                                   @Common.Label : '{i18n>customizing.workEntryTypeCode}';
+
+     weekendEntryTypeCode          @title        : '{i18n>title.customizing.weekendEntryTypeCode}'
+                                   @Common.Label : '{i18n>customizing.weekendEntryTypeCode}';
+
+     holidayEntryTypeCode          @title        : '{i18n>title.customizing.holidayEntryTypeCode}'
+                                   @Common.Label : '{i18n>customizing.holidayEntryTypeCode}';
+
+     fallbackWeeklyHours           @title        : '{i18n>title.customizing.fallbackWeeklyHours}'
+                                   @Common.Label : '{i18n>customizing.fallbackWeeklyHours}'
+                                   @Measures.Unit: 'h';
+
+     fallbackWorkingDays           @title        : '{i18n>title.customizing.fallbackWorkingDays}'
+                                   @Common.Label : '{i18n>customizing.fallbackWorkingDays}';
+
+     fallbackAnnualVacationDays    @title        : '{i18n>title.customizing.fallbackAnnualVacationDays}'
+                                   @Common.Label : '{i18n>customizing.fallbackAnnualVacationDays}';
+
+     demoUserId                    @title        : '{i18n>title.customizing.demoUserId}'
+                                   @Common.Label : '{i18n>customizing.demoUserId}';
+
+     balanceUndertimeCriticalHours @title        : '{i18n>title.customizing.balanceUndertimeCriticalHours}'
+                                   @Common.Label : '{i18n>customizing.balanceUndertimeCriticalHours}'
+                                   @Measures.Unit: 'h';
+
+     recentMonthsDefault           @title        : '{i18n>title.customizing.recentMonthsDefault}'
+                                   @Common.Label : '{i18n>customizing.recentMonthsDefault}';
+
+     balanceYearPastLimit          @title        : '{i18n>title.customizing.balanceYearPastLimit}'
+                                   @Common.Label : '{i18n>customizing.balanceYearPastLimit}';
+
+     balanceYearFutureLimit        @title        : '{i18n>title.customizing.balanceYearFutureLimit}'
+                                   @Common.Label : '{i18n>customizing.balanceYearFutureLimit}';
+
+     balanceFutureMonthBuffer      @title        : '{i18n>title.customizing.balanceFutureMonthBuffer}'
+                                   @Common.Label : '{i18n>customizing.balanceFutureMonthBuffer}';
+
+     balanceMaxMonths              @title        : '{i18n>title.customizing.balanceMaxMonths}'
+                                   @Common.Label : '{i18n>customizing.balanceMaxMonths}';
+
+     balanceMaxHoursAbsolute       @title        : '{i18n>title.customizing.balanceMaxHoursAbsolute}'
+                                   @Common.Label : '{i18n>customizing.balanceMaxHoursAbsolute}';
+
+     balanceMaxWorkingDaysPerMonth @title        : '{i18n>title.customizing.balanceMaxWorkingDaysPerMonth}'
+                                   @Common.Label : '{i18n>customizing.balanceMaxWorkingDaysPerMonth}';
+
+     vacationWarningRemainingDays  @title        : '{i18n>title.customizing.vacationWarningRemainingDays}'
+                                   @Common.Label : '{i18n>customizing.vacationWarningRemainingDays}';
+
+     vacationCriticalRemainingDays @title        : '{i18n>title.customizing.vacationCriticalRemainingDays}'
+                                   @Common.Label : '{i18n>customizing.vacationCriticalRemainingDays}';
+
+     sickLeaveWarningDays          @title        : '{i18n>title.customizing.sickLeaveWarningDays}'
+                                   @Common.Label : '{i18n>customizing.sickLeaveWarningDays}';
+
+     sickLeaveCriticalDays         @title        : '{i18n>title.customizing.sickLeaveCriticalDays}'
+                                   @Common.Label : '{i18n>customizing.sickLeaveCriticalDays}';
+
+     holidayApiBaseUrl             @title        : '{i18n>title.customizing.holidayApiBaseUrl}'
+                                   @Common.Label : '{i18n>customizing.holidayApiBaseUrl}';
+
+     holidayApiCountryParameter    @title        : '{i18n>title.customizing.holidayApiCountryParameter}'
+                                   @Common.Label : '{i18n>customizing.holidayApiCountryParameter}';
+
+     locale                        @title        : '{i18n>title.customizing.locale}'
+                                   @Common.Label : '{i18n>customizing.locale}';
+};
+
+////////////////////////////////////////////////////////////////////////////
 //  Entity Labels (Common.Label)
 ////////////////////////////////////////////////////////////////////////////
 annotate service.Users with @(Common.Label: '{i18n>entity.Users}');
@@ -293,6 +381,7 @@ annotate service.TimeEntries with @(Common.Label: '{i18n>entity.TimeEntries}');
 annotate service.MonthlyBalances with @(Common.Label: '{i18n>entity.MonthlyBalances}');
 annotate service.VacationBalances with @(Common.Label: '{i18n>entity.VacationBalances}');
 annotate service.SickLeaveBalances with @(Common.Label: '{i18n>entity.SickLeaveBalances}');
+annotate service.Customizing with @(Common.Label: '{i18n>entity.Customizing}');
 
 ////////////////////////////////////////////////////////////////////////////
 //  Hinweise zu TextArrangement:
