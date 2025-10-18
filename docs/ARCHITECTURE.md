@@ -332,8 +332,8 @@ Die Anwendung folgt einer **strikten 3-Tier-Architektur** mit klarer Trennung:
 6. **Factory Pattern** → Konsistente Domain-Objekte
 7. **Dual UI Strategy** → Fiori Elements (schnell) + Custom (flexibel)
 8. **Modular CDS Annotations** → common/ + ui/ statt Monolith
-9. **ADR-Dokumentation** → Nachvollziehbare Entscheidungen
-10. **REST Client Tests** → Entwickler-freundliches Testing
+9. **Customizing Singleton** → Globale Defaults zentral via CustomizingService gepflegt
+10. **ADR-Dokumentation & Tooling** → Nachvollziehbare Entscheidungen + REST Client Tests
 
 Details zu allen Entscheidungen: siehe [Kapitel 9 - Architekturentscheidungen](#9-architekturentscheidungen)
 
@@ -475,6 +475,8 @@ sequenceDiagram
   participant Main as 🎬 cds.serve()
   participant SVC as 🎬 TrackService
   participant CONTAINER as 🧩 ServiceContainer
+  participant CUSTOM as ⚙️ CustomizingService
+  participant DATE as 🛠️ DateUtils
   participant SETUP as 🏗️ HandlerSetup
   participant FACTORY as 🏭 HandlerFactory
   participant REGISTRAR as 📝 HandlerRegistrar
@@ -484,6 +486,14 @@ sequenceDiagram
   SVC->>CONTAINER: build(entities)
   CONTAINER->>CONTAINER: Erstelle alle 30 Dependencies
   CONTAINER-->>SVC: ✅ Container ready
+
+  SVC->>CONTAINER: getService('customizing')
+  CONTAINER-->>SVC: reference(CustomizingService)
+  SVC->>CUSTOM: initialize()
+  CUSTOM->>CUSTOM: load() & cache defaults
+  CUSTOM-->>SVC: ✅ Defaults verfügbar
+  SVC->>DATE: configure(locale, workingDays)
+  DATE-->>SVC: setup complete
 
   SVC->>REG: new HandlerRegistry()
   SVC->>SETUP: create(container, registry)
@@ -641,6 +651,37 @@ erDiagram
         string code PK "BY,BW,BE..."
         string text "localized"
     }
+
+    Customizing {
+        int ID PK "singleton"
+        int workStartHour
+        int workStartMinute
+        int defaultBreakMinutes
+        string generatedSourceCode
+        string manualSourceCode
+        string workEntryTypeCode
+        string weekendEntryTypeCode
+        string holidayEntryTypeCode
+        decimal fallbackWeeklyHours
+        integer fallbackWorkingDays
+        decimal fallbackAnnualVacationDays
+        string demoUserId
+        decimal balanceUndertimeCriticalHours
+        integer recentMonthsDefault
+        integer balanceYearPastLimit
+        integer balanceYearFutureLimit
+        integer balanceFutureMonthBuffer
+        integer balanceMaxMonths
+        integer balanceMaxHoursAbsolute
+        integer balanceMaxWorkingDaysPerMonth
+        decimal vacationWarningRemainingDays
+        decimal vacationCriticalRemainingDays
+        integer sickLeaveWarningDays
+        integer sickLeaveCriticalDays
+        string holidayApiBaseUrl
+        string holidayApiCountryParameter
+        string locale
+    }
 ```
 
 **Global Defaults (Customizing Singleton):**
@@ -797,7 +838,7 @@ export default class Home extends BaseController {
 
 **Beschreibung:** Ein Mitarbeiter erfasst eine neue Zeitbuchung über die Fiori Elements App. Das System validiert die Eingabe, berechnet Zeiten (Brutto/Netto/Über-/Unterstunden) und speichert den Eintrag.
 
-**Beteiligte:** User, Fiori UI, TrackService, HandlerRegistry, TimeEntryHandlers, CreateTimeEntryCommand, Validators, Repositories, TimeEntryFactory, Database
+**Beteiligte:** User, Fiori UI, TrackService, HandlerRegistry, TimeEntryHandlers, CreateTimeEntryCommand, Validators, CustomizingService, Repositories, TimeEntryFactory, Database
 
 **Ablauf:**
 
@@ -813,6 +854,7 @@ sequenceDiagram
     participant VAL as ✅ Validator
     participant REPO as 💾 Repository
     participant EFACT as 🏭 EntryFactory
+    participant CUSTOM as ⚙️ CustomizingService
     participant DB as 🗄️ Database
 
     Note over User,DB: 🚀 Request Processing Phase
@@ -858,12 +900,14 @@ sequenceDiagram
 
     rect rgb(240, 255, 240)
     Note over CMD,EFACT: 🏭 Factory Phase - Data Calculation
-    alt Work Entry (entryType=W)
+    CMD->>CUSTOM: getTimeEntryDefaults()
+    CUSTOM-->>CMD: defaults (break, sources, codes)
+    alt Work Entry (entryType = defaults.workEntryTypeCode)
         CMD->>EFACT: createWorkTimeData(userService, tx, userId, startTime, endTime, breakMin)
         EFACT->>EFACT: calculateWorkingHours(start, end, break)
         EFACT->>EFACT: calculateOvertimeAndUndertime(net, expected)
         EFACT-->>CMD: {breakMin, gross, net, overtime, undertime}
-    else Non-Work Entry (V/S/H/O)
+    else Non-Work Entry (Vacation/Sick/Holiday/Off)
         CMD->>EFACT: createNonWorkTimeData(userService, tx, userId)
         EFACT-->>CMD: {zeros for all time fields}
     end
@@ -898,7 +942,7 @@ sequenceDiagram
 
 **Beschreibung:** Ein Mitarbeiter klickt auf "Jahr generieren" und gibt Jahr (z.B. 2025) und Bundesland (z.B. Bayern="BY") an. Das System ruft die externe Feiertags-API auf, erstellt 365 Entries (Arbeitstage, Wochenenden, Feiertage) und speichert sie per Batch-Insert.
 
-**Beteiligte:** User, Fiori UI, TrackService, GenerationHandlers, GenerateYearlyCommand, Validators, UserService, YearlyGenerationStrategy, Feiertage-API, TimeEntryFactory, Repository, Database
+**Beteiligte:** User, Fiori UI, TrackService, GenerationHandlers, GenerateYearlyCommand, Validators, UserService, CustomizingService, YearlyGenerationStrategy, Feiertage-API, TimeEntryFactory, Repository, Database
 
 **Ablauf:**
 
@@ -915,6 +959,7 @@ sequenceDiagram
     participant Strategy as 📋 YearlyGenerationStrategy
     participant HolidayAPI as 🎉 Feiertage-API
     participant Factory as 🏭 TimeEntryFactory
+    participant Custom as ⚙️ CustomizingService
     participant Repo as 💾 TimeEntryRepository
     participant DB as 🗄️ Database
 
@@ -984,26 +1029,28 @@ sequenceDiagram
         else Feiertag
             Strategy->>Strategy: holidays.get(date)?
             Strategy->>Factory: createHolidayEntry(userId, date, 'Neujahr')
-            Factory-->>Strategy: TimeEntry {entryType='H', note='Neujahr', hours=0}
+            Factory-->>Strategy: TimeEntry {entryType=defaults.holidayEntryTypeCode, note='Neujahr', hours=0}
         else Wochenende
             Strategy->>Strategy: isWeekend(date)?
             Strategy->>Factory: createWeekendEntry(userId, date)
-            Factory-->>Strategy: TimeEntry {entryType='O', note='Samstag', hours=0}
+            Factory-->>Strategy: TimeEntry {entryType=defaults.weekendEntryTypeCode, note='Samstag', hours=0}
         else Arbeitstag
             Strategy->>Factory: createDefaultEntry(userId, date, user)
             Factory->>Factory: Calculate start/end times from expectedDailyHours
             Factory->>Factory: Calculate gross/net/overtime/undertime
-            Factory-->>Strategy: TimeEntry {entryType='W', hours=7.2, ...}
+            Factory-->>Strategy: TimeEntry {entryType=defaults.workEntryTypeCode, hours=expectedDaily, ...}
         end
 
         Strategy->>Strategy: Push to newEntries[]
     end
 
-    Strategy-->>Command: newEntries[] (320 Entries)
+    Strategy-->>Command: newEntries[] (≈320 Entries)
     end
 
     rect rgb(240, 248, 255)
     Note over Command,Validator: ✅ Phase 8: Validierung
+    Command->>Custom: getTimeEntryDefaults()
+    Custom-->>Command: defaults (entryType codes)
     Command->>Validator: validateGeneratedEntries(newEntries)
     Validator->>Validator: Check length > 0, workDate exists, user_ID matches
     Validator-->>Command: ✅ Alle valide
@@ -1013,7 +1060,7 @@ sequenceDiagram
     Note over Command,Command: 📊 Phase 9: Stats-Berechnung
     Command->>Command: calculateYearlyStats(newEntries, existing.size)
     loop Für jeden Entry
-        Command->>Command: Count by entryType: W→workdays, O→weekends, H→holidays
+        Command->>Command: Count by entryType (defaults.work/weekend/holiday)
     end
     Command->>Command: stats = {generated: 320, existing: 45, total: 365, workdays: 251, weekends: 104, holidays: 10}
     end
@@ -1482,6 +1529,7 @@ Alle Architekturentscheidungen sind als ADRs dokumentiert unter `docs/ADR/`:
 | [ADR-0009](ADR/0009-source-feld-datenherkunft.md)        | Source-Feld Datenherkunft        | ✅ Akzeptiert |
 | [ADR-0010](ADR/0010-mocked-authentication-test-user.md)  | Mocked Authentication Test User  | ✅ Akzeptiert |
 | [ADR-0011](ADR/0011-test-strategie-jest-rest-client.md)  | Test-Strategie Jest REST Client  | ✅ Akzeptiert |
+| [ADR-0012](ADR/0012-customizing-singleton-defaults.md)   | Customizing Singleton Defaults   | ✅ Akzeptiert |
 
 ---
 
@@ -1755,16 +1803,18 @@ Auswirkung
 
 ### A-C
 
-| Begriff           | Definition                                                                 |
-| ----------------- | -------------------------------------------------------------------------- |
-| **ActivityType**  | Tätigkeitsart (z.B. "Development", "Testing", "Meeting")                   |
-| **ADR**           | Architecture Decision Record - Dokumentiertes Entscheidungsprotokoll       |
-| **Barrel Export** | `index.ts` mit Re-Exports für saubere Imports                              |
-| **BTP**           | SAP Business Technology Platform (Cloud)                                   |
-| **CAP**           | Cloud Application Programming Model (SAP Framework)                        |
-| **CDS**           | Core Data Services (SAP's Modellierungssprache)                            |
-| **CQRS**          | Command Query Responsibility Segregation                                   |
-| **Criticality**   | UI5 Status-Indikator (1=Error/Rot, 2=Warning/Gelb, 3=Success/Grün, 0=None) |
+| Begriff                | Definition                                                                     |
+| ---------------------- | ------------------------------------------------------------------------------ |
+| **ActivityType**       | Tätigkeitsart (z.B. "Development", "Testing", "Meeting")                       |
+| **ADR**                | Architecture Decision Record - Dokumentiertes Entscheidungsprotokoll           |
+| **Barrel Export**      | `index.ts` mit Re-Exports für saubere Imports                                  |
+| **BTP**                | SAP Business Technology Platform (Cloud)                                       |
+| **CAP**                | Cloud Application Programming Model (SAP Framework)                            |
+| **CDS**                | Core Data Services (SAP's Modellierungssprache)                                |
+| **CQRS**               | Command Query Responsibility Segregation                                       |
+| **Criticality**        | UI5 Status-Indikator (1=Error/Rot, 2=Warning/Gelb, 3=Success/Grün, 0=None)     |
+| **Customizing**        | Singleton-Entität mit globalen System-Defaults                                 |
+| **CustomizingService** | Service, der Customizing liest, cached und Werte an die Business-Layer liefert |
 
 ### D-F
 
@@ -1792,6 +1842,7 @@ Auswirkung
 | **Repository** | Data Access Layer (kapselt DB-Zugriff)                      |
 | **SOLID**      | 5 Prinzipien für objektorientiertes Design                  |
 | **Strategy**   | Austauschbarer Algorithmus (z.B. MonthlyGenerationStrategy) |
+| **Singleton**  | Muster mit genau einer Instanz (z.B. Customizing Datensatz) |
 
 ### T-Z
 
@@ -1833,9 +1884,9 @@ Auswirkung
 
 ### B. Änderungshistorie
 
-| Version | Datum      | Autor    | Änderungen                            |
-| ------- | ---------- | -------- | ------------------------------------- |
-| 1.0     | 16.10.2025 | Dev Team | Initiale arc42-Dokumentation erstellt |
+| Version | Datum      | Autor       | Änderungen                            |
+| ------- | ---------- | ----------- | ------------------------------------- |
+| 1.0     | 16.10.2025 | @nimble-123 | Initiale arc42-Dokumentation erstellt |
 
 ---
 

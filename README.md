@@ -65,16 +65,17 @@ graph TB
     style INFRA fill:#fce4ec,stroke:#c2185b,stroke-width:2px
 ```
 
-**🎯 30 Pattern-Klassen** organisiert in 6 Kategorien:
+**🎯 44 Pattern-Klassen** organisiert in 6 Kategorien:
 
-- **Commands** (7) - Business Operations (CRUD, Generation, Balance)
-- **Validators** (5) - Fachliche Validierung
-- **Services** (4) - Domain Logic (TimeCalc, User, Holiday, Balance)
-- **Repositories** (4) - Data Access Layer
+- **Commands** (11) - Business Operations (CRUD, Generation, Balance)
+- **Validators** (7) - Fachliche Validierung
+- **Services** (7) - Domain Logic (TimeCalc, User, Holiday, Balance)
+- **Repositories** (7) - Data Access Layer
 - **Strategies** (2) - Generation Algorithms (Monthly, Yearly)
 - **Factories** (2) - Object Creation (TimeEntry, Handler)
 
-**+ 1 ServiceContainer (DI), 1 HandlerRegistry, 12 Barrel Exports**
+**+ 1 ServiceContainer (DI), 1 HandlerRegistry, 1 HandlerRegistrar, 1 Builder**  
+**+ 1 DateUtil, 1 Logger, 14 Barrel Exports**
 
 📖 **Deep Dive:** [ARCHITECTURE.md](docs/ARCHITECTURE.md) (vollständige arc42-Dokumentation)
 
@@ -96,116 +97,129 @@ graph TB
 
 ## 📂 Project Structure
 
-Modulare 5-Tier-Architektur mit klarer Trennung der Verantwortlichkeiten:
+<details>
+<summary>Modulare 5-Tier-Architektur mit klarer Trennung der Verantwortlichkeiten:</summary>
 
 ```
 cap-fiori-timetracking/
 │
-├── 📱 app/                          # Frontend Applications (TypeScript UI5)
-│   ├── timetable/                   # Fiori Elements List Report App
-│   │   ├── webapp/
-│   │   │   ├── Component.ts         # UI5 Component (TypeScript)
-│   │   │   ├── manifest.json        # App Descriptor
-│   │   │   └── i18n/                # Internationalization
-│   │   └── annotations.cds          # UI Annotations
+├── 📱 app/                                # Frontend Applications (TypeScript UI5)
 │   │
-│   └── timetracking/                # Custom UI5 Dashboard App
+│   ├── timetable/                         # Fiori Elements List Report App
+│   │   ├── webapp/
+│   │   │   ├── Component.ts               # UI5 Component (TypeScript)
+│   │   │   ├── manifest.json              # App Descriptor
+│   │   │   └── i18n/                      # Internationalization
+│   │   └── annotations.cds                # UI Annotations
+│   │
+│   └── timetracking/                      # Custom UI5 Dashboard App
 │       ├── webapp/
-│       │   ├── controller/          # MVC Controller (TypeScript)
-│       │   ├── view/                # XML Views
-│       │   ├── model/               # Client Models
+│       │   ├── controller/                # MVC Controller (TypeScript)
+│       │   ├── view/                      # XML Views
+│       │   ├── model/                     # Client Models
 │       │   └── Component.ts
 │       └── annotations.cds
 │
-├── 💾 db/                           # Data Model & Master Data
-│   ├── data-model.cds               # Core Domain Model
+├── 💾 db/                                 # Data Model & Master Data
+│   │
+│   ├── data-model.cds                     # Core Domain Model
 │   │   ├── Users, Projects, TimeEntries
 │   │   └── ActivityTypes, EntryTypes, GermanStates (CodeLists)
-│   └── data/                        # CSV Test & Master Data
+│   └── data/                              # CSV Test & Master Data
 │
-├── ⚙️ srv/                           # Backend Service Layer (100% TypeScript!)
+├── ⚙️ srv/                                # Backend Service Layer (100% TypeScript!)
 │   │
-│   ├── service-model.cds            # Top-Level Service Model
+│   ├── service-model.cds                  # Top-Level Service Model
+│   ├── index.ts                           # Top-Level Barrel Export
 │   │
-│   └── track-service/               # TrackService - Complete Service Module
+│   └── track-service/                     # TrackService - Complete Service Module
 │       │
-│       ├── track-service.cds        # OData Service Definition
-│       ├── track-service.ts         # 🎬 Orchestrator
-│       ├── index.cds                # Service Entry Point
+│       ├── track-service.cds              # OData Service Definition
+│       ├── track-service.ts               # 🎬 Orchestrator
+│       ├── index.cds                      # Service Entry Point
+│       ├── index.ts                       # Service Entry Point
 │       │
-│       ├── annotations/             # 📝 UI Annotations
-│       │   ├── annotations.cds      # Main Annotations File
-│       │   ├── common/              # Common Annotations
+│       ├── annotations/                   # 📝 UI Annotations
+│       │   │
+│       │   ├── annotations.cds            # Main Annotations File
+│       │   │
+│       │   ├── common/                    # Common Annotations
 │       │   │   ├── authorization.cds
 │       │   │   ├── capabilities.cds
 │       │   │   ├── field-controls.cds
 │       │   │   ├── labels.cds
 │       │   │   └── value-helps.cds
-│       │   └── ui/                  # UI-spezifisch pro Entity
+│       │   │
+│       │   └── ui/                        # UI-spezifisch pro Entity
 │       │       ├── activities-ui.cds
 │       │       ├── balance-ui.cds
 │       │       ├── projects-ui.cds
 │       │       ├── timeentries-ui.cds
-│       │       └── users-ui.cds
+│       │       ├── users-ui.cds
+│       │       └── customizing-ui.cds
 │       │
-│       └── handler/                 # 🔧 Business Logic & Infrastructure
+│       └── handler/                       # 🔧 Business Logic & Infrastructure
 │           │
-│           ├── index.ts             # Handler Entry Point
+│           ├── index.ts                   # Handler Entry Point
 │           │
-│           ├── container/           # 🏗️ Dependency Injection
-│           │   ├── ServiceContainer.ts  # DI Container
+│           ├── container/                 # 🏗️ Dependency Injection
+│           │   ├── ServiceContainer.ts    # DI Container
 │           │   │   - 6 Kategorien: Repos, Services, Validators, Strategies, Commands, Factories
 │           │   │   - Type-safe Resolution mit Generics
 │           │   │   - Auto-Wiring aller Dependencies
-│           │   └── index.ts             # Barrel Export
+│           │   └── index.ts               # Barrel Export
 │           │
-│           ├── registry/            # 📋 Event Handler Registry
-│           │   ├── HandlerRegistry.ts   # Handler-Registrierung
+│           ├── registry/                  # 📋 Event Handler Registry
+│           │   ├── HandlerRegistry.ts     # Handler-Registrierung
 │           │   │   - Unterstützt: before, on, after
 │           │   │   - Fluent API & Logging
-│           │   ├── HandlerRegistrar.ts  # Handler-Registrierung
-│           │   └── index.ts
+│           │   ├── HandlerRegistrar.ts    # Handler-Registrierung
+│           │   └── index.ts               # Barrel Export
 │           │
-│           ├── setup/               # 🏗️ Setup & Initialization
-│           │   ├── HandlerSetup.ts      # Builder Pattern für Handler Setup
-│           │   └── index.ts
+│           ├── setup/                     # 🏗️ Setup & Initialization
+│           │   ├── HandlerSetup.ts        # Builder Pattern für Handler Setup
+│           │   └── index.ts               # Barrel Export
 │           │
-│           ├── handlers/            # 🎯 Event Handler (Separation of Concerns)
-│           │   ├── TimeEntryHandlers.ts     # CRUD
-│           │   ├── GenerationHandlers.ts    # Bulk-Generierung
-│           │   ├── BalanceHandlers.ts       # Balance-Abfragen
-│           │   └── index.ts
+│           ├── handlers/                  # 🎯 Event Handler (Separation of Concerns)
+│           │   ├── TimeEntryHandlers.ts   # CRUD
+│           │   ├── GenerationHandlers.ts  # Bulk-Generierung
+│           │   ├── BalanceHandlers.ts     # Balance-Abfragen
+│           │   └── index.ts               # Barrel Export
 │           │
-│           ├── commands/            # 🎯 Command Pattern (10 Commands!)
-│           │   ├── balance/                 # Balance Commands
+│           ├── commands/                  # 🎯 Command Pattern
+│           │   ├── balance/               # Balance Commands
 │           │   │   ├── GetMonthlyBalanceCommand.ts
 │           │   │   ├── GetCurrentBalanceCommand.ts
 │           │   │   ├── GetRecentBalancesCommand.ts
 │           │   │   ├── GetVacationBalanceCommand.ts
 │           │   │   └── GetSickLeaveBalanceCommand.ts
-│           │   ├── generation/              # Generation Commands
+│           │   ├── generation/            # Generation Commands
 │           │   │   ├── GenerateMonthlyCommand.ts
 │           │   │   ├── GenerateYearlyCommand.ts
 │           │   │   └── GetDefaultParamsCommand.ts
-│           │   ├── time-entry/              # TimeEntry Commands
+│           │   ├── time-entry/            # TimeEntry Commands
 │           │   │   ├── CreateTimeEntryCommand.ts
-│           │   │   └── UpdateTimeEntryCommand.ts
-│           │   └── index.ts                 # Barrel Export
+│           │   │   ├── UpdateTimeEntryCommand.ts
+│           │   │   └── RecalculateTimeEntryCommand.ts
+│           │   └── index.ts               # Barrel Export
 │           │
-│           ├── services/            # 💼 Domain Services
-│           ├── repositories/        # 💾 Data Access Layer
-│           ├── validators/          # ✅ Business Validation
-│           ├── strategies/          # 📋 Generation Algorithms
-│           ├── factories/           # 🏭 Object Creation
-│           └── utils/               # 🛠️ Utilities (DateUtils)
+│           ├── services/                  # 💼 Domain Services
+│           ├── repositories/              # 💾 Data Access Layer
+│           ├── validators/                # ✅ Business Validation
+│           ├── strategies/                # 📋 Generation Algorithms
+│           ├── factories/                 # 🏭 Object Creation
+│           └── utils/                     # 🛠️ Utilities (DateUtils, Logger)
 │
-├── @cds-models/                     # 🎯 Auto-generierte TypeScript Types
-├── docs/                            # 📚 Dokumentation
-│   ├── ARCHITECTURE.md              # arc42 Architektur (vollständig)
-│   └── ADR/                         # Architecture Decision Records (11 ADRs)
-├── test/                            # 🧪 Tests
+├── @cds-models/                           # 🎯 Auto-generierte TypeScript Types
+├── docs/                                  # 📚 Dokumentation
+│   ├── ARCHITECTURE.md                    # arc42 Architektur
+│   └── ADR/                               # Architecture Decision Records
+├── test/                                  # 🧪 Tests
 └── package.json, tsconfig.json, etc.
 ```
+
+</details>
+</br>
 
 **📖 Detaillierte Struktur & Diagramme:** Siehe [ARCHITECTURE.md - Kapitel 5](docs/ARCHITECTURE.md#5-bausteinsicht)
 
@@ -225,7 +239,7 @@ cap-fiori-timetracking/
 | Dokument                                    | Inhalt                                     | Wann lesen?                            |
 | ------------------------------------------- | ------------------------------------------ | -------------------------------------- |
 | **[ARCHITECTURE.md](docs/ARCHITECTURE.md)** | arc42-Dokumentation (12 Kapitel)           | Deep Dive in Architektur               |
-| **[ADR-Verzeichnis](docs/ADR/)**            | 11 Architecture Decision Records           | Warum wurden Entscheidungen getroffen? |
+| **[ADR-Verzeichnis](docs/ADR/)**            | 12 Architecture Decision Records           | Warum wurden Entscheidungen getroffen? |
 | **[CONTRIBUTING.md](CONTRIBUTING.md)**      | Code Style, Commit Conventions, PR-Process | Bevor du Code beiträgst                |
 
 ### 🎯 arc42-Kapitel Schnellzugriff
@@ -288,12 +302,12 @@ Willst du zum Projekt beitragen? **Awesome!** 🎉
 
 ## 📊 Projekt-Stats
 
-**30 Pattern-Klassen + 12 Barrel Exports:**
+**45 Pattern-Klassen + 14 Barrel Exports:**
 
-- 7 Commands (CRUD, Generation, Balance)
+- 11 Commands (CRUD, Generation, Balance)
 - 7 Validators (Domain-spezifisch)
-- 6 Repositories (Data Access)
-- 6 Services (Domain Logic)
+- 7 Repositories (Data Access)
+- 7 Services (Domain Logic + Customizing)
 - 2 Strategies (Algorithms)
 - 2 Factories (TimeEntry + Handler)
 - 1 ServiceContainer (DI mit 6 Kategorien)
@@ -301,6 +315,7 @@ Willst du zum Projekt beitragen? **Awesome!** 🎉
 - 1 HandlerRegistrar
 - 1 HandlerSetup (Builder mit Fluent API)
 - 3 Handler-Klassen
+- 1 Logger
 - 1 DateUtils
 
 ---
