@@ -472,6 +472,7 @@ graph TB
 
 ```mermaid
 sequenceDiagram
+  autonumber
   participant Main as 🎬 cds.serve()
   participant SVC as 🎬 TrackService
   participant CONTAINER as 🧩 ServiceContainer
@@ -701,6 +702,59 @@ erDiagram
 ---
 
 ### 5.5 Ebene 5: Infrastruktur Layer (ServiceContainer & HandlerRegistry)
+
+Der Infrastruktur-Layer bildet das Fundament zwischen CAP-Runtime und unserer Business-Logik. Hier werden alle Abhängigkeiten aufgebaut, konfiguriert und die Event-Handler registriert. Ziel ist es, den TrackService schlank zu halten und eine zentrale Stelle für Querschnittsaufgaben wie Dependency Injection, Caching, Logging und Date-Konfiguration zu besitzen.
+
+**Beteiligte Bausteine und Verantwortungen:**
+
+| Baustein                               | Verantwortung                                                                                                                                                        | Wichtige Artefakte                                                                                                |
+| -------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `ServiceContainer`                     | Baut Repositories, Services, Validators, Strategies, Factories und Commands auf. Verwaltet sechs Kategorien und liefert typsichere Getter.                           | `srv/track-service/handler/container/ServiceContainer.ts`                                                         |
+| `CustomizingService`                   | Lädt das `Customizing`-Singleton, cached globale Defaults und stellt typisierte Getter für alle Schichten bereit. Initialisiert Locale/Working-Days für `DateUtils`. | `srv/track-service/handler/services/CustomizingService.ts`, `db/data-model.cds`                                   |
+| `HandlerSetup` & `HandlerFactory`      | Fluent API zum Zusammenstellen aller Handlergruppen (TimeEntry, Generation, Balance).                                                                                | `srv/track-service/handler/setup/HandlerSetup.ts`, `srv/track-service/handler/factories/HandlerFactory.ts`        |
+| `HandlerRegistry` & `HandlerRegistrar` | Registrieren before/on/after Events bei CAP. Gewährleisten transparente Handler-Ketten mit Logging.                                                                  | `srv/track-service/handler/registry/HandlerRegistry.ts`, `srv/track-service/handler/registry/HandlerRegistrar.ts` |
+| `DateUtils`                            | Infrastruktur-Hilfsklasse zur zeitzonen-sicheren Verarbeitung. Locale und Standard-Arbeitstage werden beim Service-Start gesetzt.                                    | `srv/track-service/handler/utils/DateUtils.ts`                                                                    |
+| `Logger`                               | Einheitliche, farbcodierte Log-Ausgabe für Service-, Command- und Handler-Layer.                                                                                     | `srv/track-service/handler/utils/Logger.ts`                                                                       |
+
+**Initialisierungsablauf (vereinfacht):**
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant SVC as 🎬 TrackService
+    participant CONTAINER as 🧩 ServiceContainer
+    participant CUSTOM as ⚙️ CustomizingService
+    participant DATE as 🛠️ DateUtils
+    participant SETUP as 🏗️ HandlerSetup
+    participant REGISTRAR as 📝 HandlerRegistrar
+    participant REG as 📋 HandlerRegistry
+
+    SVC->>CONTAINER: build(entities)
+    CONTAINER->>CONTAINER: Registriere Repos, Services, Validators, Commands
+    CONTAINER-->>SVC: Dependencies bereit
+
+    SVC->>CUSTOM: initialize()
+    CUSTOM->>CUSTOM: lade Customizing Singleton
+    CUSTOM->>DATE: configure(locale, workingDays)
+    DATE-->>SVC: Locale/Working Days gesetzt
+
+    SVC->>REG: new HandlerRegistry()
+    SVC->>SETUP: create(container, registry)
+    SETUP->>REGISTRAR: new HandlerRegistrar(registry)
+    SETUP->>SETUP: withAllHandlers()
+    SETUP->>REGISTRAR: registerTimeEntry/Generation/Balance
+    REGISTRAR->>REG: apply(service)
+    REG-->>SVC: Handler registriert
+```
+
+**Vorteile der Infrastruktur-Schicht:**
+
+- **Zentrale Steuerung:** Alle Abhängigkeiten und Querschnittsfunktionen sind an einem Ort gebündelt – Änderungen wirken sofort auf alle Handler/Services.
+- **Testbarkeit:** Unit-Tests können einzelne Bausteine (z. B. Commands) isoliert instanziieren oder den Container mocken.
+- **Erweiterbarkeit:** Neue Handlergruppen oder Services werden im Container registriert, ohne dass bestehender Code angepasst werden muss.
+- **Konfigurierbarkeit:** `CustomizingService` erlaubt es, Defaults ohne Codeänderungen zu variieren und stellt sie konsistent bereit.
+
+Damit ist der Infrastruktur-Layer die „Schaltzentrale“ des TrackService und stellt sicher, dass Application- und Business-Layer fokussiert auf Fachlogik bleiben.
 
 ---
 
