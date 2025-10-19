@@ -62,6 +62,7 @@ Zeiterfassungsanwendung auf Basis von SAP Cloud Application Programming Model mi
 - [8.6 Caching](#86-caching)
 - [8.7 Performance](#87-performance)
 - [8.8 Dokumentanhänge (Attachments Plugin)](#88-dokumentanhänge-attachments-plugin)
+- [8.9 OpenAPI & Swagger UI](#89-openapi--swagger-ui)
 
 ### [9. Architekturentscheidungen](#9-architekturentscheidungen)
 
@@ -1611,25 +1612,51 @@ Weitere Details: [CAP Attachments Plugin Doku](https://cap.cloud.sap/docs/plugin
 
 ---
 
+### 8.9 OpenAPI & Swagger UI
+
+Um die OData-APIs des TrackService schnell nachvollziehen zu können, setzen wir in der lokalen Entwicklung auf das Plugin [`cds-swagger-ui-express`](https://www.npmjs.com/package/cds-swagger-ui-express) (siehe [ADR-0014](ADR/0014-openapi-swagger-ui-preview.md)). Das Plugin erweitert den CAP-Express-Server über den `cds.on('serving')`-Hook und nutzt den offiziellen OpenAPI-Compiler `@cap-js/openapi`.
+
+**Bereitstellung im Development:**
+
+- Automatisch aktiv beim Start über `npm run watch` bzw. `cds watch`
+- Swagger UI unter `http://localhost:4004/$api-docs/odata/v4/track/`
+- OpenAPI JSON unter `http://localhost:4004/$api-docs/odata/v4/track/openapi.json`
+- Link erscheint zusätzlich in der CAP-Startseite (`Open API Preview`)
+
+**Integration & Konfiguration:**
+
+- `package.json` → Dev Dependency `cds-swagger-ui-express` + Transitiver Import von `@cap-js/openapi`
+- Standardkonfiguration (`basePath="/$api-docs"`, `apiPath="/"`) reicht aus; Anpassungen wären per `cds.swagger.*` möglich
+- Kein Einfluss auf productive Builds (`cds build`), da das Plugin nur zur Laufzeit des Development-Servers aktiv ist
+
+**Nutzen:**
+
+- Schnelles API-Explorieren ohne externe Tools
+- Dokumentationsgrundlage für Frontend- und Integrations-Teams
+- Konsistentes Spiegelbild der aktuellen CDS-Modelle dank on-the-fly-Kompilierung
+
+---
+
 ## 9. Architekturentscheidungen
 
 Alle Architekturentscheidungen sind als ADRs dokumentiert unter `docs/ADR/`:
 
-| ADR                                                      | Titel                            | Status        |
-| -------------------------------------------------------- | -------------------------------- | ------------- |
-| [ADR-0001](ADR/0001-clean-architecture-trackservice.md)  | Clean Architecture TrackService  | ✅ Akzeptiert |
-| [ADR-0002](ADR/0002-command-pattern-business-logik.md)   | Command Pattern Business Logik   | ✅ Akzeptiert |
-| [ADR-0003](ADR/0003-zeitberechnung-und-factories.md)     | Zeitberechnung und Factories     | ✅ Akzeptiert |
-| [ADR-0004](ADR/0004-typescript-tooling-und-workflow.md)  | TypeScript Tooling und Workflow  | ✅ Akzeptiert |
-| [ADR-0005](ADR/0005-duale-ui5-strategie.md)              | Duale UI5-Strategie              | ✅ Akzeptiert |
-| [ADR-0006](ADR/0006-modularisierung-cds-annotationen.md) | Modularisierung CDS Annotationen | ✅ Akzeptiert |
-| [ADR-0007](ADR/0007-repository-pattern-datenzugriff.md)  | Repository Pattern Datenzugriff  | ✅ Akzeptiert |
-| [ADR-0008](ADR/0008-strukturiertes-logging.md)           | Strukturiertes Logging           | ✅ Akzeptiert |
-| [ADR-0009](ADR/0009-source-feld-datenherkunft.md)        | Source-Feld Datenherkunft        | ✅ Akzeptiert |
-| [ADR-0010](ADR/0010-mocked-authentication-test-user.md)  | Mocked Authentication Test User  | ✅ Akzeptiert |
-| [ADR-0011](ADR/0011-test-strategie-jest-rest-client.md)  | Test-Strategie Jest REST Client  | ✅ Akzeptiert |
-| [ADR-0012](ADR/0012-customizing-singleton-defaults.md)   | Customizing Singleton Defaults   | ✅ Akzeptiert |
-| [ADR-0013](ADR/0013-attachments-plugin-integration.md)   | CAP Attachments Plugin           | ✅ Akzeptiert |
+| ADR                                                      | Titel                             | Status        |
+| -------------------------------------------------------- | --------------------------------- | ------------- |
+| [ADR-0001](ADR/0001-clean-architecture-trackservice.md)  | Clean Architecture TrackService   | ✅ Akzeptiert |
+| [ADR-0002](ADR/0002-command-pattern-business-logik.md)   | Command Pattern Business Logik    | ✅ Akzeptiert |
+| [ADR-0003](ADR/0003-zeitberechnung-und-factories.md)     | Zeitberechnung und Factories      | ✅ Akzeptiert |
+| [ADR-0004](ADR/0004-typescript-tooling-und-workflow.md)  | TypeScript Tooling und Workflow   | ✅ Akzeptiert |
+| [ADR-0005](ADR/0005-duale-ui5-strategie.md)              | Duale UI5-Strategie               | ✅ Akzeptiert |
+| [ADR-0006](ADR/0006-modularisierung-cds-annotationen.md) | Modularisierung CDS Annotationen  | ✅ Akzeptiert |
+| [ADR-0007](ADR/0007-repository-pattern-datenzugriff.md)  | Repository Pattern Datenzugriff   | ✅ Akzeptiert |
+| [ADR-0008](ADR/0008-strukturiertes-logging.md)           | Strukturiertes Logging            | ✅ Akzeptiert |
+| [ADR-0009](ADR/0009-source-feld-datenherkunft.md)        | Source-Feld Datenherkunft         | ✅ Akzeptiert |
+| [ADR-0010](ADR/0010-mocked-authentication-test-user.md)  | Mocked Authentication Test User   | ✅ Akzeptiert |
+| [ADR-0011](ADR/0011-test-strategie-jest-rest-client.md)  | Test-Strategie Jest REST Client   | ✅ Akzeptiert |
+| [ADR-0012](ADR/0012-customizing-singleton-defaults.md)   | Customizing Singleton Defaults    | ✅ Akzeptiert |
+| [ADR-0013](ADR/0013-attachments-plugin-integration.md)   | CAP Attachments Plugin            | ✅ Akzeptiert |
+| [ADR-0014](ADR/0014-openapi-swagger-ui-preview.md)       | Swagger UI Preview im Development | ✅ Akzeptiert |
 
 ---
 
@@ -1871,31 +1898,21 @@ Auswirkung
 
 ### 11.2 Technische Schulden
 
-| ID       | Schuld                           | Priorität  | Effort | Auswirkung                           | Ticket |
-| -------- | -------------------------------- | ---------- | ------ | ------------------------------------ | ------ |
-| **TD-1** | Fehlende Unit Tests für Commands | 🔴 Hoch    | 5 PT   | Regressions-Risiko                   | #42    |
-| **TD-2** | Integration Tests für Generation | 🟡 Mittel  | 3 PT   | Jahresgenerierung nicht E2E getestet | #43    |
-| **TD-3** | Swagger/OpenAPI Docs fehlen      | 🟢 Niedrig | 2 PT   | API nicht selbst-dokumentierend      | #44    |
-| **TD-4** | E2E-Tests mit Playwright fehlen  | 🟢 Niedrig | 5 PT   | UI-Flows nicht automatisch getestet  | #45    |
-| **TD-5** | Performance-Monitoring fehlt     | 🟡 Mittel  | 3 PT   | Keine Metriken in Produktion         | #46    |
-| **TD-6** | Logging zu console statt Winston | 🟢 Niedrig | 2 PT   | Logs nicht strukturiert in Prod      | #47    |
-
-**Priorisierung:**
-
-1. **Sprint 1:** TD-1 (Unit Tests)
-2. **Sprint 2:** TD-2 (Integration Tests) + TD-5 (Monitoring)
-3. **Sprint 3:** TD-3 (OpenAPI) + TD-6 (Logging)
-4. **Sprint 4:** TD-4 (E2E Tests)
+| ID       | Schuld                                | Priorität   | Effort | Auswirkung                           |
+| -------- | ------------------------------------- | ----------- | ------ | ------------------------------------ |
+| **TD-1** | Fehlende Unit Tests für Commands      | 🔴 Hoch     | 5 PT   | Regressions-Risiko                   |
+| **TD-2** | Integration Tests für Generation      | 🟡 Mittel   | 3 PT   | Jahresgenerierung nicht E2E getestet |
+| **TD-3** | Swagger/OpenAPI Docs (siehe ADR-0014) | ✅ Erledigt | 0 PT   | API via Swagger UI dokumentiert      |
+| **TD-4** | E2E-Tests mit Playwright/wdi5 fehlen  | 🟢 Niedrig  | 5 PT   | UI-Flows nicht automatisch getestet  |
+| **TD-5** | Performance-Monitoring fehlt          | 🟡 Mittel   | 3 PT   | Keine Metriken in Produktion         |
 
 ---
 
 ### 11.3 Known Issues
 
-| Issue    | Beschreibung                                 | Workaround                       | Geplant für |
-| -------- | -------------------------------------------- | -------------------------------- | ----------- |
-| **#101** | Feiertage-API liefert manchmal falsche Daten | Manuell in CSV überschreiben     | Q1/2026     |
-| **#102** | TypeScript Build dauert 30s+ bei Clean Build | Incremental Build nutzen         | Q2/2026     |
-| **#103** | UI5 DatePicker zeigt falsches Format         | Browser-Spracheinstellung prüfen | Q1/2026     |
+| Issue    | Beschreibung                                 | Workaround               | Geplant für |
+| -------- | -------------------------------------------- | ------------------------ | ----------- |
+| **#101** | TypeScript Build dauert 30s+ bei Clean Build | Incremental Build nutzen | Q2/2026     |
 
 ---
 
@@ -1903,18 +1920,20 @@ Auswirkung
 
 ### A-C
 
-| Begriff                | Definition                                                                     |
-| ---------------------- | ------------------------------------------------------------------------------ |
-| **ActivityType**       | Tätigkeitsart (z.B. "Development", "Testing", "Meeting")                       |
-| **ADR**                | Architecture Decision Record - Dokumentiertes Entscheidungsprotokoll           |
-| **Barrel Export**      | `index.ts` mit Re-Exports für saubere Imports                                  |
-| **BTP**                | SAP Business Technology Platform (Cloud)                                       |
-| **CAP**                | Cloud Application Programming Model (SAP Framework)                            |
-| **CDS**                | Core Data Services (SAP's Modellierungssprache)                                |
-| **CQRS**               | Command Query Responsibility Segregation                                       |
-| **Criticality**        | UI5 Status-Indikator (1=Error/Rot, 2=Warning/Gelb, 3=Success/Grün, 0=None)     |
-| **Customizing**        | Singleton-Entität mit globalen System-Defaults                                 |
-| **CustomizingService** | Service, der Customizing liest, cached und Werte an die Business-Layer liefert |
+| Begriff                    | Definition                                                                     |
+| -------------------------- | ------------------------------------------------------------------------------ |
+| **@cap-js/openapi**        | CAP-Compiler, der CDS-Modelle zur OpenAPI-Spezifikation rendert                |
+| **ActivityType**           | Tätigkeitsart (z.B. "Development", "Testing", "Meeting")                       |
+| **ADR**                    | Architecture Decision Record - Dokumentiertes Entscheidungsprotokoll           |
+| **Barrel Export**          | `index.ts` mit Re-Exports für saubere Imports                                  |
+| **BTP**                    | SAP Business Technology Platform (Cloud)                                       |
+| **CAP**                    | Cloud Application Programming Model (SAP Framework)                            |
+| **cds-swagger-ui-express** | CAP-Plugin, das Swagger UI pro Service bereitstellt                            |
+| **CDS**                    | Core Data Services (SAP's Modellierungssprache)                                |
+| **CQRS**                   | Command Query Responsibility Segregation                                       |
+| **Criticality**            | UI5 Status-Indikator (1=Error/Rot, 2=Warning/Gelb, 3=Success/Grün, 0=None)     |
+| **Customizing**            | Singleton-Entität mit globalen System-Defaults                                 |
+| **CustomizingService**     | Service, der Customizing liest, cached und Werte an die Business-Layer liefert |
 
 ### D-F
 
@@ -1932,17 +1951,19 @@ Auswirkung
 | ------------- | --------------------------------------------------------- |
 | **HANA**      | SAP's In-Memory-Datenbank                                 |
 | **Handler**   | Event-Handler (before/on/after) im CAP-Service            |
-| **OData**     | Open Data Protocol (REST-basiertes Protokoll)             |
 | **Mock User** | Test-User für lokale Entwicklung (max.mustermann@test.de) |
+| **OpenAPI**   | Standard zur Beschreibung von HTTP-APIs (ehemals Swagger) |
+| **OData**     | Open Data Protocol (REST-basiertes Protokoll)             |
 
 ### N-S
 
 | Begriff        | Definition                                                  |
 | -------------- | ----------------------------------------------------------- |
 | **Repository** | Data Access Layer (kapselt DB-Zugriff)                      |
+| **Singleton**  | Muster mit genau einer Instanz (z.B. Customizing Datensatz) |
 | **SOLID**      | 5 Prinzipien für objektorientiertes Design                  |
 | **Strategy**   | Austauschbarer Algorithmus (z.B. MonthlyGenerationStrategy) |
-| **Singleton**  | Muster mit genau einer Instanz (z.B. Customizing Datensatz) |
+| **Swagger UI** | Browserbasierte Oberfläche zur Exploration von OpenAPI-APIs |
 
 ### T-Z
 

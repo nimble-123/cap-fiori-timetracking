@@ -113,6 +113,15 @@ npm run build
 npm start
 ```
 
+### Swagger UI & OpenAPI (nur Entwicklung)
+
+Beim Start über `npm run watch` oder `cds watch` registriert das Plugin `cds-swagger-ui-express` automatisch eine Swagger UI für den TrackService:
+
+- **Swagger UI:** `http://localhost:4004/$api-docs/odata/v4/track/`
+- **OpenAPI JSON:** `http://localhost:4004/$api-docs/odata/v4/track/openapi.json`
+
+Die Oberfläche ist ausschließlich für lokale Entwicklung gedacht und wird nicht im produktiven Build ausgeliefert.
+
 ---
 
 ## 🧪 Test-User verwenden

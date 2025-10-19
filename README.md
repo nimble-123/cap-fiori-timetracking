@@ -18,6 +18,7 @@
 - 🔧 **Production-Ready** - Validierung, Error Handling, strukturiertes Logging, Holiday-API Integration
 - 📚 **Vollständig dokumentiert** - arc42-Architektur, ADRs, Inline-JSDoc
 - 🧪 **Testbar** - Jest Tests + REST Client für manuelle Tests
+- 📘 **API Discovery** - Swagger UI Preview für TrackService während der Entwicklung
 
 ---
 
@@ -35,6 +36,7 @@ npm run watch
 
 **🌐 Browser öffnet automatisch:** `http://localhost:4004`  
 **🔐 Login:** `max.mustermann@test.de` / Passwort: `max`
+**🧭 Swagger UI (Dev):** `http://localhost:4004/$api-docs/odata/v4/track/`
 
 👉 **Ausführliche Installation:** Siehe [GETTING_STARTED.md](GETTING_STARTED.md)
 
