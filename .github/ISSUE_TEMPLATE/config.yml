@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📚 Documentation
+    url: https://github.com/nimble-123/cap-fiori-timetracking/tree/main/docs
+    about: Check the documentation before opening an issue.
+  - name: 💬 Discussions
+    url: https://github.com/nimble-123/cap-fiori-timetracking/discussions
+    about: Use discussions for general questions or ideas.
