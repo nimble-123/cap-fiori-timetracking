@@ -279,6 +279,29 @@ npm run watch
 
 ---
 
+## ☁️ Attachments auf SAP BTP konfigurieren (optional)
+
+Standardmäßig speichert das Attachments Plugin (`@cap-js/attachments`) Binärdaten in der angebundenen Datenbank. Für produktive Szenarien mit größeren Dateien oder Compliance-Anforderungen kannst du zusätzliche SAP BTP Services anbinden:
+
+1. **SAP Object Store** – lagert die Dateien in ein S3-kompatibles Storage aus.
+2. **SAP Malware Scanning Service** – prüft Uploads automatisiert auf Viren/Malware.
+
+**Beispielhafte Schritte (Cloud Foundry):**
+
+```bash
+# Optional: Object Store für Attachments
+cf create-service objectstore standard attachments-objectstore
+
+# Optional: Malware Scanner für Uploads
+cf create-service malwarescanning standard attachments-malware
+
+# Service-Bindings beim Deploy hinzufügen (manifest.yaml)
+```
+
+> Konkrete Konfigurationsdetails (Binding-Names, Destinations, Environment Variables) findest du in der offiziellen Plugin-Dokumentation: [SAP Object Store](https://github.com/cap-js/attachments#using-sap-object-store) und [Malware Scanning Service](https://github.com/cap-js/attachments#using-sap-malware-scanning-service).
+
+---
+
 ## 🐛 Troubleshooting
 
 ### Problem: `Cannot find module '#cds-models/TrackService'`

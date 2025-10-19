@@ -1,0 +1,9 @@
+code,locale,name,descr
+PF,de,"Pool-Fahrzeug","Von der Firma zur gemeinsamen Nutzung bereitgestelltes Fahrzeug."
+PF,en,"Pool Vehicle","Vehicle provided by the company for shared use."
+PK,de,"Privat PKW","Nutzung des privaten Personenkraftwagens für geschäftliche Zwecke."
+PK,en,"Private Car","Use of a private car for business purposes."
+BA,de,"Bahn","Nutzung von Zügen und öffentlichen Verkehrsmitteln der Bahn für Reisen."
+BA,en,"Train","Use of trains and public rail transport for travel."
+FL,de,"Flugzeug","Reisen mit dem Flugzeug, meist für längere Distanzen."
+FL,en,"Airplane","Travel by airplane, typically used for longer distances."

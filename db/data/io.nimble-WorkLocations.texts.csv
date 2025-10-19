@@ -1,0 +1,13 @@
+code,locale,name,descr
+KA,de,"Karlsruhe","Hauptstandort oder regelmäßiger Arbeitsort Karlsruhe."
+KA,en,"Karlsruhe","Primary location or regular workplace Karlsruhe."
+S,de,"Stuttgart","Hauptstandort oder regelmäßiger Arbeitsort Stuttgart."
+S,en,"Stuttgart","Primary location or regular workplace Stuttgart."
+X,de,"Sonstiges","Jeder andere Arbeitsort oder unbekannte/flexible Position."
+X,en,"Other","Any other workplace or unknown/flexible location."
+HO,de,"Home Office","Arbeit vom eigenen Wohnsitz aus (Telearbeit)."
+HO,en,"Home Office","Work performed from the employee's residence (teleworking)."
+OS,de,"Off Site","Arbeit außerhalb der Unternehmensstandorte (z.B. beim Kunden)."
+OS,en,"Off Site","Work performed away from company locations (e.g., at a customer site)."
+EV,de,"Event","Arbeit im Rahmen einer Veranstaltung, Messe oder Konferenz."
+EV,en,"Event","Work performed in the context of an event, trade show, or conference."

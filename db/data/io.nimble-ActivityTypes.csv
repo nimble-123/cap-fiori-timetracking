@@ -1,20 +1,20 @@
-name;descr;code;text
-User Research;Erforschung und Sammlung von Benutzerbedürfnissen und -daten (UX);URCH;User Research
-Design Thinking/Ideation;Kreative Ideenfindung und Problemlösung;DSGN;Design/Ideation
-Concept & Wireframing;Erstellung von Konzepten, User Flows und Wireframes (UX);CONC;Konzept/Wireframing
-Solution Architecture;Entwurf der gesamtheitlichen technischen Lösung;ARCH;Solution Arch.
-API/Backend Development;Implementierung der Geschäftslogik, Datenbank und APIs;BDEV;Backend/API Dev
-Frontend Development;Implementierung der Benutzeroberfläche (UI);FDEV;Frontend Dev
-SAP Customizing/Config;Konfiguration und Customizing spezifischer SAP-Module;SCON;SAP Customizing
-SAP ABAP/Fiori Development;Entwicklung von kundenspezifischen SAP-Lösungen (ABAP, Fiori);SDEV;SAP Entwicklung
-Continuous Integration;Automatisierte Integration und Bauen der Software;CINT;Cont. Integration
-Deployment/Release;Automatisierte Bereitstellung auf Test- oder Produktivsystemen;DEPL;Deployment
-Infrastructure/Cloud;Einrichtung und Wartung der Cloud/SAP-Infrastruktur;INFR;Infrastruktur
-Monitoring/Logging;Überwachung der Anwendung und Analyse von Logs;MONI;Monitoring
-Testing/QA;Qualitätssicherung, Testen von Funktionalitäten und Regressionstests;TEST;Testing & QA
-Documentation/Knowledge;Erstellung von technischer und Anwender-Dokumentation;DOKU;Dokumentation
-Sprint Planning;Planung der Aufgaben für den nächsten Sprint (Agile);PLAN;Sprint Planning
-Daily Standup;Kurzes, tägliches Team-Meeting zur Abstimmung;DAIL;Daily Standup
-Refinement/Grooming;Detaillierung und Schätzung von Backlog-Items;REFI;Backlog Refinement
-Retrospective/Lessons;Rückblick auf den abgeschlossenen Sprint oder Projekte;RETR;Retrospektive
-Process Analysis (Lean);Analyse und Optimierung bestehender Geschäftsprozesse;ANAL;Prozessanalyse
+code
+URCH
+DSGN
+CONC
+ARCH
+BDEV
+FDEV
+SCON
+SDEV
+CINT
+DEPL
+INFR
+MONI
+TEST
+DOKU
+PLAN
+DAIL
+REFI
+RETR
+ANAL

@@ -30,8 +30,8 @@ annotate service.MonthlyBalances with @(
   },
 
   UI.HeaderInfo         : {
-    TypeName      : '{i18n>balance.monthlyBalance}',
-    TypeNamePlural: '{i18n>balance.monthlyBalances}',
+    TypeName      : '{i18n>headerInfo.monthlyBalance.typeName}',
+    TypeNamePlural: '{i18n>headerInfo.monthlyBalance.typeNamePlural}',
     Title         : {Value: month},
     Description   : {Value: balanceHours}
   },

@@ -6,6 +6,7 @@
   "license": "UNLICENSED",
   "private": true,
   "dependencies": {
+    "@cap-js/attachments": "^3.0.0",
     "@sap/cds": "^9",
     "@sap/eslint-plugin-ui5-jsdocs": "^2.0.5",
     "@sapui5/ts-types": "^1.141.1",
@@ -22,6 +23,7 @@
     "@types/node": "^24.7.1",
     "cds-plugin-ui5": "^0.13.0",
     "prettier": "3.6.2",
+    "tsx": "^4",
     "typescript": "^5"
   },
   "scripts": {

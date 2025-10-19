@@ -1,13 +1,21 @@
 using TrackService as service from '../../../service-model';
 
+////////////////////////////////////////////////////////////////////////////
+//  EntryTypes - UI Layout
+////////////////////////////////////////////////////////////////////////////
 annotate service.Customizing with @(
-  UI.HeaderInfo                     : {
-    TypeName      : 'Customizing',
-    TypeNamePlural: 'Customizing',
+  UI.HeaderInfo                       : {
+    TypeName      : '{i18n>headerInfo.customizing.typeName}',
+    TypeNamePlural: '{i18n>headerInfo.customizing.typeNamePlural}',
     Title         : {Value: 'System Defaults'},
     Description   : {Value: locale}
   },
-  UI.Facets                         : [
+  UI.Facets                           : [
+    {
+      $Type : 'UI.ReferenceFacet',
+      Label : '{i18n>facet.customizing.userInterface}',
+      Target: '@UI.FieldGroup#UserInterfaceDefaults'
+    },
     {
       $Type : 'UI.ReferenceFacet',
       Label : '{i18n>facet.customizing.timeEntry}',
@@ -34,7 +42,11 @@ annotate service.Customizing with @(
       Target: '@UI.FieldGroup#IntegrationSettings'
     }
   ],
-  UI.FieldGroup #TimeEntryDefaults  : {Data: [
+  UI.FieldGroup #UserInterfaceDefaults: {Data: [{
+    Value: hideAttachmentFacet,
+    $Type: 'UI.DataField'
+  }]},
+  UI.FieldGroup #TimeEntryDefaults    : {Data: [
     {
       Value: workStartHour,
       $Type: 'UI.DataField'
@@ -68,7 +80,7 @@ annotate service.Customizing with @(
       $Type: 'UI.DataField'
     }
   ]},
-  UI.FieldGroup #UserDefaults       : {Data: [
+  UI.FieldGroup #UserDefaults         : {Data: [
     {
       Value: fallbackWeeklyHours,
       $Type: 'UI.DataField'
@@ -86,7 +98,7 @@ annotate service.Customizing with @(
       $Type: 'UI.DataField'
     }
   ]},
-  UI.FieldGroup #BalanceSettings    : {Data: [
+  UI.FieldGroup #BalanceSettings      : {Data: [
     {
       Value: balanceUndertimeCriticalHours,
       $Type: 'UI.DataField'
@@ -120,7 +132,7 @@ annotate service.Customizing with @(
       $Type: 'UI.DataField'
     }
   ]},
-  UI.FieldGroup #VacationSettings   : {Data: [
+  UI.FieldGroup #VacationSettings     : {Data: [
     {
       Value: vacationWarningRemainingDays,
       $Type: 'UI.DataField'
@@ -138,7 +150,7 @@ annotate service.Customizing with @(
       $Type: 'UI.DataField'
     }
   ]},
-  UI.FieldGroup #IntegrationSettings: {Data: [
+  UI.FieldGroup #IntegrationSettings  : {Data: [
     {
       Value: holidayApiBaseUrl,
       $Type: 'UI.DataField'
@@ -152,7 +164,7 @@ annotate service.Customizing with @(
       $Type: 'UI.DataField'
     }
   ]},
-  UI.Identification                 : [
+  UI.Identification                   : [
     {
       Value: workStartHour,
       $Type: 'UI.DataField'

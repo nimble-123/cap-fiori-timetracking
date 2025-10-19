@@ -1,5 +1,4 @@
-// srv/track.cds
-using {io.nimble as db} from '../../db/data-model';
+using {io.nimble as db} from '../../db';
 
 @impl: './track-service.ts'
 service TrackService {

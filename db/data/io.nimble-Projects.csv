@@ -1,3 +1,3 @@
-createdAt;createdBy;modifiedAt;modifiedBy;ID;number;name;active;billable
-2024-10-08T11:00:00.000Z;TestSetup;2024-10-08T11:00:00.000Z;TestSetup;a1b2c3d4-e5f6-4a4a-b7b7-1234567890ab;P-2024-001;Interne Optimierung;true;false
-2024-10-08T11:05:00.000Z;TestSetup;2024-10-08T11:05:00.000Z;TestSetup;f9e8d7c6-b5a4-4b4b-c9c9-0987654321ba;P-2024-002;Kundenprojekt Alpha;true;true
+ID,number,name,active,billable
+a1b2c3d4-e5f6-4a4a-b7b7-1234567890ab,"P-2024-001","Interne Optimierung",true,false
+f9e8d7c6-b5a4-4b4b-c9c9-0987654321ba,"P-2024-002","Kundenprojekt Alpha",true,true

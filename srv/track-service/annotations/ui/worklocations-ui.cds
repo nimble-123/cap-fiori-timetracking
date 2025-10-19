@@ -1,9 +1,9 @@
 using TrackService as service from '../../../service-model';
 
 ////////////////////////////////////////////////////////////////////////////
-//  ActivityTypes - UI Layout
+//  WorkLocations - UI Layout
 ////////////////////////////////////////////////////////////////////////////
-annotate service.ActivityTypes with @(
+annotate service.WorkLocations with @(
   UI.SelectionFields    : [
     code,
     name
@@ -33,8 +33,8 @@ annotate service.ActivityTypes with @(
   },
 
   UI.HeaderInfo         : {
-    TypeName      : '{i18n>headerInfo.activityType.typeName}',
-    TypeNamePlural: '{i18n>headerInfo.activityType.typeNamePlural}',
+    TypeName      : '{i18n>headerInfo.workLocation.typeName}',
+    TypeNamePlural: '{i18n>headerInfo.workLocation.typeNamePlural}',
     Title         : {Value: name},
     Description   : {Value: descr}
   }

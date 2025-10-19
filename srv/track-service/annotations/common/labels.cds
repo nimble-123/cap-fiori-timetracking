@@ -31,12 +31,12 @@ annotate service.Users with {
 
      preferredState        @title                 : '{i18n>title.user.preferredState}'
                            @Common.Label          : '{i18n>user.preferredState}'
-                           @Common.Text           : preferredState.text
+                           @Common.Text           : preferredState.name
                            @Common.TextArrangement: #TextOnly;
 
      defaultWorkLocation   @title                 : '{i18n>title.user.defaultWorkLocation}'
                            @Common.Label          : '{i18n>user.defaultWorkLocation}'
-                           @Common.Text           : defaultWorkLocation.text
+                           @Common.Text           : defaultWorkLocation.name
                            @Common.TextArrangement: #TextOnly;
 };
 
@@ -66,13 +66,16 @@ annotate service.Projects with {
 //  ActivityTypes Entity - Labels & TextArrangements
 ////////////////////////////////////////////////////////////////////////////
 annotate service.ActivityTypes with {
-     code @title                 : '{i18n>title.activityType.code}'
-          @Common.Label          : '{i18n>activityType.code}'
-          @Common.Text           : text
-          @Common.TextArrangement: #TextOnly;
+     code  @title                 : '{i18n>title.activityType.code}'
+           @Common.Label          : '{i18n>activityType.code}'
+           @Common.Text           : name
+           @Common.TextArrangement: #TextOnly;
 
-     text @title                 : '{i18n>title.activityType.text}'
-          @Common.Label          : '{i18n>activityType.text}';
+     name  @title                 : '{i18n>title.activityType.name}'
+           @Common.Label          : '{i18n>activityType.name}';
+
+     descr @title                 : '{i18n>title.activityType.descr}'
+           @Common.Label          : '{i18n>activityType.descr}';
 };
 
 ////////////////////////////////////////////////////////////////////////////
@@ -81,11 +84,14 @@ annotate service.ActivityTypes with {
 annotate service.EntryTypes with {
      code        @title                 : '{i18n>title.entryType.code}'
                  @Common.Label          : '{i18n>entryType.code}'
-                 @Common.Text           : text
+                 @Common.Text           : name
                  @Common.TextArrangement: #TextLast;
 
-     text        @title                 : '{i18n>title.entryType.text}'
-                 @Common.Label          : '{i18n>entryType.text}';
+     name        @title                 : '{i18n>title.entryType.name}'
+                 @Common.Label          : '{i18n>entryType.name}';
+
+     descr       @title                 : '{i18n>title.entryType.descr}'
+                 @Common.Label          : '{i18n>entryType.descr}';
 
      criticality @title                 : '{i18n>title.entryType.criticality}'
                  @Common.Label          : '{i18n>entryType.criticality}';
@@ -95,26 +101,32 @@ annotate service.EntryTypes with {
 //  WorkLocations Entity - Labels & TextArrangements
 ////////////////////////////////////////////////////////////////////////////
 annotate service.WorkLocations with {
-     code @title                 : '{i18n>title.workLocation.code}'
-          @Common.Label          : '{i18n>workLocation.code}'
-          @Common.Text           : text
-          @Common.TextArrangement: #TextOnly;
+     code  @title                 : '{i18n>title.workLocation.code}'
+           @Common.Label          : '{i18n>workLocation.code}'
+           @Common.Text           : name
+           @Common.TextArrangement: #TextOnly;
 
-     text @title                 : '{i18n>title.workLocation.text}'
-          @Common.Label          : '{i18n>workLocation.text}';
+     name  @title                 : '{i18n>title.workLocation.name}'
+           @Common.Label          : '{i18n>workLocation.name}';
+
+     descr @title                 : '{i18n>title.workLocation.descr}'
+           @Common.Label          : '{i18n>workLocation.descr}';
 };
 
 ////////////////////////////////////////////////////////////////////////////
 //  TravelTypes Entity - Labels & TextArrangements
 ////////////////////////////////////////////////////////////////////////////
 annotate service.TravelTypes with {
-     code @title                 : '{i18n>title.travelType.code}'
-          @Common.Label          : '{i18n>travelType.code}'
-          @Common.Text           : text
-          @Common.TextArrangement: #TextFirst;
+     code  @title                 : '{i18n>title.travelType.code}'
+           @Common.Label          : '{i18n>travelType.code}'
+           @Common.Text           : name
+           @Common.TextArrangement: #TextFirst;
 
-     text @title                 : '{i18n>title.travelType.text}'
-          @Common.Label          : '{i18n>travelType.text}';
+     name  @title                 : '{i18n>title.travelType.name}'
+           @Common.Label          : '{i18n>travelType.name}';
+
+     descr @title                 : '{i18n>title.travelType.descr}'
+           @Common.Label          : '{i18n>travelType.descr}';
 };
 
 ////////////////////////////////////////////////////////////////////////////
@@ -134,7 +146,7 @@ annotate service.TimeEntries with {
 
      entryType             @title                 : '{i18n>title.timeEntry.entryType}'
                            @Common.Label          : '{i18n>timeEntry.entryType}'
-                           @Common.Text           : entryType.text
+                           @Common.Text           : entryType.name
                            @Common.TextArrangement: #TextLast;
 
      project               @title                 : '{i18n>title.timeEntry.project}'
@@ -144,17 +156,17 @@ annotate service.TimeEntries with {
 
      activity              @title                 : '{i18n>title.timeEntry.activity}'
                            @Common.Label          : '{i18n>timeEntry.activity}'
-                           @Common.Text           : activity.text
+                           @Common.Text           : activity.name
                            @Common.TextArrangement: #TextOnly;
 
      workLocation          @title                 : '{i18n>title.timeEntry.workLocation}'
                            @Common.Label          : '{i18n>timeEntry.workLocation}'
-                           @Common.Text           : workLocation.text
+                           @Common.Text           : workLocation.name
                            @Common.TextArrangement: #TextOnly;
 
      travelType            @title                 : '{i18n>title.timeEntry.travelType}'
                            @Common.Label          : '{i18n>timeEntry.travelType}'
-                           @Common.Text           : travelType.text
+                           @Common.Text           : travelType.name
                            @Common.TextArrangement: #TextFirst;
 
      startTime             @title                 : '{i18n>title.timeEntry.startTime}'
@@ -357,6 +369,9 @@ annotate service.Customizing with {
 
      sickLeaveCriticalDays         @title        : '{i18n>title.customizing.sickLeaveCriticalDays}'
                                    @Common.Label : '{i18n>customizing.sickLeaveCriticalDays}';
+
+     hideAttachmentFacet           @title        : '{i18n>title.customizing.hideAttachmentFacet}'
+                                   @Common.Label : '{i18n>customizing.hideAttachmentFacet}';
 
      holidayApiBaseUrl             @title        : '{i18n>title.customizing.holidayApiBaseUrl}'
                                    @Common.Label : '{i18n>customizing.holidayApiBaseUrl}';

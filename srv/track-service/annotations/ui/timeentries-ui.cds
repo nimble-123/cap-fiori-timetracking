@@ -77,15 +77,15 @@ annotate service.TimeEntries with @(
         $Type: 'UI.DataField'
       },
       {
-        Value: entryType.text,
+        Value: entryType.name,
         $Type: 'UI.DataField'
       },
       {
-        Value: workLocation.text,
+        Value: workLocation.name,
         $Type: 'UI.DataField'
       },
       {
-        Value: travelType.text,
+        Value: travelType.name,
         $Type: 'UI.DataField'
       },
       {
@@ -94,7 +94,7 @@ annotate service.TimeEntries with @(
         $Type            : 'UI.DataField'
       },
       {
-        Value            : activity.text,
+        Value            : activity.name,
         ![@UI.Importance]: #Low,
         $Type            : 'UI.DataField'
       },
@@ -200,7 +200,7 @@ annotate service.TimeEntries with @(
         $Type: 'UI.DataField'
       },
       {
-        Value: entryType.text,
+        Value: entryType.name,
         $Type: 'UI.DataField'
       },
       {
@@ -276,15 +276,15 @@ annotate service.TimeEntries with @(
         $Type: 'UI.DataField'
       },
       {
-        Value: entryType.text,
+        Value: entryType.name,
         $Type: 'UI.DataField'
       },
       {
-        Value: workLocation.text,
+        Value: workLocation.name,
         $Type: 'UI.DataField'
       },
       {
-        Value: travelType.text,
+        Value: travelType.name,
         $Type: 'UI.DataField'
       },
       {
@@ -293,7 +293,7 @@ annotate service.TimeEntries with @(
         $Type            : 'UI.DataField'
       },
       {
-        Value            : activity.text,
+        Value            : activity.name,
         ![@UI.Importance]: #Low,
         $Type            : 'UI.DataField'
       },
@@ -428,6 +428,12 @@ annotate service.TimeEntries with @(
       $Type : 'UI.ReferenceFacet',
       Target: '@UI.FieldGroup#CalculatedInfo',
       Label : '{i18n>facet.calculatedInfo}'
+    },
+    {
+      $Type     : 'UI.ReferenceFacet',
+      Target    : 'attachments/@UI.LineItem',
+      Label     : '{i18n>facet.attachments}',
+      @UI.Hidden: {$edmJson: {$Path: '/Customizing/hideAttachmentFacet'}},
     }
   ],
 
@@ -435,10 +441,6 @@ annotate service.TimeEntries with @(
   UI.FieldGroup #GeneralInfo       : {Data: [
     {
       Value: workDate,
-      $Type: 'UI.DataField'
-    },
-    {
-      Value: user_ID,
       $Type: 'UI.DataField'
     },
     {
@@ -609,6 +611,10 @@ annotate service.TimeEntries with @(UI.SelectionPresentationVariant #Advanced: {
   },
   PresentationVariant: ![@UI.PresentationVariant#Advanced]
 });
+
+annotate service.TimeEntries with {
+  attachments @Common.Label: '{i18n>facet.attachments}';
+};
 
 
 ////////////////////////////////////////////////////////////////////////////

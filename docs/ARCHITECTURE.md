@@ -61,6 +61,7 @@ Zeiterfassungsanwendung auf Basis von SAP Cloud Application Programming Model mi
 - [8.5 Internationalisierung (i18n)](#85-internationalisierung-i18n)
 - [8.6 Caching](#86-caching)
 - [8.7 Performance](#87-performance)
+- [8.8 Dokumentanhänge (Attachments Plugin)](#88-dokumentanhänge-attachments-plugin)
 
 ### [9. Architekturentscheidungen](#9-architekturentscheidungen)
 
@@ -164,14 +165,15 @@ Die Top-5-Qualitätsziele nach Priorität:
 
 ### 2.1 Technische Randbedingungen
 
-| Randbedingung                  | Beschreibung                                          | Auswirkung                             |
-| ------------------------------ | ----------------------------------------------------- | -------------------------------------- |
-| **SAP CAP Framework**          | Cloud Application Programming Model (Node.js-basiert) | Architektur muss CAP-Events verwenden  |
-| **TypeScript >= 5.0**          | Vollständig typisierte Codebase                       | Strikte Type-Checks aktiviert          |
-| **UI5 >= 1.120**               | SAP UI5 für Frontend-Anwendungen                      | Fiori Guidelines einhalten             |
-| **Node.js >= 18 LTS**          | Laufzeitumgebung                                      | Verwendung von ES2022-Features möglich |
-| **OData V4**                   | REST-Protokoll für UI-Backend-Kommunikation           | Komplexe Queries via $expand/$filter   |
-| **SQLite (Dev) / HANA (Prod)** | Datenbank-Technologien                                | SQL muss kompatibel sein               |
+| Randbedingung                  | Beschreibung                                          | Auswirkung                                                    |
+| ------------------------------ | ----------------------------------------------------- | ------------------------------------------------------------- |
+| **SAP CAP Framework**          | Cloud Application Programming Model (Node.js-basiert) | Architektur muss CAP-Events verwenden                         |
+| **TypeScript >= 5.0**          | Vollständig typisierte Codebase                       | Strikte Type-Checks aktiviert                                 |
+| **UI5 >= 1.120**               | SAP UI5 für Frontend-Anwendungen                      | Fiori Guidelines einhalten                                    |
+| **Node.js >= 18 LTS**          | Laufzeitumgebung                                      | Verwendung von ES2022-Features möglich                        |
+| **OData V4**                   | REST-Protokoll für UI-Backend-Kommunikation           | Komplexe Queries via $expand/$filter                          |
+| **@cap-js/attachments**        | Offizielles CAP Attachments Plugin für Dateiablagen   | Standardisierte Upload/Download-Flows, Metadaten & Persistenz |
+| **SQLite (Dev) / HANA (Prod)** | Datenbank-Technologien                                | SQL muss kompatibel sein                                      |
 
 **Entwicklungswerkzeuge:**
 
@@ -586,6 +588,7 @@ erDiagram
     TravelTypes ||--o{ TimeEntry : has_travel_type
     GermanStates ||--o{ Users : preferred_state
     WorkLocations ||--o{ Users : default_location
+    TimeEntry ||--o{ Attachments : stores_files
 
     Users {
         string ID PK
@@ -617,6 +620,14 @@ erDiagram
         decimal undertimeHours "calculated"
         string source "UI|GENERATED (configurable)"
         string note
+    }
+
+    Attachments {
+        uuid ID PK
+        string fileName
+        string mediaType
+        integer size
+        binary content "handled by plugin"
     }
 
     Projects {
@@ -679,6 +690,7 @@ erDiagram
         decimal vacationCriticalRemainingDays
         integer sickLeaveWarningDays
         integer sickLeaveCriticalDays
+        boolean hideAttachmentFacet "UI toggle"
         string holidayApiBaseUrl
         string holidayApiCountryParameter
         string locale
@@ -689,6 +701,7 @@ erDiagram
 
 - Die Entity `Customizing` liefert alle zentralen Defaults (Arbeitsbeginn, Pausenlänge, EntryType- und Source-Codes).
 - Balance-, Urlaubs- und Krankheitsschwellen werden hier gepflegt und von Services/Validatoren konsumiert.
+- UI-Toggles: `hideAttachmentFacet` steuert das Attachment-Facet der Fiori Object Page und kann über das Singleton von Key Usern ein-/ausgeschaltet werden.
 - Enthält Integrationsparameter (Feiertags-API, Locale) und Fallback-Werte für Benutzer (Wochenstunden, Arbeitstage, Demo-User).
 - `CustomizingService` cached den Datensatz und wird im `TrackService` beim Start initialisiert.
 
@@ -698,6 +711,7 @@ erDiagram
 - **Eindeutigkeit:** Nur ein TimeEntry pro User+Datum (validiert im Repository)
 - **EntryTypes:** CodeList mit 8 Typen (W=Work, V=Vacation, S=Sick, H=Holiday, O=Off, B=Business Trip, F=Flextime, G=Gleitzeit)
 - **Source-Feld:** Unterscheidet UI-Eingabe (`UI`) von generierten Entries (`GENERATED`), beide Codes sind im Customizing pflegbar
+- **Anhänge:** `TimeEntries` kompositionieren auf `Attachments` des offiziellen CAP-Plugins (`@cap-js/attachments`) für Upload, Metadaten und Binärinhalte.
 
 ---
 
@@ -801,6 +815,8 @@ annotate TrackService.TimeEntries with @(
     }
 );
 ```
+
+> Hinweis: Über die Annotation `Hidden: { $Path: 'Customizing/hideAttachmentFacet' }` wird das Attachment-Facet der Object Page dynamisch gesteuert. Der Boolean lebt im Singleton `Customizing` und kann von Key Usern ohne Code-Deployment angepasst werden.
 
 #### 📊 Timetracking Dashboard (Custom UI5) - Der flexible Weg
 
@@ -1230,43 +1246,48 @@ sequenceDiagram
 **Production Deployment auf SAP Business Technology Platform:**
 
 ```
-┌───────────────────────────────────────────────────────────┐
-│  SAP BTP Cloud Foundry                                    │
-│                                                           │
-│  ┌─────────────────────────────────────────────────────┐  │
-│  │  App Router (Authentication/Routing)                │  │
-│  │  - XSUAA (User Management)                          │  │
-│  │  - Port 443 (HTTPS)                                 │  │
-│  └─────────────────────────────────────────────────────┘  │
-│           │                                               │
-│           ├──────────────┬──────────────┐                 │
-│           ▼              ▼              ▼                 │
-│  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐       │
-│  │ Timetable UI │ │Dashboard UI  │ │ CAP Service  │       │
-│  │ (Static)     │ │ (Static)     │ │ (Node.js)    │       │
-│  └──────────────┘ └──────────────┘ └──────────────┘       │
-│                                            │              │
-│                                            ▼              │
-│                                    ┌──────────────┐       │
-│                                    │ HANA Cloud   │       │
-│                                    │ (Database)   │       │
-│                                    └──────────────┘       │
-│                                                           │
-│  External Service:                                        │
-│  ┌─────────────────────────────────────────────────────┐  │
-│  │ feiertage-api.de (REST API)                         │  │
-│  └─────────────────────────────────────────────────────┘  │
-└───────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────┐
+│  SAP BTP Cloud Foundry                               │
+│                                                      │
+│  ┌────────────────────────────────────────────────┐  │
+│  │  App Router (Authentication/Routing)           │  │
+│  │  - XSUAA (User Management)                     │  │
+│  │  - Port 443 (HTTPS)                            │  │
+│  └────────────────────────────────────────────────┘  │
+│           │                                          │
+│           ├──────────────┬──────────────┐            │
+│           ▼              ▼              ▼            │
+│  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐  │
+│  │ Timetable UI │ │Dashboard UI  │ │ CAP Service  │  │
+│  │ (Static)     │ │ (Static)     │ │ (Node.js)    │  │
+│  └──────────────┘ └──────────────┘ └──────────────┘  │
+│                                            │         │
+│                                            │─ ─ ─ ─ ─│─ ─ ─ ─ ─ ─┐
+│                                            ▼         │           ▼
+│                                    ┌──────────────┐  │  ┌ ─ ─ ─ ─ ─ ─ ─ ─ ┐
+│                                    │ HANA Cloud   │  │  │ AWS (optional)  │
+│                                    │ (Database)   │  │  │ S3 Object Store │
+│                                    └──────────────┘  │  └ ─ ─ ─ ─ ─ ─ ─ ─ ┘
+│                                                      │
+│  External Services:                                  │
+│  ┌────────────────────────────────────────────────┐  │
+│  │ feiertage-api.de (REST API)                    │  │
+│  └────────────────────────────────────────────────┘  │
+└──────────────────────────────────────────────────────┘
 ```
 
 **Cloud Foundry Services:**
 
-| Service                    | Typ                              | Zweck                 |
-| -------------------------- | -------------------------------- | --------------------- |
-| **XSUAA**                  | Authorization & Trust Management | User Authentication   |
-| **HANA Cloud**             | Database                         | Production-Datenbank  |
-| **Application Logging**    | Logging                          | Centralized Logs      |
-| **Application Autoscaler** | Scaling                          | Auto-Scaling bei Last |
+| Service                                 | Typ                              | Zweck                                    |
+| --------------------------------------- | -------------------------------- | ---------------------------------------- |
+| **XSUAA**                               | Authorization & Trust Management | User Authentication                      |
+| **HANA Cloud**                          | Database                         | Production-Datenbank                     |
+| **Application Logging**                 | Logging                          | Centralized Logs                         |
+| **Application Autoscaler**              | Scaling                          | Auto-Scaling bei Last                    |
+| **SAP Object Store** (optional)         | Object Storage                   | Auslagerung von Attachment-Binärdaten    |
+| **Malware Scanning Service** (optional) | Security Service                 | Viren-/Malware-Prüfung für Datei-Uploads |
+
+> Optional: Das Attachments Plugin (`@cap-js/attachments`) kann so konfiguriert werden, dass Binärdaten im **SAP Object Store** abgelegt und Uploads über den **Malware Scanning Service** geprüft werden. Beide Services werden nur benötigt, wenn Dateiablagen nicht in der Datenbank erfolgen sollen bzw. Compliance-Richtlinien einen Malware-Scan verlangen.
 
 ---
 
@@ -1566,6 +1587,30 @@ if (existingDates.has(date)) { ... }
 
 ---
 
+### 8.8 Dokumentanhänge (Attachments Plugin)
+
+Wir verwenden das offizielle **CAP Attachments Plugin** [`@cap-js/attachments`](https://github.com/cap-js/attachments), um Uploads und Downloads von Dokumenten an `TimeEntries` abzuwickeln. Die Integration besteht aus drei Bausteinen:
+
+1. **Datenmodell-Erweiterung** – `db/attachments.cds` erweitert `TimeEntries` um eine `Composition of many Attachments`. Das Plugin bringt die `Attachments`-Entity samt Metadaten (Dateiname, MIME-Type, Größe) und Binärinhalt (Streaming) mit und sorgt für schema-kompatible Persistenz in SQLite/HANA.
+2. **Service & OData** – Das Plugin registriert automatische Handler für CRUD und Medienzugriff. Unsere `TrackService`-Definition muss keine zusätzliche Logik implementieren; Upload/Download läuft über die bereitgestellten REST-Endpunkte.
+3. **Fiori UI** – Die Object Page zeigt das Attachment-Facet (`attachments/@UI.LineItem`). Die Sichtbarkeit wird über `Customizing.hideAttachmentFacet` gesteuert, damit Key User die Funktion bei Bedarf deaktivieren können.
+
+**Warum das Plugin?**
+
+- Wiederverwendbare, getestete Lösung statt eigener File-Handling-Implementierung
+- Einheitliche Sicherheits- und Streaming-Mechanismen für lokale Entwicklung und HANA Cloud
+- Minimale Backend-Anpassungen (keine eigenen Media-Entity-Handler nötig)
+
+**Konfiguration & Referenzen:**
+
+- `package.json` → Dependency `@cap-js/attachments`
+- `db/attachments.cds` → Composition-Definition für `TimeEntries`
+- `srv/track-service/annotations/ui/timeentries-ui.cds` → Attachment-Facet + `Hidden`-Toggle
+
+Weitere Details: [CAP Attachments Plugin Doku](https://cap.cloud.sap/docs/plugins/#attachments).
+
+---
+
 ## 9. Architekturentscheidungen
 
 Alle Architekturentscheidungen sind als ADRs dokumentiert unter `docs/ADR/`:
@@ -1584,6 +1629,7 @@ Alle Architekturentscheidungen sind als ADRs dokumentiert unter `docs/ADR/`:
 | [ADR-0010](ADR/0010-mocked-authentication-test-user.md)  | Mocked Authentication Test User  | ✅ Akzeptiert |
 | [ADR-0011](ADR/0011-test-strategie-jest-rest-client.md)  | Test-Strategie Jest REST Client  | ✅ Akzeptiert |
 | [ADR-0012](ADR/0012-customizing-singleton-defaults.md)   | Customizing Singleton Defaults   | ✅ Akzeptiert |
+| [ADR-0013](ADR/0013-attachments-plugin-integration.md)   | CAP Attachments Plugin           | ✅ Akzeptiert |
 
 ---
 
@@ -1603,7 +1649,7 @@ System-Qualität
 │   │   └── Validator Composition
 │   └── Analysierbarkeit
 │       ├── JSDoc für alle APIs
-│       ├── 11 ADRs
+│       ├── 13 ADRs
 │       └── Strukturiertes Logging
 │
 ├── 2️⃣ Testbarkeit (Prio: Sehr Hoch)
