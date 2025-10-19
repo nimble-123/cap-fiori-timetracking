@@ -130,6 +130,44 @@ annotate service.TravelTypes with {
 };
 
 ////////////////////////////////////////////////////////////////////////////
+//  TimeEntryStatuses Entity - Labels & TextArrangements
+////////////////////////////////////////////////////////////////////////////
+annotate service.TimeEntryStatuses with {
+      code               @title                 : '{i18n>title.timeEntryStatus.code}'
+                         @Common.Label          : '{i18n>timeEntryStatus.code}'
+                         @Common.Text           : name
+                         @Common.TextArrangement: #TextLast;
+
+      name               @title                 : '{i18n>title.timeEntryStatus.name}'
+                         @Common.Label          : '{i18n>timeEntryStatus.name}';
+
+      descr              @title                 : '{i18n>title.timeEntryStatus.descr}'
+                         @Common.Label          : '{i18n>timeEntryStatus.descr}';
+
+      ![from]            @title                 : '{i18n>title.timeEntryStatus.from}'
+                         @Common.Label          : '{i18n>timeEntryStatus.from}'
+                         @Common.Text           : ![from].name
+                         @Common.TextArrangement: #TextOnly;
+
+      ![to]              @title                 : '{i18n>title.timeEntryStatus.to}'
+                         @Common.Label          : '{i18n>timeEntryStatus.to}'
+                         @Common.Text           : ![to].name
+                         @Common.TextArrangement: #TextOnly;
+
+      allowDoneAction    @title                 : '{i18n>title.timeEntryStatus.allowDoneAction}'
+                         @Common.Label          : '{i18n>timeEntryStatus.allowDoneAction}';
+
+      allowReleaseAction @title                 : '{i18n>title.timeEntryStatus.allowReleaseAction}'
+                         @Common.Label          : '{i18n>timeEntryStatus.allowReleaseAction}';
+
+      criticality        @title                 : '{i18n>title.timeEntryStatus.criticality}'
+                         @Common.Label          : '{i18n>timeEntryStatus.criticality}';
+
+      sortValue          @title                 : '{i18n>title.timeEntryStatus.sortValue}'
+                         @Common.Label          : '{i18n>timeEntryStatus.sortValue}';
+};
+
+////////////////////////////////////////////////////////////////////////////
 //  TimeEntries Entity - Labels & TextArrangements
 ////////////////////////////////////////////////////////////////////////////
 annotate service.TimeEntries with {
@@ -147,6 +185,11 @@ annotate service.TimeEntries with {
       entryType             @title                 : '{i18n>title.timeEntry.entryType}'
                             @Common.Label          : '{i18n>timeEntry.entryType}'
                             @Common.Text           : entryType.name
+                            @Common.TextArrangement: #TextLast;
+
+      status                @title                 : '{i18n>title.timeEntry.status}'
+                            @Common.Label          : '{i18n>timeEntry.status}'
+                            @Common.Text           : status.name
                             @Common.TextArrangement: #TextLast;
 
       project               @title                 : '{i18n>title.timeEntry.project}'
@@ -320,6 +363,18 @@ annotate service.Customizing with {
       holidayEntryTypeCode          @title        : '{i18n>title.customizing.holidayEntryTypeCode}'
                                     @Common.Label : '{i18n>customizing.holidayEntryTypeCode}';
 
+      timeEntryStatusOpenCode       @title        : '{i18n>title.customizing.timeEntryStatusOpenCode}'
+                                    @Common.Label : '{i18n>customizing.timeEntryStatusOpenCode}';
+
+      timeEntryStatusProcessedCode  @title        : '{i18n>title.customizing.timeEntryStatusProcessedCode}'
+                                    @Common.Label : '{i18n>customizing.timeEntryStatusProcessedCode}';
+
+      timeEntryStatusDoneCode       @title        : '{i18n>title.customizing.timeEntryStatusDoneCode}'
+                                    @Common.Label : '{i18n>customizing.timeEntryStatusDoneCode}';
+
+      timeEntryStatusReleasedCode   @title        : '{i18n>title.customizing.timeEntryStatusReleasedCode}'
+                                    @Common.Label : '{i18n>customizing.timeEntryStatusReleasedCode}';
+
       fallbackWeeklyHours           @title        : '{i18n>title.customizing.fallbackWeeklyHours}'
                                     @Common.Label : '{i18n>customizing.fallbackWeeklyHours}'
                                     @Measures.Unit: 'h';
@@ -394,6 +449,7 @@ annotate service.WorkLocations with @(Common.Label: '{i18n>entity.WorkLocations}
 annotate service.TravelTypes with @(Common.Label: '{i18n>entity.TravelTypes}');
 annotate service.GermanStates with @(Common.Label: '{i18n>entity.GermanStates}');
 annotate service.TimeEntries with @(Common.Label: '{i18n>entity.TimeEntries}');
+annotate service.TimeEntryStatuses with @(Common.Label: '{i18n>entity.TimeEntryStatuses}');
 annotate service.MonthlyBalances with @(Common.Label: '{i18n>entity.MonthlyBalances}');
 annotate service.VacationBalances with @(Common.Label: '{i18n>entity.VacationBalances}');
 annotate service.SickLeaveBalances with @(Common.Label: '{i18n>entity.SickLeaveBalances}');

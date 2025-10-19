@@ -76,6 +76,24 @@ annotate service.getVacationBalance with @(Common.Label: '{i18n>action.getVacati
  */
 annotate service.getSickLeaveBalance with @(Common.Label: '{i18n>action.getSickLeaveBalance}');
 
+/**
+ * markTimeEntriesDone Action
+ * - Setzt ausgewählte TimeEntries auf Status "Done"
+ */
+annotate service.markTimeEntriesDone with @(
+  Common.SideEffects: {TargetEntities: ['/TrackService.EntityContainer/TimeEntries']},
+  Common.Label      : '{i18n>action.markTimeEntriesDone}'
+);
+
+/**
+ * releaseTimeEntries Action
+ * - Setzt ausgewählte TimeEntries auf Status "Released"
+ */
+annotate service.releaseTimeEntries with @(
+  Common.SideEffects: {TargetEntities: ['/TrackService.EntityContainer/TimeEntries']},
+  Common.Label      : '{i18n>action.releaseTimeEntries}'
+);
+
 ////////////////////////////////////////////////////////////////////////////
 //  Functions - Annotationen
 ////////////////////////////////////////////////////////////////////////////

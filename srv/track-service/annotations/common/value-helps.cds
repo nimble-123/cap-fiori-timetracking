@@ -134,6 +134,27 @@ annotate service.TimeEntries with {
   )
 };
 
+// Status Value Help
+annotate service.TimeEntries with {
+  status @(
+    Common.ValueList               : {
+      CollectionPath: 'TimeEntryStatuses',
+      Parameters    : [
+        {
+          $Type            : 'Common.ValueListParameterInOut',
+          LocalDataProperty: status_code,
+          ValueListProperty: 'code'
+        },
+        {
+          $Type            : 'Common.ValueListParameterDisplayOnly',
+          ValueListProperty: 'text'
+        }
+      ]
+    },
+    Common.ValueListWithFixedValues: true
+  )
+};
+
 ////////////////////////////////////////////////////////////////////////////
 //  Action Parameter - Value Helps
 ////////////////////////////////////////////////////////////////////////////

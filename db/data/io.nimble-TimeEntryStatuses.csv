@@ -1,0 +1,5 @@
+code,from_code,to_code,allowDoneAction,allowReleaseAction,criticality,sortValue
+"O",,"P",false,false,0,0
+"P","O","D",true,false,1,1
+"D","P","R",false,true,2,2
+"R","D",,false,false,3,3

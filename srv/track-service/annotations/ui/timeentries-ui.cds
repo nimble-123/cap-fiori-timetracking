@@ -7,6 +7,7 @@ annotate service.TimeEntries with @(
   UI.SelectionFields               : [
     workDate,
     entryType_code,
+    status_code,
     workLocation_code,
     travelType_code,
     project_ID,
@@ -72,6 +73,30 @@ annotate service.TimeEntries with @(
           }
         ]
       },
+      // Action Group für Statuswechsel
+      {
+        $Type  : 'UI.DataFieldForActionGroup',
+        Label  : '{i18n>actionGroup.status}',
+        ID     : 'statusActions',
+        Actions: [
+          {
+            $Type                      : 'UI.DataFieldForAction',
+            Action                     : 'TrackService.EntityContainer/markTimeEntriesDone',
+            Label                      : '{i18n>action.markTimeEntriesDone}',
+            ![@UI.Importance]          : #Medium,
+            ![@Core.OperationAvailable]: status.allowDoneAction,
+            Inline                     : false
+          },
+          {
+            $Type                      : 'UI.DataFieldForAction',
+            Action                     : 'TrackService.EntityContainer/releaseTimeEntries',
+            Label                      : '{i18n>action.releaseTimeEntries}',
+            ![@UI.Importance]          : #High,
+            ![@Core.OperationAvailable]: status.allowReleaseAction,
+            Inline                     : false
+          }
+        ]
+      },
       {
         Value: workDate,
         $Type: 'UI.DataField'
@@ -80,6 +105,12 @@ annotate service.TimeEntries with @(
         Value                : entryType.name,
         $Type                : 'UI.DataField',
         ![@HTML5.CssDefaults]: {width: '100px'}
+      },
+      {
+        Value                : status.name,
+        $Type                : 'UI.DataField',
+        ![@UI.Importance]    : #High,
+        ![@HTML5.CssDefaults]: {width: '80px'}
       },
       {
         Value                : workLocation.name,
@@ -195,6 +226,30 @@ annotate service.TimeEntries with @(
           }
         ]
       },
+      // Action Group für Statuswechsel
+      {
+        $Type  : 'UI.DataFieldForActionGroup',
+        Label  : '{i18n>actionGroup.status}',
+        ID     : 'statusActions',
+        Actions: [
+          {
+            $Type                      : 'UI.DataFieldForAction',
+            Action                     : 'TrackService.EntityContainer/markTimeEntriesDone',
+            Label                      : '{i18n>action.markTimeEntriesDone}',
+            ![@UI.Importance]          : #Medium,
+            ![@Core.OperationAvailable]: status.allowDoneAction,
+            Inline                     : false
+          },
+          {
+            $Type                      : 'UI.DataFieldForAction',
+            Action                     : 'TrackService.EntityContainer/releaseTimeEntries',
+            Label                      : '{i18n>action.releaseTimeEntries}',
+            ![@UI.Importance]          : #High,
+            ![@Core.OperationAvailable]: status.allowReleaseAction,
+            Inline                     : false
+          }
+        ]
+      },
       // Essential fields only (6 columns)
       {
         Value: workDate,
@@ -204,6 +259,12 @@ annotate service.TimeEntries with @(
         Value                : entryType.name,
         $Type                : 'UI.DataField',
         ![@HTML5.CssDefaults]: {width: '100px'}
+      },
+      {
+        Value                : status.name,
+        $Type                : 'UI.DataField',
+        ![@UI.Importance]    : #High,
+        ![@HTML5.CssDefaults]: {width: '80px'}
       },
       {
         Value: startTime,
@@ -272,6 +333,30 @@ annotate service.TimeEntries with @(
           }
         ]
       },
+      // Action Group für Statuswechsel
+      {
+        $Type  : 'UI.DataFieldForActionGroup',
+        Label  : '{i18n>actionGroup.status}',
+        ID     : 'statusActions',
+        Actions: [
+          {
+            $Type                      : 'UI.DataFieldForAction',
+            Action                     : 'TrackService.EntityContainer/markTimeEntriesDone',
+            Label                      : '{i18n>action.markTimeEntriesDone}',
+            ![@UI.Importance]          : #Medium,
+            ![@Core.OperationAvailable]: status.allowDoneAction,
+            Inline                     : false
+          },
+          {
+            $Type                      : 'UI.DataFieldForAction',
+            Action                     : 'TrackService.EntityContainer/releaseTimeEntries',
+            Label                      : '{i18n>action.releaseTimeEntries}',
+            ![@UI.Importance]          : #High,
+            ![@Core.OperationAvailable]: status.allowReleaseAction,
+            Inline                     : false
+          }
+        ]
+      },
       // All fields
       {
         Value: workDate,
@@ -281,6 +366,12 @@ annotate service.TimeEntries with @(
         Value                : entryType.name,
         $Type                : 'UI.DataField',
         ![@HTML5.CssDefaults]: {width: '100px'}
+      },
+      {
+        Value                : status.name,
+        $Type                : 'UI.DataField',
+        ![@UI.Importance]    : #High,
+        ![@HTML5.CssDefaults]: {width: '80px'}
       },
       {
         Value                : workLocation.name,
@@ -449,6 +540,11 @@ annotate service.TimeEntries with @(
     {
       Value: entryType_code,
       $Type: 'UI.DataField'
+    },
+    {
+      Value      : status_code,
+      $Type      : 'UI.DataField',
+      Criticality: status.criticality,
     },
     {
       Value: note,

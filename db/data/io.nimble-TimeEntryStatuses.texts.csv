@@ -1,0 +1,9 @@
+code,locale,name,descr
+"O",de,"Offen","Eintrag ist offen und kann bearbeitet werden."
+"P",de,"Bearbeitet","Eintrag wurde bearbeitet, aber noch nicht abgeschlossen."
+"D",de,"Erledigt","Eintrag ist abgeschlossen und wartet auf Freigabe."
+"R",de,"Freigegeben","Eintrag ist freigegeben und endgültig abgeschlossen."
+"O",en,"Open","Entry is open and can be edited."
+"P",en,"Processed","Entry has been processed but not yet completed."
+"D",en,"Done","Entry is complete and awaiting release."
+"R",en,"Released","Entry is released and finally complete."

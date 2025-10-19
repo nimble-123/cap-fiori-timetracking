@@ -4,21 +4,27 @@
 ////////////////////////////////////////////////////////////////////////////
 //  Common Annotations (Shared across all entities)
 ////////////////////////////////////////////////////////////////////////////
-using from './annotations/common/labels'; // Labels & Titles, @Common.Text, @Common.TextArrangement
-using from './annotations/common/field-controls'; // @readonly, @mandatory, @UI.Hidden
-using from './annotations/common/capabilities'; // @Capabilities
-using from './annotations/common/value-helps'; // @Common.ValueList
-using from './annotations/common/authorization'; // @restrict
 using from './annotations/common/actions'; // Action Annotations (@Common.SideEffects, @Core.OperationAvailable)
+using from './annotations/common/authorization'; // @restrict
+using from './annotations/common/capabilities'; // @Capabilities
+using from './annotations/common/field-controls'; // @readonly, @mandatory, @UI.Hidden
+using from './annotations/common/labels'; // Labels & Titles, @Common.Text, @Common.TextArrangement
+using from './annotations/common/value-helps'; // @Common.ValueList
 
 ////////////////////////////////////////////////////////////////////////////
 //  UI Layout Annotations (Per Entity)
 ////////////////////////////////////////////////////////////////////////////
-using from './annotations/ui/users-ui'; // Users UI Layout
-using from './annotations/ui/projects-ui'; // Projects UI Layout
 using from './annotations/ui/activities-ui'; // ActivityTypes UI Layout
-using from './annotations/ui/timeentries-ui'; // TimeEntries UI Layout
 using from './annotations/ui/balance-ui'; // MonthlyBalances UI Layout
+using from './annotations/ui/customizing-ui'; // Customizing UI Layout
+using from './annotations/ui/entrytypes-ui'; // EntryTypes UI Layout
+using from './annotations/ui/projects-ui'; // Projects UI Layout
+using from './annotations/ui/states-ui'; // GermanStates UI Layout
+using from './annotations/ui/timeentries-ui'; // TimeEntries UI Layout
+using from './annotations/ui/timeentrystatuses-ui'; // TimeEntryStatuses UI Layout
+using from './annotations/ui/traveltypes-ui'; // TravelTypes UI Layout
+using from './annotations/ui/users-ui'; // Users UI Layout
+using from './annotations/ui/worklocations-ui'; // WorkLocations UI Layout
 
 ////////////////////////////////////////////////////////////////////////////
 //  Hinweis zur Struktur:

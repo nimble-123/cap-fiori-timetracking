@@ -55,10 +55,21 @@ entity TravelTypes : CodeList {
   key code : String(2);
 }
 
+entity TimeEntryStatuses : CodeList {
+  key code               : String(1);
+      ![from]            : Association to TimeEntryStatuses;
+      ![to]              : Association to TimeEntryStatuses;
+      allowDoneAction    : Boolean default false;
+      allowReleaseAction : Boolean default false;
+      criticality        : Integer default 0; // UI5 Criticality: 0=neutral, 1=negative(red), 2=critical(orange), 3=positive(green), 5=information(blue)
+      sortValue          : Integer;
+}
+
 entity TimeEntries : managed, cuid {
   user                  : Association to Users not null;
   workDate              : Date not null;
   entryType             : Association to EntryTypes not null;
+  status                : Association to TimeEntryStatuses not null;
 
   // Optional: Zuordnung
   project               : Association to Projects;
@@ -97,6 +108,12 @@ entity Customizing : managed {
       workEntryTypeCode             : String(1) default 'W';
       weekendEntryTypeCode          : String(1) default 'O';
       holidayEntryTypeCode          : String(1) default 'H';
+
+      // Time entry status defaults
+      timeEntryStatusOpenCode       : String(1) default 'O';
+      timeEntryStatusProcessedCode  : String(1) default 'P';
+      timeEntryStatusDoneCode       : String(1) default 'D';
+      timeEntryStatusReleasedCode   : String(1) default 'R';
 
       // User fallback defaults
       fallbackWeeklyHours           : Decimal(4, 2) default 36.00;

@@ -31,6 +31,9 @@ service TrackService {
     @readonly
     entity TravelTypes   as projection on db.TravelTypes;
 
+    @readonly
+    entity TimeEntryStatuses as projection on db.TimeEntryStatuses;
+
     @odata.singleton
     entity Customizing   as projection on db.Customizing;
 
@@ -54,7 +57,7 @@ service TrackService {
              * Bound Action: Berechnet alle Zeitwerte neu
              * Nutzt aktuelle User-Sollstunden und berechnet Über-/Unterstunden
              * Nur im Display Mode verfügbar (nicht im Draft/Edit Mode)
-             */
+            */
             action recalculateTimeEntry() returns TimeEntries;
         };
 
@@ -78,6 +81,16 @@ service TrackService {
      * Unbound Action: Generiere TimeEntries für ein ganzes Jahr inkl. Wochenenden und Feiertage
      */
     action   generateYearlyTimeEntries(year: DefaultParamsForGenerateYearly:year, stateCode: DefaultParamsForGenerateYearly:stateCode) returns array of TimeEntries;
+
+    /**
+     * Unbound Action: Markiere TimeEntries als abgeschlossen (Status „Done“)
+     */
+    action   markTimeEntriesDone(entryIDs: array of UUID) returns array of TimeEntries;
+
+    /**
+     * Unbound Action: Markiere TimeEntries als freigegeben (Status „Released“)
+     */
+    action   releaseTimeEntries(entryIDs: array of UUID) returns array of TimeEntries;
 
     // ========================================
     // Monatssaldo-Funktionalität
