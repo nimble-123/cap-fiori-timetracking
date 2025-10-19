@@ -10,12 +10,14 @@ Stelle sicher, dass folgende Software installiert ist:
 
 ### Erforderlich
 
-| Tool           | Version   | Download                            | Zweck                 |
-| -------------- | --------- | ----------------------------------- | --------------------- |
-| **Node.js**    | ≥20.x LTS | [nodejs.org](https://nodejs.org/)   | Runtime für CAP & UI5 |
-| **npm**        | ≥10.x     | (kommt mit Node.js)                 | Package Manager       |
-| **TypeScript** | ≥5.0      | `npm install -g typescript`         | Compiler              |
-| **Git**        | Latest    | [git-scm.com](https://git-scm.com/) | Version Control       |
+| Tool           | Version                                    | Download                            | Zweck                 |
+| -------------- | ------------------------------------------ | ----------------------------------- | --------------------- |
+| **Node.js**    | ≥23.x LTS (empfohlen 23.6.0 laut `.nvmrc`) | [nodejs.org](https://nodejs.org/)   | Runtime für CAP & UI5 |
+| **npm**        | ≥10.x                                      | (kommt mit Node.js)                 | Package Manager       |
+| **TypeScript** | ≥5.0                                       | `npm install -g typescript`         | Compiler              |
+| **Git**        | Latest                                     | [git-scm.com](https://git-scm.com/) | Version Control       |
+
+> Tipp: Falls du `nvm` verwendest, kannst du mit `nvm use` automatisch die in `.nvmrc` definierte Node-Version (23.6.0) aktivieren. Bei Bedarf installiert `nvm install` die Version einmalig.
 
 ### Empfohlen
 
@@ -62,7 +64,25 @@ Dies installiert:
 
 **Hinweis:** Das Projekt nutzt npm Workspaces – `app/timetable` und `app/timetracking` werden automatisch verlinkt.
 
-### 3. TypeScript-Typen generieren
+> Dank `.npmrc` schlägt die Installation fehl, wenn deine Node-Version nicht zu den definierten Engines passt (`engine-strict=true`) – so bleiben alle Umgebungen konsistent. `npm audit` ist dabei standardmäßig aktiv.
+
+### 3. Environment konfigurieren
+
+Kopiere das Beispiel und passe Werte bei Bedarf an (für lokale Entwicklung reichen die Default-Werte):
+
+```bash
+cp .env.example .env
+```
+
+**Wichtige Variablen:**
+
+- `NODE_ENV`, `CDS_LOG_LEVELS_TRACK_SERVICE`, `CDS_LOG_FORMAT` – steuern Logging und Laufzeitverhalten.
+- `HOLIDAY_API_BASE_URL`, `HOLIDAY_API_TIMEOUT_MS` – Konfiguration für die Feiertags-API.
+- `CAP_AUTH_STRATEGY` – legt die lokale Authentifizierungsstrategie fest (Standard: `mocked`).
+
+Alle Variablen sind optional. Nicht gesetzte Werte fallen auf die Defaults aus `Customizing` bzw. den Services zurück.
+
+### 4. TypeScript-Typen generieren
 
 ```bash
 npm run generate-entry-point
@@ -73,6 +93,21 @@ Dies erzeugt:
 - `@cds-models/` Verzeichnis mit TypeScript-Typen
 - Entry Points für alle CDS-Entities
 - Import-Aliases (`#cds-models/TrackService`)
+
+---
+
+## 🧭 Repository-Guidelines & Meta-Dateien
+
+Damit alle Contributors dieselben Standards nutzen, bringt das Projekt mehrere Meta-Dateien mit:
+
+- `.nvmrc` – definiert Node.js 23.6.0. `nvm use` stellt sicher, dass du exakt diese Version nutzt.
+- `.npmrc` – erzwingt kompatible Node-Versionen (`engine-strict=true`) und aktiviert Sicherheitsprüfungen (`audit=true`).
+- `.editorconfig` – legt Formatierungsregeln fest (2 Spaces, LF, keine trailing spaces), passend zu Prettier.
+- `.env.example` – Beispielkonfiguration für lokale Umgebungsvariablen. Kopiere sie wie oben beschrieben nach `.env`.
+- `CODE_OF_CONDUCT.md` & `SECURITY.md` – beschreiben Verhaltensregeln sowie den Ablauf für Sicherheitsmeldungen.
+- `.github/ISSUE_TEMPLATE/*`, `.github/PULL_REQUEST_TEMPLATE.md`, `.github/dependabot.yml`, `.github/CODEOWNERS` – sorgen für saubere Issues/PRs, automatische Dependency-Updates und klar zugewiesene Reviews.
+
+Bitte beachte diese Richtlinien, bevor du einen PR erstellst.
 
 ---
 
@@ -177,8 +212,15 @@ cap-fiori-timetracking/
 ├── docs/                     # 📚 Dokumentation
 │   ├── ARCHITECTURE.md       # arc42 Architektur-Dokumentation
 │   └── ADR/                  # Architecture Decision Records
+├── .github/                  # 🤖 Templates, Dependabot, CODEOWNERS
 ├── @cds-models/              # 🔧 Generierte TypeScript-Typen
 ├── test/                     # 🧪 Tests (Jest + REST Client)
+├── .env.example              # ⚙️ Beispiel-Umgebungsvariablen
+├── .editorconfig             # 🧹 Formatierungsregeln (2 Spaces, LF)
+├── .nvmrc                    # 🟦 Node-Version 23.6.0
+├── .npmrc                    # 📦 npm Richtlinien (engine-strict, audit)
+├── CODE_OF_CONDUCT.md        # 🤝 Community Guidelines
+├── SECURITY.md               # 🔐 Responsible Disclosure
 └── package.json              # npm Scripts & Dependencies
 ```
 
