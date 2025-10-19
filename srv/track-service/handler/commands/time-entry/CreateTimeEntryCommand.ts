@@ -48,6 +48,15 @@ export class CreateTimeEntryCommand {
     const manualSource = timeEntryDefaults.manualSourceCode;
     const generatedSource = timeEntryDefaults.generatedSourceCode;
     const effectiveBreakMinutes = entryData.breakMin ?? timeEntryDefaults.defaultBreakMinutes;
+    const openStatusCode = timeEntryDefaults.statusOpenCode;
+    const statusCode = entryData.status_code || openStatusCode;
+
+    this.validator.validateStatusChange(undefined, statusCode, timeEntryDefaults);
+    if (statusCode !== openStatusCode) {
+      const error = new Error('Neue TimeEntries müssen im Status „Open“ gestartet werden.') as any;
+      error.code = 400;
+      throw error;
+    }
 
     // Validierung der Pflichtfelder
     const entryType = this.validator.validateRequiredFieldsForCreate(entryData);
@@ -79,6 +88,7 @@ export class CreateTimeEntryCommand {
         overtimeHours: entryData.overtimeHours,
         undertimeHours: entryData.undertimeHours,
         source: entryData.source,
+        status_code: statusCode,
       };
     }
 
@@ -107,6 +117,7 @@ export class CreateTimeEntryCommand {
     return {
       ...durationData,
       source: entryData.source || manualSource,
+      status_code: statusCode,
     };
   }
 }

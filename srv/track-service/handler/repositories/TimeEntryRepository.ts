@@ -1,5 +1,5 @@
 import { Transaction } from '@sap/cds';
-import { TimeEntry } from '#cds-models/TrackService';
+import { TimeEntry, TimeEntryStatus } from '#cds-models/TrackService';
 import { logger } from '../utils';
 
 /**
@@ -8,9 +8,11 @@ import { logger } from '../utils';
  */
 export class TimeEntryRepository {
   private TimeEntries: any;
+  private TimeEntryStatuses: any;
 
   constructor(entities: any) {
     this.TimeEntries = entities.TimeEntries;
+    this.TimeEntryStatuses = entities.TimeEntryStatuses;
   }
 
   /**
@@ -83,6 +85,77 @@ export class TimeEntryRepository {
     });
 
     return new Set(existingInRange.map((entry: any) => entry.workDate));
+  }
+
+  /**
+   * Lädt mehrere TimeEntries anhand einer Liste von IDs
+   * @param tx - Transaction Objekt
+   * @param ids - Liste der TimeEntry IDs
+   */
+  async getByIds(tx: Transaction, ids: string[]): Promise<TimeEntry[]> {
+    if (!ids.length) {
+      return [];
+    }
+
+    const uniqueIds = Array.from(new Set(ids));
+    logger.repositoryQuery('TimeEntry', 'Fetching entries by IDs', { count: uniqueIds.length });
+
+    const entries = await tx.run(SELECT.from(this.TimeEntries).where({ ID: { in: uniqueIds } }));
+    logger.repositoryResult('TimeEntry', 'Entries fetched by IDs', { count: entries.length });
+
+    const entryMap = new Map(entries.map((entry: any) => [entry.ID, entry]));
+    return uniqueIds.map((id) => entryMap.get(id)).filter((entry): entry is TimeEntry => Boolean(entry));
+  }
+
+  /**
+   * Batch-Update des Status für mehrere TimeEntries
+   * @param tx - Transaction Objekt
+   * @param ids - Liste der TimeEntry IDs
+   * @param statusCode - Ziel-Statuscode
+   */
+  async updateStatusBatch(tx: Transaction, ids: string[], statusCode: string): Promise<void> {
+    if (!ids.length) {
+      return;
+    }
+
+    const uniqueIds = Array.from(new Set(ids));
+    logger.repositorySave('TimeEntry', uniqueIds.length, {
+      statusCode,
+    });
+
+    await tx.run(
+      UPDATE(this.TimeEntries)
+        .set({ status_code: statusCode })
+        .where({ ID: { in: uniqueIds } }),
+    );
+  }
+
+  /**
+   * Lädt TimeEntry Status nach Codes
+   * @param tx - Transaction Objekt
+   * @param codes - Liste der Statuscodes
+   */
+  async getStatusesByCodes(tx: Transaction, codes: string[]): Promise<TimeEntryStatus[]> {
+    if (!codes.length) {
+      return [];
+    }
+
+    const uniqueCodes = Array.from(new Set(codes));
+    logger.repositoryQuery('TimeEntryStatus', 'Fetching statuses by codes', { codes: uniqueCodes });
+    const statuses = await tx.run(SELECT.from(this.TimeEntryStatuses).where({ code: { in: uniqueCodes } }));
+    logger.repositoryResult('TimeEntryStatus', 'Statuses fetched', { count: statuses.length });
+
+    return statuses;
+  }
+
+  /**
+   * Liefert Status als Map für schnellen Zugriff
+   * @param tx - Transaction Objekt
+   * @param codes - Liste der Statuscodes
+   */
+  async getStatusMapByCodes(tx: Transaction, codes: string[]): Promise<Map<string, TimeEntryStatus>> {
+    const statuses = await this.getStatusesByCodes(tx, codes);
+    return new Map(statuses.map((status: any) => [status.code, status]));
   }
 
   /**

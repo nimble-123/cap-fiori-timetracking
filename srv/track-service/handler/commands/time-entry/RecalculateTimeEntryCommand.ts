@@ -47,9 +47,15 @@ export class RecalculateTimeEntryCommand {
       entryType: existingEntry.entryType_code,
     });
 
+    const defaults = this.customizingService.getTimeEntryDefaults();
+    if (existingEntry.status_code === defaults.statusReleasedCode) {
+      const error = new Error('Freigegebene TimeEntries können nicht neu berechnet werden.') as any;
+      error.code = 409;
+      throw error;
+    }
+
     // 2. Zeitdaten neu berechnen
     let calculatedData;
-    const defaults = this.customizingService.getTimeEntryDefaults();
     const entryType = existingEntry.entryType_code || defaults.workEntryTypeCode;
     const breakMinutes = existingEntry.breakMin ?? defaults.defaultBreakMinutes;
 
@@ -75,12 +81,17 @@ export class RecalculateTimeEntryCommand {
     });
 
     // 3. Entry aktualisieren
+    const statusUpdateNeeded =
+      existingEntry.status_code !== defaults.statusReleasedCode &&
+      existingEntry.status_code !== defaults.statusProcessedCode;
+
     await tx.update('TrackService.TimeEntries', entryId).set({
       durationHoursGross: calculatedData.durationHoursGross,
       durationHoursNet: calculatedData.durationHoursNet,
       expectedDailyHoursDec: calculatedData.expectedDailyHoursDec,
       overtimeHours: calculatedData.overtimeHours,
       undertimeHours: calculatedData.undertimeHours,
+      ...(statusUpdateNeeded ? { status_code: defaults.statusProcessedCode } : {}),
     });
 
     // 4. Aktualisierten Entry laden und zurückgeben

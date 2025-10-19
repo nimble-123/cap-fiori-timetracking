@@ -44,6 +44,20 @@ export class HandlerRegistrar {
       handler: handlers.handleRecalculate.bind(handlers),
       description: 'Recalculate time entry values based on current times',
     });
+
+    this.registry.register({
+      type: 'on',
+      event: 'markTimeEntriesDone',
+      handler: handlers.handleMarkDone.bind(handlers),
+      description: 'Mark selected time entries as done',
+    });
+
+    this.registry.register({
+      type: 'on',
+      event: 'releaseTimeEntries',
+      handler: handlers.handleRelease.bind(handlers),
+      description: 'Release selected time entries for billing',
+    });
   }
 
   /**

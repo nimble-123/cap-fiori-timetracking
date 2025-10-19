@@ -12,6 +12,10 @@ interface TimeEntryDefaults {
   workEntryTypeCode: string;
   weekendEntryTypeCode: string;
   holidayEntryTypeCode: string;
+  statusOpenCode: string;
+  statusProcessedCode: string;
+  statusDoneCode: string;
+  statusReleasedCode: string;
 }
 
 interface UserDefaults {
@@ -137,6 +141,10 @@ export class CustomizingService {
         workEntryTypeCode: raw.workEntryTypeCode || 'W',
         weekendEntryTypeCode: raw.weekendEntryTypeCode || 'O',
         holidayEntryTypeCode: raw.holidayEntryTypeCode || 'H',
+        statusOpenCode: raw.timeEntryStatusOpenCode || 'O',
+        statusProcessedCode: raw.timeEntryStatusProcessedCode || 'P',
+        statusDoneCode: raw.timeEntryStatusDoneCode || 'D',
+        statusReleasedCode: raw.timeEntryStatusReleasedCode || 'R',
       },
       user: {
         fallbackWeeklyHours: this.toNumber(raw.fallbackWeeklyHours, 36),

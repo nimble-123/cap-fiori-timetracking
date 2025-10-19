@@ -136,6 +136,58 @@ export class TimeEntryValidator {
   }
 
   /**
+   * Stellt sicher, dass Status noch bearbeitbar ist
+   */
+  ensureStatusMutable(currentStatus: string | undefined, finalStatus: string): void {
+    if (currentStatus === finalStatus) {
+      const error = new Error('Freigegebene TimeEntries können nicht mehr bearbeitet werden.') as any;
+      error.code = 409;
+      throw error;
+    }
+  }
+
+  /**
+   * Validiert erlaubte Statusänderungen
+   */
+  validateStatusChange(
+    currentStatus: string | undefined,
+    requestedStatus: string,
+    defaults: {
+      statusOpenCode: string;
+      statusProcessedCode: string;
+      statusDoneCode: string;
+      statusReleasedCode: string;
+    },
+  ): void {
+    if (!requestedStatus) {
+      return;
+    }
+
+    if (requestedStatus === currentStatus) {
+      return;
+    }
+
+    const allowedStatuses = new Set([
+      defaults.statusOpenCode,
+      defaults.statusProcessedCode,
+      defaults.statusDoneCode,
+      defaults.statusReleasedCode,
+    ]);
+
+    if (!allowedStatuses.has(requestedStatus)) {
+      const error = new Error('Ungültiger TimeEntry-Status.') as any;
+      error.code = 400;
+      throw error;
+    }
+
+    if (requestedStatus === defaults.statusReleasedCode && currentStatus !== defaults.statusReleasedCode) {
+      const error = new Error('Status „Released“ kann nur über die Freigabe-Aktion gesetzt werden.') as any;
+      error.code = 409;
+      throw error;
+    }
+  }
+
+  /**
    * Validiert Eindeutigkeit pro User/Tag
    * @param tx - Transaction Objekt
    * @param userId - User ID

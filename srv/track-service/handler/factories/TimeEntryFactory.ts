@@ -145,6 +145,7 @@ export class TimeEntryFactory {
       note: `Automatisch generiert für ${displayDate}`,
       workLocation_code: user.defaultWorkLocation_code || null,
       travelType_code: null,
+      status_code: timeDefaults.statusOpenCode,
     } as TimeEntry;
   }
 
@@ -178,6 +179,7 @@ export class TimeEntryFactory {
       note: `${dayName}`,
       workLocation_code: null,
       travelType_code: null,
+      status_code: timeDefaults.statusOpenCode,
     } as TimeEntry;
   }
 
@@ -211,6 +213,7 @@ export class TimeEntryFactory {
       note: holidayName,
       workLocation_code: null,
       travelType_code: null,
+      status_code: timeDefaults.statusOpenCode,
     } as TimeEntry;
   }
 }

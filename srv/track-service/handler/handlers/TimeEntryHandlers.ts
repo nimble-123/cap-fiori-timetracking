@@ -1,6 +1,12 @@
 import cds from '@sap/cds';
 import { TimeEntry } from '#cds-models/TrackService';
-import { CreateTimeEntryCommand, UpdateTimeEntryCommand, RecalculateTimeEntryCommand } from '../commands';
+import {
+  CreateTimeEntryCommand,
+  UpdateTimeEntryCommand,
+  RecalculateTimeEntryCommand,
+  MarkTimeEntriesDoneCommand,
+  ReleaseTimeEntriesCommand,
+} from '../commands';
 import { logger } from '../utils';
 
 /**
@@ -14,6 +20,8 @@ export class TimeEntryHandlers {
     private createCommand: CreateTimeEntryCommand,
     private updateCommand: UpdateTimeEntryCommand,
     private recalculateCommand: RecalculateTimeEntryCommand,
+    private markDoneCommand: MarkTimeEntriesDoneCommand,
+    private releaseCommand: ReleaseTimeEntriesCommand,
   ) {}
 
   /**
@@ -100,6 +108,40 @@ export class TimeEntryHandlers {
       return updatedEntry;
     } catch (error: any) {
       logger.error('TimeEntry RECALCULATE handler failed', error, { entryId: req.params?.[0] });
+      return req.reject(error.code || 400, error.message);
+    }
+  }
+
+  /**
+   * Handler: Mehrere TimeEntries auf "Done" setzen (Unbound Action)
+   */
+  async handleMarkDone(req: any): Promise<TimeEntry[]> {
+    try {
+      const tx = cds.transaction(req) as any;
+      const entryIds = req.data?.entryIDs ?? [];
+      logger.handlerInvoked('TimeEntry', 'MARK_DONE', { count: entryIds.length });
+      const updatedEntries = await this.markDoneCommand.execute(tx, entryIds);
+      logger.handlerCompleted('TimeEntry', 'MARK_DONE', { count: updatedEntries.length });
+      return updatedEntries;
+    } catch (error: any) {
+      logger.error('TimeEntry MARK_DONE handler failed', error, { entryIDs: req.data?.entryIDs });
+      return req.reject(error.code || 400, error.message);
+    }
+  }
+
+  /**
+   * Handler: Mehrere TimeEntries auf "Released" setzen (Unbound Action)
+   */
+  async handleRelease(req: any): Promise<TimeEntry[]> {
+    try {
+      const tx = cds.transaction(req) as any;
+      const entryIds = req.data?.entryIDs ?? [];
+      logger.handlerInvoked('TimeEntry', 'RELEASE', { count: entryIds.length });
+      const updatedEntries = await this.releaseCommand.execute(tx, entryIds);
+      logger.handlerCompleted('TimeEntry', 'RELEASE', { count: updatedEntries.length });
+      return updatedEntries;
+    } catch (error: any) {
+      logger.error('TimeEntry RELEASE handler failed', error, { entryIDs: req.data?.entryIDs });
       return req.reject(error.code || 400, error.message);
     }
   }

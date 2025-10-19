@@ -49,6 +49,8 @@ import {
   GetRecentBalancesCommand,
   GetVacationBalanceCommand,
   GetSickLeaveBalanceCommand,
+  MarkTimeEntriesDoneCommand,
+  ReleaseTimeEntriesCommand,
 } from '../commands';
 
 /**
@@ -236,6 +238,7 @@ export class ServiceContainer {
       validator: timeEntryValidator,
       repository: timeEntryRepository,
       factory: timeEntryFactory,
+      customizingService,
     };
     this.commands.set('updateTimeEntry', new UpdateTimeEntryCommand(updateDeps));
     this.commands.set('recalculateTimeEntry', new RecalculateTimeEntryCommand({ ...updateDeps, customizingService }));
@@ -276,5 +279,13 @@ export class ServiceContainer {
       userService,
     };
     this.commands.set('getSickLeaveBalance', new GetSickLeaveBalanceCommand(sickLeaveBalanceDeps));
+
+    // Status Commands
+    const statusDeps = {
+      repository: timeEntryRepository,
+      customizingService,
+    };
+    this.commands.set('markTimeEntriesDone', new MarkTimeEntriesDoneCommand(statusDeps));
+    this.commands.set('releaseTimeEntries', new ReleaseTimeEntriesCommand(statusDeps));
   }
 }

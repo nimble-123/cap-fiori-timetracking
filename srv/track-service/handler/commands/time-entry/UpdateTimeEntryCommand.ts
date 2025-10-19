@@ -1,6 +1,6 @@
 import { Transaction } from '@sap/cds';
 import { TimeEntry } from '#cds-models/TrackService';
-import { UserService } from '../../services';
+import { UserService, CustomizingService } from '../../services';
 import { TimeEntryValidator } from '../../validators';
 import { TimeEntryRepository } from '../../repositories';
 import { TimeEntryFactory } from '../../factories';
@@ -12,6 +12,7 @@ interface Dependencies {
   validator: TimeEntryValidator;
   repository: TimeEntryRepository;
   factory: TimeEntryFactory;
+  customizingService: CustomizingService;
 }
 
 /**
@@ -23,12 +24,14 @@ export class UpdateTimeEntryCommand {
   private validator: TimeEntryValidator;
   private repository: TimeEntryRepository;
   private factory: TimeEntryFactory;
+  private customizingService: CustomizingService;
 
   constructor(dependencies: Dependencies) {
     this.userService = dependencies.userService;
     this.validator = dependencies.validator;
     this.repository = dependencies.repository;
     this.factory = dependencies.factory;
+    this.customizingService = dependencies.customizingService;
   }
 
   /**
@@ -45,6 +48,9 @@ export class UpdateTimeEntryCommand {
     const existingEntry = await this.repository.getById(tx, entryId);
     logger.commandData('UpdateTimeEntry', 'Existing entry loaded', { workDate: existingEntry.workDate });
 
+    const statusDefaults = this.customizingService.getTimeEntryDefaults();
+    this.validator.ensureStatusMutable(existingEntry.status_code, statusDefaults.statusReleasedCode);
+
     // Eindeutigkeit bei User/Datum-Änderungen prüfen
     await this.validateUniquenessForUpdate(tx, updateData, existingEntry, entryId);
 
@@ -54,9 +60,11 @@ export class UpdateTimeEntryCommand {
     logger.commandData('UpdateTimeEntry', 'Validations passed', { entryId });
 
     // Prüfen ob Neuberechnung erforderlich ist
+    const statusChanges = this.determineStatusChanges(updateData, existingEntry, statusDefaults);
+
     if (!this.validator.requiresTimeRecalculation(updateData)) {
-      logger.commandEnd('UpdateTimeEntry', { recalculation: false });
-      return {}; // Keine zeitrelevanten Änderungen
+      logger.commandEnd('UpdateTimeEntry', { recalculation: false, statusChanged: 'status_code' in statusChanges });
+      return statusChanges; // Keine zeitrelevanten Änderungen
     }
 
     // Zusammengeführte Daten für Berechnung erstellen
@@ -93,9 +101,16 @@ export class UpdateTimeEntryCommand {
       durationData.expectedDailyHoursDec = updatedExpected;
     }
 
-    logger.commandEnd('UpdateTimeEntry', { recalculation: true, netHours: durationData.durationHoursNet });
+    logger.commandEnd('UpdateTimeEntry', {
+      recalculation: true,
+      netHours: durationData.durationHoursNet,
+      statusChanged: 'status_code' in statusChanges,
+    });
 
-    return durationData;
+    return {
+      ...durationData,
+      ...statusChanges,
+    };
   }
 
   /**
@@ -163,5 +178,35 @@ export class UpdateTimeEntryCommand {
       entryType: updateData.entryType ?? existingEntry.entryType ?? 'WORK',
       user_ID: updateData.user_ID ?? existingEntry.user_ID,
     };
+  }
+
+  /**
+   * Ermittelt Status-Änderungen basierend auf Update-Daten
+   */
+  private determineStatusChanges(
+    updateData: Partial<TimeEntry>,
+    existingEntry: TimeEntry,
+    statusDefaults: ReturnType<CustomizingService['getTimeEntryDefaults']>,
+  ): Record<string, any> {
+    const changes: Record<string, any> = {};
+    const requestedStatus = updateData.status_code;
+
+    if (requestedStatus) {
+      this.validator.validateStatusChange(existingEntry.status_code, requestedStatus, statusDefaults);
+      changes.status_code = requestedStatus;
+      return changes;
+    }
+
+    // Ohne Status-Update: automatisch auf "Processed" setzen, sofern nicht bereits final
+    const { statusProcessedCode, statusReleasedCode } = statusDefaults;
+    if (existingEntry.status_code === statusReleasedCode) {
+      return changes;
+    }
+
+    if (existingEntry.status_code !== statusProcessedCode) {
+      changes.status_code = statusDefaults.statusProcessedCode;
+    }
+
+    return changes;
   }
 }
