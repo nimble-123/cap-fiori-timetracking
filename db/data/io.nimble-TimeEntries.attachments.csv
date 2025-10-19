@@ -1,8 +1,8 @@
-up__ID,ID,url,mimeType,filename,status
-"57a3r2p4-6c25-4d2e-8f3a-4b5c6d7e8f74","9c2e4f01-5d3a-4b6c-8e7f-1d2a3c4b5e6f","https://file-examples.com/wp-content/storage/file/document/pdf/file-example_pdf_1mb.pdf","application/pdf","Hotelrechnung_München_0309.pdf","Clean"
-"69d2e1c3-7b94-4b0c-8d1e-2f3a4b5c6d63","0a3f5e12-6e4b-4c7d-9f8a-2e3d4c5b6a78","https://file-examples.com/wp-content/storage/file/document/image/png/file-example_png_100kb.png","image/png","Taxi_Beleg_MUC_0409.png","Scanning"
-"36a9b8f0-48a1-4b0c-8d1e-2f3a4b5c6d30","1b4g6f23-7f5c-4d8e-9a9b-3f4e5d6c7b89","https://file-examples.com/wp-content/storage/file/document/pdf/file-example_pdf_1mb.pdf","application/pdf","Messe_Ticket_Hamburg.pdf","Clean"
-"73e9d8b0-8e21-4c7e-9d8f-0a1b2c3d4e30","2c5h7g34-8a6d-4e9f-a0c1-4g5h6f7e8d90","https://file-examples.com/wp-content/storage/file/document/image/jpeg/file-example_jpeg_1mb.jpeg","image/jpeg","Tankbeleg_Walldorf.jpg","Unscanned"
-"e1a4f6b8-d2c0-4e3f-9a1b-0c2d3e4f5a6b","3d6i8h45-9b7e-4f0a-b1d2-5i6j7h8g9f01","https://raw.githubusercontent.com/dwyl/english-words/master/words.txt","text/plain","Kundenprojekt_Log_1008.txt","Failed"
-"d3c1z0x2-e403-4b0c-8d1e-2f3a4b5c6d52","4e7j9i56-a08f-4g1b-c2e3-6j7k8i9h0g12","https://file-examples.com/wp-content/storage/file/document/pdf/file-example_pdf_1mb.pdf","application/pdf","Konferenz_Bestätigung_Berlin.pdf","Clean"
-"a0d6c5a7-b138-4d2e-8f3a-4b5c6d7e8f07","5f8k0j67-b190-4h2c-d3f4-7k8l9j0i1h23","https://file-examples.com/wp-content/storage/file/document/pdf/file-example_pdf_1mb.pdf","application/pdf","Hosting_Partner_Vertrag.pdf","Infected"
+up__ID,ID,url,mimeType,filename,status,note
+"47594953-e3a1-424a-8742-5f60e9092490","4c3b2e1a-5d6f-47a8-8b9c-0d1e2f3a4b5c","https://file-examples.com/wp-content/storage/file/document/pdf/file-example_pdf_1mb.pdf","application/pdf","Hotelrechnung_München_0309.pdf","Clean","Hotelrechnung"
+"469d2e1c-7b94-4b0c-8d1e-2f3a4b5c6d63","8d7f6e5c-4b3a-49d0-9e1f-2c3d4e5f6a7b","https://file-examples.com/wp-content/storage/file/document/image/png/file-example_png_100kb.png","image/png","Taxi_Beleg_MUC_0409.png","Scanning","Taxibeleg"
+"436a9b8f-48a1-4b0c-8d1e-2f3a4b5c6d30","1a2b3c4d-5e6f-4071-b283-94a5b6c7d8e9","https://file-examples.com/wp-content/storage/file/document/pdf/file-example_pdf_1mb.pdf","application/pdf","Messe_Ticket_Hamburg.pdf","Clean","Messeticket"
+"473e9d8b-08e2-4c7e-9d8f-0a1b2c3d4e30","6f7a8b9c-0d1e-42f3-a4b5-c6d7e8f90a1b","https://file-examples.com/wp-content/storage/file/document/image/jpeg/file-example_jpeg_1mb.jpeg","image/jpeg","Tankbeleg_Walldorf.jpg","Unscanned","Tankbeleg"
+"4e1a4f6b-d2c0-4e3f-9a1b-0c2d3e4f5a6b","3e4f5a6b-7c8d-49e0-8f1a-2b3c4d5e6f70","https://raw.githubusercontent.com/dwyl/english-words/master/words.txt","text/plain","Kundenprojekt_Log_1008.txt","Failed","Protokoll/Log"
+"40358897-c8c3-4f9e-a89e-b2d951a8f9d0","9c8b7a6f-5e4d-4c3b-a210-f1e2d3c4b5a6","https://file-examples.com/wp-content/storage/file/document/pdf/file-example_pdf_1mb.pdf","application/pdf","Konferenz_Bestätigung_Berlin.pdf","Clean","Konferenzbestätigung"
+"4a0d6c5a-b138-4d2e-8f3a-4b5c6d7e8f07","0d1e2f3a-4b5c-46d7-9e8f-1a2b3c4d5e6f","https://file-examples.com/wp-content/storage/file/document/pdf/file-example_pdf_1mb.pdf","application/pdf","Hosting_Partner_Vertrag.pdf","Infected","Vertragsdokument"
