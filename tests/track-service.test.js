@@ -56,6 +56,7 @@ describe('TrackService - TimeEntries CRUD', () => {
       expect(data).to.have.property('ID');
       expect(data.user_ID).to.equal('max.mustermann@test.de');
       expect(data.entryType_code).to.equal('W');
+      expect(data.status_code).to.equal('O');
 
       // Berechnete Felder prüfen
       expect(data.durationHoursGross).to.be.a('number');
@@ -80,6 +81,7 @@ describe('TrackService - TimeEntries CRUD', () => {
       expect(status).to.equal(201);
       expect(data.entryType_code).to.equal('V');
       expect(data.durationHoursNet).to.be.greaterThan(0); // Expected daily hours
+      expect(data.status_code).to.equal('O');
     });
 
     it('should reject duplicate entry for same day', async () => {
@@ -216,6 +218,7 @@ describe('TrackService - TimeEntries CRUD', () => {
       expect(data.endTime).to.equal('18:00:00');
       expect(data.durationHoursNet).to.equal(9.5); // 10h - 0.5h break
       expect(data.overtimeHours).to.be.greaterThan(0);
+      expect(data.status_code).to.equal('P');
     });
 
     it('should update breakMin', async () => {
@@ -223,6 +226,7 @@ describe('TrackService - TimeEntries CRUD', () => {
 
       expect(status).to.equal(200);
       expect(data.breakMin).to.equal(60);
+      expect(data.status_code).to.equal('P');
     });
 
     it('should update note', async () => {
@@ -234,6 +238,63 @@ describe('TrackService - TimeEntries CRUD', () => {
 
       expect(status).to.equal(200);
       expect(data.note).to.equal('Updated note for testing');
+      expect(data.status_code).to.equal('P');
+    });
+
+    it('should allow switching status between open, processed and done', async () => {
+      const { data: created } = await POST(
+        '/odata/v4/track/TimeEntries',
+        {
+          user_ID: 'max.mustermann@test.de',
+          workDate: '2025-10-25',
+          entryType_code: 'W',
+          startTime: '08:00:00',
+          endTime: '16:00:00',
+          breakMin: 30,
+        },
+        maxUser,
+      );
+
+      expect(created.status_code).to.equal('O');
+
+      const { data: doneUpdate, status: doneStatus } = await PATCH(
+        `/odata/v4/track/TimeEntries(${created.ID})`,
+        { status_code: 'D' },
+        maxUser,
+      );
+      expect(doneStatus).to.equal(200);
+      expect(doneUpdate.status_code).to.equal('D');
+
+      const { data: reopenUpdate, status: reopenStatus } = await PATCH(
+        `/odata/v4/track/TimeEntries(${created.ID})`,
+        { status_code: 'O' },
+        maxUser,
+      );
+      expect(reopenStatus).to.equal(200);
+      expect(reopenUpdate.status_code).to.equal('O');
+    });
+
+    it('should reject direct status change to released', async () => {
+      const { data: created } = await POST(
+        '/odata/v4/track/TimeEntries',
+        {
+          user_ID: 'max.mustermann@test.de',
+          workDate: '2025-10-26',
+          entryType_code: 'W',
+          startTime: '08:00:00',
+          endTime: '16:00:00',
+          breakMin: 30,
+        },
+        maxUser,
+      );
+
+      const { status: releaseStatus } = await PATCH(
+        `/odata/v4/track/TimeEntries(${created.ID})`,
+        { status_code: 'R' },
+        maxUser,
+      );
+
+      expect(releaseStatus).to.equal(409);
     });
   });
 
@@ -266,7 +327,7 @@ describe('TrackService - TimeEntries CRUD', () => {
 });
 
 describe('TrackService - Actions & Functions', () => {
-  const { GET, POST, expect } = cds.test('../', '--in-memory');
+  const { GET, POST, PATCH, expect } = cds.test('../', '--in-memory');
   const maxUser = { auth: { username: 'max.mustermann@test.de', password: 'max' } };
 
   describe('Generation Actions', () => {
@@ -366,6 +427,102 @@ describe('TrackService - Actions & Functions', () => {
       expect(status).to.equal(200);
       expect(data).to.have.property('year');
       expect(data).to.have.property('totalSickDays');
+    });
+  });
+
+  describe('Status Actions', () => {
+    let actionEntryId;
+    let secondaryEntryId;
+    let untouchedEntryId;
+
+    beforeAll(async () => {
+      const createEntry = async (workDate) => {
+        const { data } = await POST(
+          '/odata/v4/track/TimeEntries',
+          {
+            user_ID: 'max.mustermann@test.de',
+            workDate,
+            entryType_code: 'W',
+            startTime: '08:00:00',
+            endTime: '16:00:00',
+            breakMin: 30,
+          },
+          maxUser,
+        );
+        return data.ID;
+      };
+
+      actionEntryId = await createEntry('2025-11-01');
+      secondaryEntryId = await createEntry('2025-11-02');
+      untouchedEntryId = await createEntry('2025-11-03');
+    });
+
+    it('should mark entries as done', async () => {
+      const { data, status } = await POST(
+        '/odata/v4/track/markTimeEntriesDone',
+        {
+          entryIDs: [actionEntryId, secondaryEntryId],
+        },
+        maxUser,
+      );
+
+      expect(status).to.equal(200);
+      expect(Array.isArray(data)).to.be.true;
+      data.forEach((entry) => expect(entry.status_code).to.equal('D'));
+
+      const { data: refreshed } = await GET(`/odata/v4/track/TimeEntries(${actionEntryId})`, maxUser);
+      expect(refreshed.status_code).to.equal('D');
+    });
+
+    it('should reject releasing entries that are not done', async () => {
+      const { status } = await POST(
+        '/odata/v4/track/releaseTimeEntries',
+        {
+          entryIDs: [untouchedEntryId],
+        },
+        maxUser,
+      );
+
+      expect(status).to.equal(409);
+    });
+
+    it('should release entries that are done', async () => {
+      const { data, status } = await POST(
+        '/odata/v4/track/releaseTimeEntries',
+        {
+          entryIDs: [actionEntryId],
+        },
+        maxUser,
+      );
+
+      expect(status).to.equal(200);
+      expect(Array.isArray(data)).to.be.true;
+      expect(data[0].status_code).to.equal('R');
+
+      const { data: refreshed } = await GET(`/odata/v4/track/TimeEntries(${actionEntryId})`, maxUser);
+      expect(refreshed.status_code).to.equal('R');
+    });
+
+    it('should reject editing released entries', async () => {
+      const { status } = await PATCH(
+        `/odata/v4/track/TimeEntries(${actionEntryId})`,
+        { note: 'attempt to modify released entry' },
+        maxUser,
+      );
+
+      expect(status).to.equal(409);
+    });
+
+    it('should reject marking released entries as done again', async () => {
+      const { status } = await POST(
+        '/odata/v4/track/markTimeEntriesDone',
+        {
+          entryIDs: [actionEntryId],
+        },
+        maxUser,
+      );
+
+      expect(status).to.equal(409);
     });
   });
 
