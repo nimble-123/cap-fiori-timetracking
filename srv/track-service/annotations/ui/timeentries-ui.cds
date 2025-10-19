@@ -77,26 +77,31 @@ annotate service.TimeEntries with @(
         $Type: 'UI.DataField'
       },
       {
-        Value: entryType.name,
-        $Type: 'UI.DataField'
+        Value                : entryType.name,
+        $Type                : 'UI.DataField',
+        ![@HTML5.CssDefaults]: {width: '100px'}
       },
       {
-        Value: workLocation.name,
-        $Type: 'UI.DataField'
+        Value                : workLocation.name,
+        $Type                : 'UI.DataField',
+        ![@HTML5.CssDefaults]: {width: '120px'}
       },
       {
-        Value: travelType.name,
-        $Type: 'UI.DataField'
+        Value                : travelType.name,
+        $Type                : 'UI.DataField',
+        ![@HTML5.CssDefaults]: {width: '120px'}
       },
       {
-        Value            : project.name,
-        ![@UI.Importance]: #Low,
-        $Type            : 'UI.DataField'
+        Value                : project.name,
+        ![@UI.Importance]    : #Low,
+        $Type                : 'UI.DataField',
+        ![@HTML5.CssDefaults]: {width: '10rem'}
       },
       {
-        Value            : activity.name,
-        ![@UI.Importance]: #Low,
-        $Type            : 'UI.DataField'
+        Value                : activity.name,
+        ![@UI.Importance]    : #Low,
+        $Type                : 'UI.DataField',
+        ![@HTML5.CssDefaults]: {width: '14rem'}
       },
       {
         Value: startTime,
@@ -135,13 +140,9 @@ annotate service.TimeEntries with @(
         Criticality: undertimeCriticality,
       },
       {
-        Value            : source,
-        ![@UI.Importance]: #Low,
-        $Type            : 'UI.DataField'
-      },
-      {
-        Value: note,
-        $Type: 'UI.DataField'
+        Value                : note,
+        $Type                : 'UI.DataField',
+        ![@HTML5.CssDefaults]: {width: 'auto'}
       }
     ],
     ![@UI.Criticality]: entryType.criticality
@@ -200,8 +201,9 @@ annotate service.TimeEntries with @(
         $Type: 'UI.DataField'
       },
       {
-        Value: entryType.name,
-        $Type: 'UI.DataField'
+        Value                : entryType.name,
+        $Type                : 'UI.DataField',
+        ![@HTML5.CssDefaults]: {width: '100px'}
       },
       {
         Value: startTime,
@@ -276,26 +278,31 @@ annotate service.TimeEntries with @(
         $Type: 'UI.DataField'
       },
       {
-        Value: entryType.name,
-        $Type: 'UI.DataField'
+        Value                : entryType.name,
+        $Type                : 'UI.DataField',
+        ![@HTML5.CssDefaults]: {width: '100px'}
       },
       {
-        Value: workLocation.name,
-        $Type: 'UI.DataField'
+        Value                : workLocation.name,
+        $Type                : 'UI.DataField',
+        ![@HTML5.CssDefaults]: {width: '120px'}
       },
       {
-        Value: travelType.name,
-        $Type: 'UI.DataField'
+        Value                : travelType.name,
+        $Type                : 'UI.DataField',
+        ![@HTML5.CssDefaults]: {width: '120px'}
       },
       {
-        Value            : project.name,
-        ![@UI.Importance]: #Low,
-        $Type            : 'UI.DataField'
+        Value                : project.name,
+        ![@UI.Importance]    : #Low,
+        $Type                : 'UI.DataField',
+        ![@HTML5.CssDefaults]: {width: '10rem'}
       },
       {
-        Value            : activity.name,
-        ![@UI.Importance]: #Low,
-        $Type            : 'UI.DataField'
+        Value                : activity.name,
+        ![@UI.Importance]    : #Low,
+        $Type                : 'UI.DataField',
+        ![@HTML5.CssDefaults]: {width: '14rem'}
       },
       {
         Value: startTime,
@@ -334,13 +341,9 @@ annotate service.TimeEntries with @(
         ![@UI.Importance]: #Low
       },
       {
-        Value            : source,
-        ![@UI.Importance]: #Low,
-        $Type            : 'UI.DataField'
-      },
-      {
-        Value: note,
-        $Type: 'UI.DataField'
+        Value                : note,
+        $Type                : 'UI.DataField',
+        ![@HTML5.CssDefaults]: {width: 'auto'}
       }
     ],
     ![@UI.Criticality]: entryType.criticality
