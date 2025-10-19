@@ -242,6 +242,13 @@ graph LR
     style PM fill:#e8f5e9,stroke:#43a047,stroke-width:2px
 ```
 
+**Status-Modell & Workflow:**
+
+- `TimeEntryStatuses` bildet den bearbeitbaren Status-Lebenszyklus (`O`pen, `P`rocessed, `D`one, `R`eleased) inklusive erlaubter Transitionen (`from_code` / `to_code`) und UI-Freigaben (`allowDoneAction`, `allowReleaseAction`) ab.
+- `TimeEntries.status_code` assoziiert jede Buchung mit genau einem Status. Änderungen am Eintrag erzwingen automatisch den `Processed`-Status; eine finale Freigabe (`Released`) erfolgt ausschließlich über dedizierte Actions.
+- Das `Customizing`-Singleton liefert alle verwendeten Status-Codes als Konfiguration, sodass Mandanten eigene Codes pflegen können, ohne Business-Logik anfassen zu müssen.
+- Neue Statusaktionen `markTimeEntriesDone` und `releaseTimeEntries` sorgen für Bulk-Updates über die OData-API und respektieren die Stammdaten-Transitionen sowie Sperren für endgültig freigegebene Einträge.
+
 **Schnittstellen-Beschreibung:**
 
 | Partner                            | Eingabe                      | Ausgabe                          | Protokoll    |
@@ -545,18 +552,21 @@ sequenceDiagram
 
 **Command-Übersicht:**
 
-| Command                      | Kategorie  | Verantwortung                             | Dependencies                        |
-| ---------------------------- | ---------- | ----------------------------------------- | ----------------------------------- |
-| `CreateTimeEntryCommand`     | TimeEntry  | Validierung & Berechnung für neue Entries | Validator, UserService, Factory     |
-| `UpdateTimeEntryCommand`     | TimeEntry  | Change Detection & Neuberechnung          | Validator, Repository               |
-| `GenerateMonthlyCommand`     | Generation | Monat mit Stats generieren                | Validator, Strategy, Repository     |
-| `GenerateYearlyCommand`      | Generation | Jahr mit Feiertagen generieren            | Validator, Strategy, HolidayService |
-| `GetDefaultParamsCommand`    | Generation | Default-Werte für Generierung             | UserService                         |
-| `GetMonthlyBalanceCommand`   | Balance    | Monatssaldo mit Criticality               | BalanceService, Validator           |
-| `GetCurrentBalanceCommand`   | Balance    | Kumulierter Gesamtsaldo                   | BalanceService                      |
-| `GetRecentBalancesCommand`   | Balance    | Historische Balances (6 Monate)           | BalanceService, Validator           |
-| `GetVacationBalanceCommand`  | Balance    | Urlaubssaldo-Berechnung                   | VacationBalanceService              |
-| `GetSickLeaveBalanceCommand` | Balance    | Krankheitsstand-Berechnung                | SickLeaveBalanceService             |
+| Command                       | Kategorie  | Verantwortung                             | Dependencies                                                    |
+| ----------------------------- | ---------- | ----------------------------------------- | --------------------------------------------------------------- |
+| `CreateTimeEntryCommand`      | TimeEntry  | Validierung & Berechnung für neue Entries | Validator, UserService, Factory, CustomizingService             |
+| `UpdateTimeEntryCommand`      | TimeEntry  | Change Detection & Neuberechnung          | Validator, Repository, Factory, UserService, CustomizingService |
+| `RecalculateTimeEntryCommand` | TimeEntry  | Bound Action: Werte neu berechnen         | Repository, Factory, UserService, CustomizingService            |
+| `MarkTimeEntriesDoneCommand`  | Status     | Bulk-Übergang auf Status „Done“           | Repository, CustomizingService                                  |
+| `ReleaseTimeEntriesCommand`   | Status     | Bulk-Übergang auf Status „Released“       | Repository, CustomizingService                                  |
+| `GenerateMonthlyCommand`      | Generation | Monat mit Stats generieren                | Validator, Strategy, Repository                                 |
+| `GenerateYearlyCommand`       | Generation | Jahr mit Feiertagen generieren            | Validator, Strategy, HolidayService                             |
+| `GetDefaultParamsCommand`     | Generation | Default-Werte für Generierung             | UserService                                                     |
+| `GetMonthlyBalanceCommand`    | Balance    | Monatssaldo mit Criticality               | BalanceService, Validator                                       |
+| `GetCurrentBalanceCommand`    | Balance    | Kumulierter Gesamtsaldo                   | BalanceService                                                  |
+| `GetRecentBalancesCommand`    | Balance    | Historische Balances (6 Monate)           | BalanceService, Validator                                       |
+| `GetVacationBalanceCommand`   | Balance    | Urlaubssaldo-Berechnung                   | VacationBalanceService                                          |
+| `GetSickLeaveBalanceCommand`  | Balance    | Krankheitsstand-Berechnung                | SickLeaveBalanceService                                         |
 
 **Ablauf eines Commands (Beispiel CreateTimeEntryCommand):**
 
@@ -590,6 +600,7 @@ erDiagram
     GermanStates ||--o{ Users : preferred_state
     WorkLocations ||--o{ Users : default_location
     TimeEntry ||--o{ Attachments : stores_files
+    TimeEntryStatuses ||--o{ TimeEntry : has_status
 
     Users {
         string ID PK
@@ -619,6 +630,7 @@ erDiagram
         decimal durationHoursNet "calculated"
         decimal overtimeHours "calculated"
         decimal undertimeHours "calculated"
+        string status_code FK
         string source "UI|GENERATED (configurable)"
         string note
     }
@@ -643,6 +655,16 @@ erDiagram
         string code PK "W,V,S,H,O,B,F,G"
         string text "localized"
         integer criticality "UI5"
+    }
+
+    TimeEntryStatuses {
+        string code PK "O,P,D,R"
+        string name
+        string descr
+        string from_code FK "optional"
+        string to_code FK "optional"
+        boolean allowDoneAction
+        boolean allowReleaseAction
     }
 
     ActivityTypes {
@@ -675,6 +697,10 @@ erDiagram
         string workEntryTypeCode
         string weekendEntryTypeCode
         string holidayEntryTypeCode
+        string timeEntryStatusOpenCode
+        string timeEntryStatusProcessedCode
+        string timeEntryStatusDoneCode
+        string timeEntryStatusReleasedCode
         decimal fallbackWeeklyHours
         integer fallbackWorkingDays
         decimal fallbackAnnualVacationDays
