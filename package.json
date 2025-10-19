@@ -1,15 +1,28 @@
 {
   "name": "cap-fiori-timetracking",
   "version": "1.0.0",
-  "description": "A simple CAP project.",
-  "repository": "<Add your repository here>",
-  "license": "UNLICENSED",
+  "description": "SAP CAP-based time tracking solution with Fiori UI and a TypeScript backend.",
+  "repository": "https://github.com/nimble-123/cap-fiori-timetracking",
+  "license": "MIT",
+  "author": {
+    "name": "nimble-123",
+    "url": "https://github.com/nimble-123"
+  },
+  "keywords": [
+    "sap",
+    "cap",
+    "fiori",
+    "ui5",
+    "time-tracking",
+    "typescript"
+  ],
+  "engines": {
+    "node": ">=18 <21"
+  },
   "private": true,
   "dependencies": {
     "@cap-js/attachments": "^3.0.0",
     "@sap/cds": "^9",
-    "@sap/eslint-plugin-ui5-jsdocs": "^2.0.5",
-    "@sapui5/ts-types": "^1.141.1",
     "eslint": "^9.37.0",
     "express": "^4"
   },
@@ -19,7 +32,9 @@
     "@cap-js/cds-types": "^0.15.0",
     "@cap-js/sqlite": "^2",
     "@sap/dev-cap-tools": "^1.47.10",
+    "@sap/eslint-plugin-ui5-jsdocs": "^2.0.5",
     "@sap/ux-ui5-tooling": "^1.19.1",
+    "@sapui5/ts-types": "^1.141.1",
     "@types/node": "^24.7.1",
     "cds-plugin-ui5": "^0.13.0",
     "cds-swagger-ui-express": "^0.10.0",

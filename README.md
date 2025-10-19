@@ -1,6 +1,6 @@
 # 🕐 CAP Fiori Time Tracking
 
-> **Eine Enterprise-Grade Zeiterfassungsanwendung mit SAP CAP, TypeScript und Fiori UI5**  
+> **Eine Enterprise-Grade Zeiterfassungsanwendung mit SAP CAP, TypeScript und Fiori UI5**</br>
 > Showcase für Clean Architecture, Design Patterns und Best Practices – von Entwickler für Entwickler dokumentiert! 🚀
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-100%25-blue?logo=typescript)](https://www.typescriptlang.org/)
@@ -40,7 +40,7 @@ npm install
 npm run watch
 ```
 
-**🌐 Browser öffnet automatisch:** `http://localhost:4004`  
+**🌐 Browser öffnet automatisch:** `http://localhost:4004`
 **🔐 Login:** `max.mustermann@test.de` / Passwort: `max`
 **🧭 Swagger UI (Dev):** `http://localhost:4004/$api-docs/odata/v4/track/`
 
@@ -82,7 +82,7 @@ graph TB
 - **Strategies** (2) - Generation Algorithms (Monthly, Yearly)
 - **Factories** (2) - Object Creation (TimeEntry, Handler)
 
-**+ 1 ServiceContainer (DI), 1 HandlerRegistry, 1 HandlerRegistrar, 1 Builder**  
+**+ 1 ServiceContainer (DI), 1 HandlerRegistry, 1 HandlerRegistrar, 1 Builder**
 **+ 1 DateUtil, 1 Logger, 14 Barrel Exports**
 
 📖 **Deep Dive:** [ARCHITECTURE.md](docs/ARCHITECTURE.md) (vollständige arc42-Dokumentation)
@@ -348,9 +348,9 @@ Willst du zum Projekt beitragen? **Awesome!** 🎉
 
 ---
 
-## � License
+## 📜 License
 
-**MIT License** - Do whatever you want with this code! 🚀
+[**MIT License**](./LICENSE) - Do whatever you want with this code! 🚀
 
 ---
 
