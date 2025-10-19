@@ -2,7 +2,6 @@ using {io.nimble as db} from '../../db';
 
 @impl: './track-service.ts'
 service TrackService {
-
     /**
      * Type: Default-Parameter für generateYearlyTimeEntries Action
      */

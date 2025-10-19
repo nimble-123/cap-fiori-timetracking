@@ -11,7 +11,7 @@ using TrackService as service from '../../../service-model';
  */
 annotate service.TimeEntries actions {
   recalculateTimeEntry @(
-    Common.SideEffects        : {TargetProperties: [
+    Common.SideEffects     : {TargetProperties: [
       'durationHoursGross',
       'durationHoursNet',
       'expectedDailyHoursDec',
@@ -20,9 +20,9 @@ annotate service.TimeEntries actions {
       'overtimeCriticality',
       'undertimeCriticality'
     ]},
-    Core.OperationAvailable   : IsActiveEntity,
-    Common.Label              : '{i18n>action.recalculateTimeEntry}',
-    Core.Description          : 'Berechnet alle Zeitwerte neu basierend auf aktuellen User-Sollstunden'
+    Core.OperationAvailable: IsActiveEntity,
+    Common.Label           : '{i18n>action.recalculateTimeEntry}',
+    Core.Description       : 'Berechnet alle Zeitwerte neu basierend auf aktuellen User-Sollstunden'
   )
 };
 
@@ -47,9 +47,9 @@ annotate service.generateMonthlyTimeEntries with @(
  * - DefaultValuesFunction für Prefill der Parameter
  */
 annotate service.generateYearlyTimeEntries with @(
-  Common.SideEffects           : {TargetEntities: ['/TrackService.EntityContainer/TimeEntries']},
-  Common.Label                 : '{i18n>action.generateYearlyTimeEntries}',
-  Common.DefaultValuesFunction : 'TrackService.getDefaultParamsForGenerateYearly'
+  Common.SideEffects          : {TargetEntities: ['/TrackService.EntityContainer/TimeEntries']},
+  Common.Label                : '{i18n>action.generateYearlyTimeEntries}',
+  Common.DefaultValuesFunction: 'TrackService.getDefaultParamsForGenerateYearly'
 );
 
 /**
@@ -84,4 +84,4 @@ annotate service.getSickLeaveBalance with @(Common.Label: '{i18n>action.getSickL
  * getDefaultParamsForGenerateYearly Function
  * - Liefert Default-Werte für generateYearlyTimeEntries Action
  */
-annotate service.getDefaultParamsForGenerateYearly with @(Common.Label: 'Get Default Parameters for Generate Yearly');
+annotate service.getDefaultParamsForGenerateYearly with @(Common.Label: '{i18n>action.getDefaultParamsForGenerateYearly}');
