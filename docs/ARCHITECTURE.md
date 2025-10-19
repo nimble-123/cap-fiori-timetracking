@@ -905,6 +905,10 @@ export default class Home extends BaseController {
 
 ## 6. Laufzeitsicht
 
+_GIF demonstriert List Report und Object Page, während eine TimeEntry-Buchung angepasst wird._
+
+![Timetable Fiori App Screenshot (Placeholder)](assets/timetable-app.gif)
+
 ### 6.1 Szenario 1: TimeEntry erstellen (CREATE)
 
 **Beschreibung:** Ein Mitarbeiter erfasst eine neue Zeitbuchung über die Fiori Elements App. Das System validiert die Eingabe, berechnet Zeiten (Brutto/Netto/Über-/Unterstunden) und speichert den Eintrag.

@@ -20,6 +20,12 @@
 - 🧪 **Testbar** - Jest Tests + REST Client für manuelle Tests
 - 📘 **API Discovery** - Swagger UI Preview für TrackService während der Entwicklung
 
+### Screenshot
+
+_Kurzes GIF zeigt List Report und Object Page, während ein TimeEntry live aktualisiert wird._
+
+![Timetable Fiori App Screenshot (Placeholder)](docs/assets/timetable-app.gif)
+
 ---
 
 ## 🚀 Quick Start
