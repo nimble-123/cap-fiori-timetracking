@@ -4,13 +4,32 @@
  * Testet OData HTTP APIs und Service-Layer mit cds.test()
  * Nutzt Mock-User aus package.json für Authentication
  */
-import cds from '@sap/cds';
-import path from 'path';
+//import cds from '@sap/cds';
+const cds = require('@sap/cds');
+
+describe('SETUP', () => {
+  // cds.test() initialisiert CAP Server mit In-Memory DB
+  const { GET, POST, PATCH, DELETE, expect } = cds.test('../', '--in-memory');
+
+  // Mock User für Authentication (aus package.json)
+  const maxUser = { auth: { username: 'max.mustermann@test.de', password: 'max' } };
+  const erikaUser = { auth: { username: 'erika.musterfrau@test.de', password: 'erika' } };
+
+  it('should serve $metadata document in v4', async () => {
+    const { headers, status, data } = await GET`/odata/v4/track/$metadata`;
+    expect(status).to.equal(200);
+    expect(headers).to.contain({
+      // 'content-type': 'application/xml', //> fails with 'application/xml;charset=utf-8', which is set by express
+      'odata-version': '4.0',
+    });
+    expect(headers['content-type']).to.match(/application\/xml/);
+    expect(data).to.contain('<EntitySet Name="TimeEntries" EntityType="TrackService.TimeEntries">');
+  });
+});
 
 describe('TrackService - TimeEntries CRUD', () => {
   // cds.test() initialisiert CAP Server mit In-Memory DB
-  const projectRoot = path.join(__dirname, '..');
-  const { GET, POST, PATCH, DELETE, expect } = cds.test(projectRoot, '--in-memory');
+  const { GET, POST, PATCH, DELETE, expect } = cds.test('../', '--in-memory');
 
   // Mock User für Authentication (aus package.json)
   const maxUser = { auth: { username: 'max.mustermann@test.de', password: 'max' } };
@@ -22,7 +41,7 @@ describe('TrackService - TimeEntries CRUD', () => {
         '/odata/v4/track/TimeEntries',
         {
           user_ID: 'max.mustermann@test.de',
-          workDate: '2025-10-14',
+          workDate: '2025-12-14',
           entryType_code: 'W', // Work
           startTime: '08:00:00',
           endTime: '16:30:00',
@@ -146,7 +165,7 @@ describe('TrackService - TimeEntries CRUD', () => {
 
       expect(status).to.equal(200);
       expect(data.value).to.be.an('array');
-      data.value.forEach((entry: any) => {
+      data.value.forEach((entry) => {
         expect(entry.user_ID).to.equal('max.mustermann@test.de');
       });
     });
@@ -171,7 +190,7 @@ describe('TrackService - TimeEntries CRUD', () => {
   });
 
   describe('UPDATE TimeEntry', () => {
-    let entryId: string;
+    let entryId;
 
     beforeAll(async () => {
       // Setup: Erstelle Entry zum Updaten
@@ -351,7 +370,7 @@ describe('TrackService - Actions & Functions', () => {
   });
 
   describe('Bound Actions', () => {
-    let entryId: string;
+    let entryId;
 
     beforeAll(async () => {
       // Setup: Erstelle Entry für Bound Action
