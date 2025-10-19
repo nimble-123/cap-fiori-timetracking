@@ -1,7 +1,7 @@
 # 🏗️ CAP Fiori Time Tracking - Architekturdokumentation (arc42)
 
-**Version:** 1.0  
-**Stand:** Oktober 2025  
+**Version:** 1.0
+**Stand:** Oktober 2025
 **Status:** ✅ In Verwendung
 
 Zeiterfassungsanwendung auf Basis von SAP Cloud Application Programming Model mit TypeScript Backend und Fiori UI5 Frontend. Dokumentiert nach arc42-Template.
@@ -1671,22 +1671,24 @@ Um die OData-APIs des TrackService schnell nachvollziehen zu können, setzen wir
 
 Alle Architekturentscheidungen sind als ADRs dokumentiert unter `docs/ADR/`:
 
-| ADR                                                      | Titel                             | Status        |
-| -------------------------------------------------------- | --------------------------------- | ------------- |
-| [ADR-0001](ADR/0001-clean-architecture-trackservice.md)  | Clean Architecture TrackService   | ✅ Akzeptiert |
-| [ADR-0002](ADR/0002-command-pattern-business-logik.md)   | Command Pattern Business Logik    | ✅ Akzeptiert |
-| [ADR-0003](ADR/0003-zeitberechnung-und-factories.md)     | Zeitberechnung und Factories      | ✅ Akzeptiert |
-| [ADR-0004](ADR/0004-typescript-tooling-und-workflow.md)  | TypeScript Tooling und Workflow   | ✅ Akzeptiert |
-| [ADR-0005](ADR/0005-duale-ui5-strategie.md)              | Duale UI5-Strategie               | ✅ Akzeptiert |
-| [ADR-0006](ADR/0006-modularisierung-cds-annotationen.md) | Modularisierung CDS Annotationen  | ✅ Akzeptiert |
-| [ADR-0007](ADR/0007-repository-pattern-datenzugriff.md)  | Repository Pattern Datenzugriff   | ✅ Akzeptiert |
-| [ADR-0008](ADR/0008-strukturiertes-logging.md)           | Strukturiertes Logging            | ✅ Akzeptiert |
-| [ADR-0009](ADR/0009-source-feld-datenherkunft.md)        | Source-Feld Datenherkunft         | ✅ Akzeptiert |
-| [ADR-0010](ADR/0010-mocked-authentication-test-user.md)  | Mocked Authentication Test User   | ✅ Akzeptiert |
-| [ADR-0011](ADR/0011-test-strategie-jest-rest-client.md)  | Test-Strategie Jest REST Client   | ✅ Akzeptiert |
-| [ADR-0012](ADR/0012-customizing-singleton-defaults.md)   | Customizing Singleton Defaults    | ✅ Akzeptiert |
-| [ADR-0013](ADR/0013-attachments-plugin-integration.md)   | CAP Attachments Plugin            | ✅ Akzeptiert |
-| [ADR-0014](ADR/0014-openapi-swagger-ui-preview.md)       | Swagger UI Preview im Development | ✅ Akzeptiert |
+| ADR                                                            | Titel                              | Status        |
+| -------------------------------------------------------------- | ---------------------------------- | ------------- |
+| [ADR-0001](ADR/0001-clean-architecture-trackservice.md)        | Clean Architecture TrackService    | ✅ Akzeptiert |
+| [ADR-0002](ADR/0002-command-pattern-business-logik.md)         | Command Pattern Business Logik     | ✅ Akzeptiert |
+| [ADR-0003](ADR/0003-zeitberechnung-und-factories.md)           | Zeitberechnung und Factories       | ✅ Akzeptiert |
+| [ADR-0004](ADR/0004-typescript-tooling-und-workflow.md)        | TypeScript Tooling und Workflow    | ✅ Akzeptiert |
+| [ADR-0005](ADR/0005-duale-ui5-strategie.md)                    | Duale UI5-Strategie                | ✅ Akzeptiert |
+| [ADR-0006](ADR/0006-modularisierung-cds-annotationen.md)       | Modularisierung CDS Annotationen   | ✅ Akzeptiert |
+| [ADR-0007](ADR/0007-repository-pattern-datenzugriff.md)        | Repository Pattern Datenzugriff    | ✅ Akzeptiert |
+| [ADR-0008](ADR/0008-strukturiertes-logging.md)                 | Strukturiertes Logging             | ✅ Akzeptiert |
+| [ADR-0009](ADR/0009-source-feld-datenherkunft.md)              | Source-Feld Datenherkunft          | ✅ Akzeptiert |
+| [ADR-0010](ADR/0010-mocked-authentication-test-user.md)        | Mocked Authentication Test User    | ✅ Akzeptiert |
+| [ADR-0011](ADR/0011-test-strategie-jest-rest-client.md)        | Test-Strategie Jest REST Client    | ✅ Akzeptiert |
+| [ADR-0012](ADR/0012-customizing-singleton-defaults.md)         | Customizing Singleton Defaults     | ✅ Akzeptiert |
+| [ADR-0013](ADR/0013-attachments-plugin-integration.md)         | CAP Attachments Plugin             | ✅ Akzeptiert |
+| [ADR-0014](ADR/0014-openapi-swagger-ui-preview.md)             | Swagger UI Preview im Development  | ✅ Akzeptiert |
+| [ADR-0015](ADR/0015-timeentry-status-workflow.md)              | TimeEntry Status Workflow          | ✅ Akzeptiert |
+| [ADR-0016](ADR/0016-repository-meta-dateien-und-governance.md) | Repository Meta Files & Governance | ✅ Akzeptiert |
 
 ---
 
@@ -1706,7 +1708,7 @@ System-Qualität
 │   │   └── Validator Composition
 │   └── Analysierbarkeit
 │       ├── JSDoc für alle APIs
-│       ├── 13 ADRs
+│       ├── 16 ADRs
 │       └── Strukturiertes Logging
 │
 ├── 2️⃣ Testbarkeit (Prio: Sehr Hoch)
@@ -1952,12 +1954,14 @@ Auswirkung
 
 | Begriff                    | Definition                                                                     |
 | -------------------------- | ------------------------------------------------------------------------------ |
+| **@cap-js/attachments**    | Offizielles CAP-Plugin für Datei-Uploads inkl. Metadaten- und Storage-Handling |
 | **@cap-js/openapi**        | CAP-Compiler, der CDS-Modelle zur OpenAPI-Spezifikation rendert                |
 | **ActivityType**           | Tätigkeitsart (z.B. "Development", "Testing", "Meeting")                       |
 | **ADR**                    | Architecture Decision Record - Dokumentiertes Entscheidungsprotokoll           |
 | **Barrel Export**          | `index.ts` mit Re-Exports für saubere Imports                                  |
 | **BTP**                    | SAP Business Technology Platform (Cloud)                                       |
 | **CAP**                    | Cloud Application Programming Model (SAP Framework)                            |
+| **Command Pattern**        | Kapselt Business-Operationen in Objekt-Instanzen (z.B. CreateTimeEntryCommand) |
 | **cds-swagger-ui-express** | CAP-Plugin, das Swagger UI pro Service bereitstellt                            |
 | **CDS**                    | Core Data Services (SAP's Modellierungssprache)                                |
 | **CQRS**                   | Command Query Responsibility Segregation                                       |
@@ -1977,36 +1981,42 @@ Auswirkung
 
 ### G-M
 
-| Begriff       | Definition                                                |
-| ------------- | --------------------------------------------------------- |
-| **HANA**      | SAP's In-Memory-Datenbank                                 |
-| **Handler**   | Event-Handler (before/on/after) im CAP-Service            |
-| **Mock User** | Test-User für lokale Entwicklung (max.mustermann@test.de) |
-| **OpenAPI**   | Standard zur Beschreibung von HTTP-APIs (ehemals Swagger) |
-| **OData**     | Open Data Protocol (REST-basiertes Protokoll)             |
+| Begriff             | Definition                                                                 |
+| ------------------- | -------------------------------------------------------------------------- |
+| **HANA**            | SAP's In-Memory-Datenbank                                                  |
+| **Handler**         | Event-Handler (before/on/after) im CAP-Service                             |
+| **HandlerRegistry** | Infrastrukturkomponente, die alle CAP-Handler registriert und orchestriert |
+| **HolidayService**  | Service für Feiertags-API-Aufrufe mit Cache pro Jahr und Bundesland        |
+| **Mock User**       | Test-User für lokale Entwicklung (max.mustermann@test.de)                  |
+| **OpenAPI**         | Standard zur Beschreibung von HTTP-APIs (ehemals Swagger)                  |
+| **OData**           | Open Data Protocol (REST-basiertes Protokoll)                              |
 
 ### N-S
 
-| Begriff        | Definition                                                  |
-| -------------- | ----------------------------------------------------------- |
-| **Repository** | Data Access Layer (kapselt DB-Zugriff)                      |
-| **Singleton**  | Muster mit genau einer Instanz (z.B. Customizing Datensatz) |
-| **SOLID**      | 5 Prinzipien für objektorientiertes Design                  |
-| **Strategy**   | Austauschbarer Algorithmus (z.B. MonthlyGenerationStrategy) |
-| **Swagger UI** | Browserbasierte Oberfläche zur Exploration von OpenAPI-APIs |
+| Begriff              | Definition                                                                                        |
+| -------------------- | ------------------------------------------------------------------------------------------------- |
+| **Repository**       | Data Access Layer (kapselt DB-Zugriff)                                                            |
+| **ServiceContainer** | DI-Container mit sechs Kategorien (Repos, Services, Validatoren, Strategien, Factories, Commands) |
+| **Singleton**        | Muster mit genau einer Instanz (z.B. Customizing Datensatz)                                       |
+| **SOLID**            | 5 Prinzipien für objektorientiertes Design                                                        |
+| **Strategy**         | Austauschbarer Algorithmus (z.B. MonthlyGenerationStrategy)                                       |
+| **Swagger UI**       | Browserbasierte Oberfläche zur Exploration von OpenAPI-APIs                                       |
 
 ### T-Z
 
-| Begriff              | Definition                                              |
-| -------------------- | ------------------------------------------------------- |
-| **TimeEntry**        | Zentrale Entity: Eine Zeitbuchung pro User+Tag          |
-| **Transaction (tx)** | CAP-Datenbank-Transaktion                               |
-| **TypeScript**       | Typisierte Programmiersprache (Superset von JavaScript) |
-| **Validator**        | Klasse für fachliche Validierungsregeln                 |
-| **ValueHelp (F4)**   | Auswahldialog/Dropdown für Entitäten                    |
-| **Whitebox**         | Baustein mit Blick auf innere Struktur                  |
-| **Blackbox**         | Baustein nur über Schnittstelle betrachtet              |
-| **XSUAA**            | SAP Authorization & Trust Management Service            |
+| Begriff              | Definition                                                                 |
+| -------------------- | -------------------------------------------------------------------------- |
+| **TimeEntry**        | Zentrale Entity: Eine Zeitbuchung pro User+Tag                             |
+| **TimeEntryFactory** | Factory, die Arbeitszeiten, Über-/Unterstunden und Defaults berechnet      |
+| **TrackService**     | CAP-Service-Layer als Orchestrator für Events, Handler und OData-Endpunkte |
+| **Transaction (tx)** | CAP-Datenbank-Transaktion                                                  |
+| **TypeScript**       | Typisierte Programmiersprache (Superset von JavaScript)                    |
+| **UserService**      | Service zur Auflösung und Validierung des aktuellen Users inkl. Stammdaten |
+| **Validator**        | Klasse für fachliche Validierungsregeln                                    |
+| **ValueHelp (F4)**   | Auswahldialog/Dropdown für Entitäten                                       |
+| **Whitebox**         | Baustein mit Blick auf innere Struktur                                     |
+| **Blackbox**         | Baustein nur über Schnittstelle betrachtet                                 |
+| **XSUAA**            | SAP Authorization & Trust Management Service                               |
 
 ### Fachliche Begriffe
 
@@ -2037,7 +2047,7 @@ Auswirkung
 
 | Version | Datum      | Autor       | Änderungen                            |
 | ------- | ---------- | ----------- | ------------------------------------- |
-| 1.0     | 16.10.2025 | @nimble-123 | Initiale arc42-Dokumentation erstellt |
+| 0.1     | 07.10.2025 | @nimble-123 | Initiale arc42-Dokumentation erstellt |
 
 ---
 
