@@ -35,12 +35,12 @@ annotate service.TimeEntryStatuses with @(
     {
       Value: allowDoneAction,
       Label: '{i18n>timeEntryStatus.allowDoneAction}',
-      $Type: 'UI.DataFieldBoolean'
+      $Type: 'UI.DataField'
     },
     {
       Value: allowReleaseAction,
       Label: '{i18n>timeEntryStatus.allowReleaseAction}',
-      $Type: 'UI.DataFieldBoolean'
+      $Type: 'UI.DataField'
     },
     {
       Value: criticality,
