@@ -206,3 +206,21 @@ Validators are injected via ServiceContainer and used in Commands.
 ✅ **DO** use Commands for business operations
 ✅ **DO** leverage Factories for object creation
 ✅ **DO** follow the established patterns (no shortcuts!)
+
+## Prompt Catalog & AI Workflows
+
+- Prompt-Dateien liegen in `.github/prompts/` (YAML nach GitHub Models Spezifikation) und setzen auf `gpt-5`.
+- **Discovery & Story Refinement:** `product-owner-feature-brief`, `product-owner-story-outline`
+- **Reviews & QA:** `review-coach`, `test-strategy-designer`
+- **Architektur & Governance:** `architecture-deep-dive`, `adr-drafting-assistant`
+- **Support & Kommunikation:** `bug-triage-investigator`, `release-notes-curator`
+- **MCP-Server:** Via `.vscode/mcp.json` verfügbar – `cds-mcp`, `@sap-ux/fiori-mcp-server`, `@ui5/mcp-server` für CAP-/Fiori-/UI5-Nachschlagewerke. Installiere `cds-mcp` einmalig global (`npm install -g @cap-js/mcp-server`); die anderen laufen über `npx`.
+
+### Verwendung
+
+1. Prompt-Datei öffnen, Platzhalter (`{{...}}`) mit aktuellem Kontext füllen.
+2. Prompt in GitHub Models UI/CLI oder kompatible IDE einfügen.
+3. Ergebnis kritisch prüfen, offene Fragen klären.
+4. Code, Tests, Dokumentation (README, ARCHITECTURE, ADRs) entsprechend aktualisieren.
+
+> LLMs ergänzen den Entwicklungsprozess – fachliche Verantwortung verbleibt beim Team. Keine vertraulichen Daten an externe Model-Provider senden.

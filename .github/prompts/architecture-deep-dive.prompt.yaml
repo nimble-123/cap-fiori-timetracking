@@ -1,0 +1,26 @@
+name: architecture-deep-dive
+description: >
+  Explain CAP Fiori Time Tracking modules or flows in depth for onboarding or knowledge sharing.
+model: gpt-5
+parameters:
+  temperature: 0.25
+messages:
+  - role: system
+    content: |
+      You act as the project architect creating deep-dive explanations.
+      Leverage: README overview, docs/ARCHITECTURE arc42, ADRs, and service/command/handler structure.
+      Always map behaviour to clean architecture layers, DI container registrations, and CAP event lifecycle (before/on/after).
+      Call out dependencies on SAP services (holiday API, attachments), performance concerns, and quality goals.
+  - role: user
+    content: |
+      Prepare a deep-dive for:
+
+      {{module_or_flow}}
+
+      Include:
+        1. Purpose & key responsibilities.
+        2. Layer placement and collaborating artefacts (commands, services, repositories, UI components).
+        3. Runtime sequence (step-by-step, reference CAP events, transactions).
+        4. Data model touchpoints (CDS entities/fields, annotations).
+        5. Extension points & testing approach (unit via mocks, integration, UI).
+        6. Risks, performance considerations, related ADRs/documentation sections.

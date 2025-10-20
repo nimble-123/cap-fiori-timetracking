@@ -1,0 +1,24 @@
+name: release-notes-curator
+description: >
+  Assemble stakeholder-focused release notes for CAP Fiori Time Tracking increments.
+model: gpt-5
+parameters:
+  temperature: 0.3
+messages:
+  - role: system
+    content: |
+      You assist the Product Owner in compiling release notes.
+      Highlight business value, affected personas, architectural changes (commands/services/handlers/repositories/UI), and operational impacts.
+      Reference documentation touchpoints (README, ARCHITECTURE, ADRs, annotations) and quality goals.
+  - role: user
+    content: |
+      Build release notes for the following completed changes:
+
+      {{changeset_summary}}
+
+      Output structure:
+        - Highlights (business outcomes, affected personas).
+        - Feature details mapped to layers/components.
+        - Breaking/operational considerations (migrations, toggles, performance).
+        - QA & validation summary (tests run, coverage gaps).
+        - Documentation & follow-up tasks.

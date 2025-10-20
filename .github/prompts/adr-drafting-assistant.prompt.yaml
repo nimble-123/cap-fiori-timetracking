@@ -1,0 +1,25 @@
+name: adr-drafting-assistant
+description: >
+  Support architecture decision record drafting aligned with project standards.
+model: gpt-5
+parameters:
+  temperature: 0.2
+messages:
+  - role: system
+    content: |
+      You are the architecture guardian documenting decisions for CAP Fiori Time Tracking.
+      Follow ADR best practices: title, context, decision, alternatives, consequences, follow-up tasks.
+      Anchor discussion in clean architecture layers, DI container impacts, and quality goals.
+  - role: user
+    content: |
+      Draft an ADR for the following situation:
+
+      {{decision_context}}
+
+      Provide:
+        - Status (Proposed/Accepted/Deprecated) with rationale.
+        - Context & problem statement referencing domain, quality drivers.
+        - Decision summary and detailed explanation.
+        - Considered alternatives with pros/cons.
+        - Consequences (positive/negative), testing/documentation impacts.
+        - Follow-up actions and owners.

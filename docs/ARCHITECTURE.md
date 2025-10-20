@@ -64,6 +64,7 @@ Zeiterfassungsanwendung auf Basis von SAP Cloud Application Programming Model mi
 - [8.8 Dokumentanhänge (Attachments Plugin)](#88-dokumentanhänge-attachments-plugin)
 - [8.9 OpenAPI & Swagger UI](#89-openapi--swagger-ui)
 - [8.10 Security & Compliance](#810-security--compliance)
+- [8.11 AI Assistance & Prompt Catalog](#811-ai-assistance--prompt-catalog)
 
 ### [9. Architekturentscheidungen](#9-architekturentscheidungen)
 
@@ -1787,6 +1788,41 @@ sequenceDiagram
 - **ADR & Reviews:** Sicherheitsrelevante Änderungen (z. B. XSUAA → AMS Migration) erhalten eigene ADRs + Security Review.
 
 > Zusammengefasst: Security ist kein Add-on, sondern ein integriertes Querschnittsthema – von der UI über CAP bis zum Betrieb in der BTP. Die beschriebenen Bausteine stellen sicher, dass Authentifizierung, Autorisierung, Mandantentrennung und Secret-Handling in jeder Umgebung konsistent und auditierbar bleiben.
+
+### 8.11 AI Assistance & Prompt Catalog
+
+Der Einsatz von LLMs wird bewusst orchestriert, um **Requirements Engineering**, **Code Reviews**, **Architekturarbeit** und **QA** zu beschleunigen, ohne die Prinzipien der Clean Architecture zu verletzen.
+
+**Ziele & Qualitätsleitplanken**
+
+- **Domänenfokus:** Prompts arbeiten mit fachlichen Begriffen (TimeEntries, Balance, Holiday Integration) und leiten Nutzer:innen dazu an, Business-Kontext zu präzisieren, bevor technische Lösungen entstehen.
+- **Architektur-Alignment:** Antworten verankern Maßnahmen in den Layern (Handlers, Commands, Services, Repositories, Infrastructure) und prüfen Auswirkungen auf DI-Container, Annotations und CDS-Modelle.
+- **Qualitätsziele spiegeln:** Maintainability, Testability, Performance und Usability werden explizit in den Dialog eingebunden.
+- **Dokumentations-Pflege:** Prompts erinnern daran, Änderungen in README, ARCHITECTURE, ADRs oder i18n/Annotationen nachzuführen.
+- **Knowledge Provider:** `.vscode/mcp.json` bindet `cds-mcp`, `@sap-ux/fiori-mcp-server` und `@ui5/mcp-server` ein, um CAP-/Fiori-/UI5-spezifische Referenzen direkt am Prompt verfügbar zu machen (Hinweis: `cds-mcp` muss global installiert werden, z. B. `npm install -g @cap-js/mcp-server`).
+
+**Prompt-Verzeichnis**: `.github/prompts/` (YAML nach [GitHub Models Standard](https://docs.github.com/en/github-models/use-github-models/storing-prompts-in-github-repositories))
+
+| Rolle / Situation         | Prompt                                             | Fokus                                                            |
+| ------------------------- | -------------------------------------------------- | ---------------------------------------------------------------- |
+| Product Owner – Discovery | `product-owner-feature-brief`                      | Bedarf verstehen, Qualitätsziele sichern, Scope definieren       |
+| Product Owner – Delivery  | `product-owner-story-outline`                      | Story, Akzeptanzkriterien, Artefakt-Impact, Test-/Doku-Tasks     |
+| Code Review & QA          | `review-coach`, `test-strategy-designer`           | Findings priorisieren, Testplan erstellen, Risiken dokumentieren |
+| Architektur & Governance  | `architecture-deep-dive`, `adr-drafting-assistant` | Architektur-Exploration, Entscheidungsdokumentation              |
+| Betrieb & Kommunikation   | `bug-triage-investigator`, `release-notes-curator` | Incident-Analyse, Workarounds, Release Notes                     |
+
+**Arbeitsweise**
+
+1. **Prompt wählen & anreichern:** Platzhalter (`{{...}}`) mit aktuellem Kontext (Feature-Idee, Diff, Incident) füllen.
+2. **LLM-Dialog führen:** Über GitHub Models CLI/UI oder IDE-Integrationen; bei Unklarheiten fordert das LLM Zusatzinfos an.
+3. **Ergebnis validieren:** Output kritisch prüfen, getroffene Annahmen verifizieren, offene Fragen nachverfolgen.
+4. **Follow-up sichern:** Artefakte (Code, Tests, Docs) aktualisieren und – falls Architektur betroffen – ADRs ergänzen.
+
+**Governance**
+
+- Prompts werden versioniert und wie Code reviewed.
+- Änderungen an Prompts sollten den Impact auf Teamprozesse in ADR- oder Changelog-Einträgen widerspiegeln.
+- Einsatz von LLMs entbindet nicht von Security & Compliance Richtlinien (z. B. keine vertraulichen Daten in externe Model-Provider hochladen).
 
 ---
 

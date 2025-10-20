@@ -251,6 +251,17 @@ cap-fiori-timetracking/
 | **[ADR-Verzeichnis](docs/ADR/)**            | 12 Architecture Decision Records           | Warum wurden Entscheidungen getroffen? |
 | **[CONTRIBUTING.md](CONTRIBUTING.md)**      | Code Style, Commit Conventions, PR-Process | Bevor du Code beiträgst                |
 
+### 🤖 AI-Unterstützung & Prompts
+
+- **Prompt-Katalog:** `.github/prompts/` – YAML-Prompts nach [GitHub Models Guideline](https://docs.github.com/en/github-models/use-github-models/storing-prompts-in-github-repositories).
+- **Rollenspezifische Einstiegspunkte:**
+  - Product Owner: `product-owner-feature-brief`, `product-owner-story-outline`
+  - Reviewer & QA: `review-coach`, `test-strategy-designer`
+  - Architektur & Wissensaufbau: `architecture-deep-dive`, `adr-drafting-assistant`
+  - Betrieb & Support: `bug-triage-investigator`, `release-notes-curator`
+- **MCP-Server:** In `.vscode/mcp.json` vorkonfiguriert – `cds-mcp` (CAP Docs), `@sap-ux/fiori-mcp-server` (Fiori UX Guidance), `@ui5/mcp-server` (UI5 SDK). Installiere `cds-mcp` global (`npm install -g @cap-js/mcp-server`), die anderen starten via `npx`.
+- **Workflow-Tipps:** Siehe [GETTING_STARTED.md](GETTING_STARTED.md#-ai-prompts--llm-workflows) für Beispiele, wie die Prompts in Discovery, Delivery und Review eingesetzt werden.
+
 ### 🎯 arc42-Kapitel Schnellzugriff
 
 | Kapitel     | Inhalt                                              | Link                                                               |

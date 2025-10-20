@@ -111,6 +111,38 @@ Bitte beachte diese Richtlinien, bevor du einen PR erstellst.
 
 ---
 
+## 🤖 AI Prompts & LLM Workflows
+
+Das Repository enthält kuratierte Prompts für GitHub Models & CoPilot (`.github/prompts/*.prompt.yml`), um Product Owner, Entwickler:innen und QA bei CAP-spezifischen Aufgaben zu unterstützen.
+
+### Nutzung
+
+1. **Prompt auswählen:** Inhalte der YAML-Dateien lesen (z. B. `product-owner-feature-brief.prompt.yml`) und an dein Vorhaben anpassen (`{{...}}` Placeholder ersetzen).
+2. **LLM starten:** Prompt in GitHub Models UI, GitHub CLI (`gh models`), oder kompatible IDE-Integrationen laden.
+3. **Kontext teilen:** Relevante Artefakte/Änderungen als Input beschreiben (Summary, Diff, Incident etc.).
+4. **Ergebnisse prüfen:** Output durchgehen, offene Punkte klären und Entscheidungen dokumentieren (README, ARCHITECTURE, ADRs).
+
+### Typische Workflows
+
+- **Discovery (Product Owner):** `product-owner-feature-brief` für Anforderungs-Gathering → `product-owner-story-outline` für Story-Bundle.
+- **Code Review:** `review-coach` für Findings, Test-Impact und Doku-Hinweise.
+- **Architecture Enablement:** `architecture-deep-dive` erklärt Module/Flows; `adr-drafting-assistant` unterstützt neue Entscheidungen.
+- **Support & Releases:** `bug-triage-investigator` strukturiert Fehlermeldungen, `release-notes-curator` erstellt Stakeholder-Updates.
+- **Qualitätssicherung:** `test-strategy-designer` definiert Testpakete (Unit, CAP-Integration, UI5 E2E, Performance).
+
+### MCP-Server & Wissensquellen
+
+- `.vscode/mcp.json` konfiguriert drei Server, die in kompatiblen IDEs sofort nutzbar sind:
+  - `cds-mcp` → SAP CAP Referenzen & Best Practices.
+  - `@sap-ux/fiori-mcp-server` → Fiori Elements Patterns, UX Guidelines und Annotation-Hilfen.
+  - `@ui5/mcp-server` → UI5 Control API, MVC, Routing.
+- **Installation:** Für `cds-mcp` muss die CLI einmal global installiert werden, z. B. `npm install -g @cap-js/mcp-server`. Prüfe die Installation mit `cds-mcp --help`. Die beiden anderen Server werden bei Bedarf über `npx …` gestartet.
+- In Kombination mit den Prompts können MCP-Server als „Knowledge Provider“ dienen, um technische Details während der Anforderungs- oder Review-Phase abzufragen.
+
+> Tipp: Ergänze bei Bedarf projektspezifische Details (z. B. betroffene Entities, Handler, Commands), damit das LLM zielgerichtet antwortet.
+
+---
+
 ## 🏃 Development Server starten
 
 ### Variante 1: Watch Mode (empfohlen für Development)
