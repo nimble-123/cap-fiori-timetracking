@@ -40,8 +40,8 @@ npm install
 npm run watch
 ```
 
-**🌐 Browser öffnet automatisch:** `http://localhost:4004`
-**🔐 Login:** `max.mustermann@test.de` / Passwort: `max`
+**🌐 Browser öffnet automatisch:** `http://localhost:4004`</br>
+**🔐 Login:** `max.mustermann@test.de` / Passwort: `max`</br>
 **🧭 Swagger UI (Dev):** `http://localhost:4004/$api-docs/odata/v4/track/`
 
 👉 **Ausführliche Installation:** Siehe [GETTING_STARTED.md](GETTING_STARTED.md)
