@@ -4,13 +4,23 @@
  * Testet OData HTTP APIs und Service-Layer mit cds.test()
  * Nutzt Mock-User aus package.json für Authentication
  */
-//import cds from '@sap/cds';
 const cds = require('@sap/cds');
 
-describe('SETUP', () => {
-  // cds.test() initialisiert CAP Server mit In-Memory DB
-  const { GET, POST, PATCH, DELETE, expect } = cds.test('../', '--in-memory');
+const projectRoot = `${__dirname}/..`;
+const testEnv = cds.test(projectRoot, '--in-memory');
 
+let GET;
+let POST;
+let PATCH;
+let DELETE;
+let expect;
+
+beforeAll(async () => {
+  ({ GET, POST, PATCH, DELETE, expect } = testEnv);
+  await testEnv; // wartet, bis der CDS Testserver bereit ist
+});
+
+describe('SETUP', () => {
   // Mock User für Authentication (aus package.json)
   const maxUser = { auth: { username: 'max.mustermann@test.de', password: 'max' } };
   const erikaUser = { auth: { username: 'erika.musterfrau@test.de', password: 'erika' } };
@@ -28,9 +38,6 @@ describe('SETUP', () => {
 });
 
 describe('TrackService - TimeEntries CRUD', () => {
-  // cds.test() initialisiert CAP Server mit In-Memory DB
-  const { GET, POST, PATCH, DELETE, expect } = cds.test('../', '--in-memory');
-
   // Mock User für Authentication (aus package.json)
   const maxUser = { auth: { username: 'max.mustermann@test.de', password: 'max' } };
   const erikaUser = { auth: { username: 'erika.musterfrau@test.de', password: 'erika' } };
@@ -327,7 +334,6 @@ describe('TrackService - TimeEntries CRUD', () => {
 });
 
 describe('TrackService - Actions & Functions', () => {
-  const { GET, POST, PATCH, expect } = cds.test('../', '--in-memory');
   const maxUser = { auth: { username: 'max.mustermann@test.de', password: 'max' } };
 
   describe('Generation Actions', () => {
@@ -556,7 +562,6 @@ describe('TrackService - Actions & Functions', () => {
 });
 
 describe('TrackService - Other Entities', () => {
-  const { GET, expect } = cds.test('../', '--in-memory');
   const maxUser = { auth: { username: 'max.mustermann@test.de', password: 'max' } };
 
   describe('Users', () => {
