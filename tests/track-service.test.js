@@ -458,28 +458,27 @@ describe('TrackService - Actions & Functions', () => {
     });
 
     it('should mark entries as done', async () => {
-      const { data, status } = await POST(
-        '/odata/v4/track/markTimeEntriesDone',
-        {
-          entryIDs: [actionEntryId, secondaryEntryId],
-        },
-        maxUser,
-      );
+      const postMarkDone = (entryId) =>
+        POST(`/odata/v4/track/TimeEntries(${entryId})/TrackService.markTimeEntryDone`, {}, maxUser);
 
-      expect(status).to.equal(200);
-      expect(Array.isArray(data)).to.be.true;
-      data.forEach((entry) => expect(entry.status_code).to.equal('D'));
+      const { data: firstResult, status: firstStatus } = await postMarkDone(actionEntryId);
+      expect(firstStatus).to.equal(200);
+      expect(firstResult.status_code).to.equal('D');
 
-      const { data: refreshed } = await GET(`/odata/v4/track/TimeEntries(${actionEntryId})`, maxUser);
-      expect(refreshed.status_code).to.equal('D');
+      const { data: secondResult, status: secondStatus } = await postMarkDone(secondaryEntryId);
+      expect(secondStatus).to.equal(200);
+      expect(secondResult.status_code).to.equal('D');
+
+      const { data: refreshedFirst } = await GET(`/odata/v4/track/TimeEntries(${actionEntryId})`, maxUser);
+      const { data: refreshedSecond } = await GET(`/odata/v4/track/TimeEntries(${secondaryEntryId})`, maxUser);
+      expect(refreshedFirst.status_code).to.equal('D');
+      expect(refreshedSecond.status_code).to.equal('D');
     });
 
     it('should reject releasing entries that are not done', async () => {
       const { status } = await POST(
-        '/odata/v4/track/releaseTimeEntries',
-        {
-          entryIDs: [untouchedEntryId],
-        },
+        `/odata/v4/track/TimeEntries(${untouchedEntryId})/TrackService.releaseTimeEntry`,
+        {},
         maxUser,
       );
 
@@ -488,16 +487,13 @@ describe('TrackService - Actions & Functions', () => {
 
     it('should release entries that are done', async () => {
       const { data, status } = await POST(
-        '/odata/v4/track/releaseTimeEntries',
-        {
-          entryIDs: [actionEntryId],
-        },
+        `/odata/v4/track/TimeEntries(${actionEntryId})/TrackService.releaseTimeEntry`,
+        {},
         maxUser,
       );
 
       expect(status).to.equal(200);
-      expect(Array.isArray(data)).to.be.true;
-      expect(data[0].status_code).to.equal('R');
+      expect(data.status_code).to.equal('R');
 
       const { data: refreshed } = await GET(`/odata/v4/track/TimeEntries(${actionEntryId})`, maxUser);
       expect(refreshed.status_code).to.equal('R');
@@ -515,10 +511,8 @@ describe('TrackService - Actions & Functions', () => {
 
     it('should reject marking released entries as done again', async () => {
       const { status } = await POST(
-        '/odata/v4/track/markTimeEntriesDone',
-        {
-          entryIDs: [actionEntryId],
-        },
+        `/odata/v4/track/TimeEntries(${actionEntryId})/TrackService.markTimeEntryDone`,
+        {},
         maxUser,
       );
 

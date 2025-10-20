@@ -12,8 +12,8 @@ import type {
   GetRecentBalancesCommand,
   GetVacationBalanceCommand,
   GetSickLeaveBalanceCommand,
-  MarkTimeEntriesDoneCommand,
-  ReleaseTimeEntriesCommand,
+  MarkTimeEntryDoneCommand,
+  ReleaseTimeEntryCommand,
 } from '../commands';
 
 /**
@@ -31,8 +31,8 @@ export class HandlerFactory {
       this.container.getCommand<CreateTimeEntryCommand>('createTimeEntry'),
       this.container.getCommand<UpdateTimeEntryCommand>('updateTimeEntry'),
       this.container.getCommand<RecalculateTimeEntryCommand>('recalculateTimeEntry'),
-      this.container.getCommand<MarkTimeEntriesDoneCommand>('markTimeEntriesDone'),
-      this.container.getCommand<ReleaseTimeEntriesCommand>('releaseTimeEntries'),
+      this.container.getCommand<MarkTimeEntryDoneCommand>('markTimeEntryDone'),
+      this.container.getCommand<ReleaseTimeEntryCommand>('releaseTimeEntry'),
     );
   }
 

@@ -14,7 +14,7 @@ TimeEntries konnten bislang beliebig geändert werden. Für Abrechnungsprozesse 
 Die Lösung muss…
 - sowohl **UI** als auch **Backend** vor unerlaubten Statuswechseln schützen,
 - Mandanten erlauben, **eigene Codes** zu pflegen,
-- **Bulk-Aktionen** für Done/Release bereitstellen,
+- **Mehrfachauswahl** für Done/Release unterstützen (über sequentielle Bound Actions),
 - Stammdaten-basiert definieren, **welche Transitionen** erlaubt sind.
 
 ## Entscheidungsfaktoren
@@ -29,7 +29,7 @@ Die Lösung muss…
 - *Vorteile:*
   - Stammdaten erfassen Transitionen (`from_code`, `to_code`) und Action-Verfügbarkeit.
   - Customizing liefert Default-Codes für Open/Processed/Done/Released.
-  - Neue Unbound Actions (`markTimeEntriesDone`, `releaseTimeEntries`) ermöglichen Bulk-Statuswechsel mit Server-Validierung.
+  - Neue gebundene Actions (`markTimeEntryDone`, `releaseTimeEntry`) ermöglichen Statuswechsel mit Server-Validierung direkt auf den betroffenen Einträgen.
   - UI-Annotations können direkt auf `status.allowDoneAction` / `allowReleaseAction` zugreifen und Operationen steuern.
 - *Nachteile:*
   - Zusätzliche Entität + CSV Seeds müssen gepflegt werden.
@@ -45,7 +45,7 @@ Die Lösung muss…
   - Erweiterungen (weitere Status, Mandanten-spezifische Transitionen) sehr aufwändig.
 
 ## Entscheidung
-Option A liefert den geforderten Grad an Konfigurierbarkeit und ermöglicht dennoch eine zentrale Steuerung der Business Rules. `TimeEntryStatuses` erweitert das Datenmodell, `Customizing` hält die aktuellen Codes, und zwei neue Commands orchestrieren Bulk-Aktionen mit Repository-Validierung. `TimeEntryHandlers` blockieren Änderungen, sobald `Released` erreicht ist. UI-Annotations nutzen die Stammdaten, um Actions kontextabhängig zu be- oder deaktivieren. Damit erreichen wir fachliche Nachvollziehbarkeit, konsistente Sperrlogik und saubere Erweiterbarkeit.
+Option A liefert den geforderten Grad an Konfigurierbarkeit und ermöglicht dennoch eine zentrale Steuerung der Business Rules. `TimeEntryStatuses` erweitert das Datenmodell, `Customizing` hält die aktuellen Codes, und zwei Commands orchestrieren die Statuswechsel pro Eintrag mit Repository-Validierung. `TimeEntryHandlers` blockieren Änderungen, sobald `Released` erreicht ist. UI-Annotations nutzen die Stammdaten, um Actions kontextabhängig zu be- oder deaktivieren. Damit erreichen wir fachliche Nachvollziehbarkeit, konsistente Sperrlogik und saubere Erweiterbarkeit.
 
 ## Konsequenzen
 

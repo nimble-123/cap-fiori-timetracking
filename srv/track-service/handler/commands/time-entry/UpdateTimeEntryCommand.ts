@@ -61,6 +61,9 @@ export class UpdateTimeEntryCommand {
 
     // Prüfen ob Neuberechnung erforderlich ist
     const statusChanges = this.determineStatusChanges(updateData, existingEntry, statusDefaults);
+    if ('status_code' in statusChanges) {
+      updateData.status_code = statusChanges.status_code;
+    }
 
     if (!this.validator.requiresTimeRecalculation(updateData)) {
       logger.commandEnd('UpdateTimeEntry', { recalculation: false, statusChanged: 'status_code' in statusChanges });
@@ -194,17 +197,17 @@ export class UpdateTimeEntryCommand {
     if (requestedStatus) {
       this.validator.validateStatusChange(existingEntry.status_code, requestedStatus, statusDefaults);
       changes.status_code = requestedStatus;
-      return changes;
+      //return changes;
     }
 
     // Ohne Status-Update: automatisch auf "Processed" setzen, sofern nicht bereits final
-    const { statusProcessedCode, statusReleasedCode } = statusDefaults;
+    const { statusProcessedCode, statusReleasedCode, statusOpenCode } = statusDefaults;
     if (existingEntry.status_code === statusReleasedCode) {
       return changes;
     }
 
-    if (existingEntry.status_code !== statusProcessedCode) {
-      changes.status_code = statusDefaults.statusProcessedCode;
+    if (existingEntry.status_code === statusOpenCode) {
+      changes.status_code = statusProcessedCode;
     }
 
     return changes;

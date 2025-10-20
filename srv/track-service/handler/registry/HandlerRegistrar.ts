@@ -47,14 +47,16 @@ export class HandlerRegistrar {
 
     this.registry.register({
       type: 'on',
-      event: 'markTimeEntriesDone',
+      event: 'markTimeEntryDone',
+      entity: TimeEntries,
       handler: handlers.handleMarkDone.bind(handlers),
       description: 'Mark selected time entries as done',
     });
 
     this.registry.register({
       type: 'on',
-      event: 'releaseTimeEntries',
+      event: 'releaseTimeEntry',
+      entity: TimeEntries,
       handler: handlers.handleRelease.bind(handlers),
       description: 'Release selected time entries for billing',
     });

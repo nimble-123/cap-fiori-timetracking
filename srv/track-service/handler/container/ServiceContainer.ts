@@ -49,8 +49,8 @@ import {
   GetRecentBalancesCommand,
   GetVacationBalanceCommand,
   GetSickLeaveBalanceCommand,
-  MarkTimeEntriesDoneCommand,
-  ReleaseTimeEntriesCommand,
+  MarkTimeEntryDoneCommand,
+  ReleaseTimeEntryCommand,
 } from '../commands';
 
 /**
@@ -285,7 +285,7 @@ export class ServiceContainer {
       repository: timeEntryRepository,
       customizingService,
     };
-    this.commands.set('markTimeEntriesDone', new MarkTimeEntriesDoneCommand(statusDeps));
-    this.commands.set('releaseTimeEntries', new ReleaseTimeEntriesCommand(statusDeps));
+    this.commands.set('markTimeEntryDone', new MarkTimeEntryDoneCommand(statusDeps));
+    this.commands.set('releaseTimeEntry', new ReleaseTimeEntryCommand(statusDeps));
   }
 }

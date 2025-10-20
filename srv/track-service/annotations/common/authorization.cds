@@ -8,7 +8,9 @@ annotate service.TimeEntries with @(restrict: [
     grant: [
       'READ',
       'WRITE',
-      'recalculateTimeEntry'
+      'recalculateTimeEntry',
+      'markTimeEntryDone',
+      'releaseTimeEntry'
     ],
     to   : 'authenticated-user',
     where: 'user_ID = $user'

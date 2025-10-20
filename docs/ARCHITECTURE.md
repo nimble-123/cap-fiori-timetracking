@@ -254,7 +254,7 @@ graph LR
 - `TimeEntryStatuses` bildet den bearbeitbaren Status-Lebenszyklus (`O`pen, `P`rocessed, `D`one, `R`eleased) inklusive erlaubter Transitionen (`from_code` / `to_code`) und UI-Freigaben (`allowDoneAction`, `allowReleaseAction`) ab.
 - `TimeEntries.status_code` assoziiert jede Buchung mit genau einem Status. Änderungen am Eintrag erzwingen automatisch den `Processed`-Status; eine finale Freigabe (`Released`) erfolgt ausschließlich über dedizierte Actions.
 - Das `Customizing`-Singleton liefert alle verwendeten Status-Codes als Konfiguration, sodass Mandanten eigene Codes pflegen können, ohne Business-Logik anfassen zu müssen.
-- Neue Statusaktionen `markTimeEntriesDone` und `releaseTimeEntries` sorgen für Bulk-Updates über die OData-API und respektieren die Stammdaten-Transitionen sowie Sperren für endgültig freigegebene Einträge.
+- Bound Statusaktionen `markTimeEntryDone` und `releaseTimeEntry` setzen einzelne Buchungen via OData auf die konfigurierten Ziel-Status und erzwingen dabei die Stammdaten-Transitionen sowie Sperren für endgültig freigegebene Einträge.
 
 **Schnittstellen-Beschreibung:**
 
@@ -582,8 +582,8 @@ sequenceDiagram
 | `CreateTimeEntryCommand`      | TimeEntry  | Validierung & Berechnung für neue Entries | Validator, UserService, Factory, CustomizingService             |
 | `UpdateTimeEntryCommand`      | TimeEntry  | Change Detection & Neuberechnung          | Validator, Repository, Factory, UserService, CustomizingService |
 | `RecalculateTimeEntryCommand` | TimeEntry  | Bound Action: Werte neu berechnen         | Repository, Factory, UserService, CustomizingService            |
-| `MarkTimeEntriesDoneCommand`  | Status     | Bulk-Übergang auf Status „Done“           | Repository, CustomizingService                                  |
-| `ReleaseTimeEntriesCommand`   | Status     | Bulk-Übergang auf Status „Released“       | Repository, CustomizingService                                  |
+| `MarkTimeEntryDoneCommand`    | Status     | Statuswechsel auf „Done“ (einzeln)        | Repository, CustomizingService                                  |
+| `ReleaseTimeEntryCommand`     | Status     | Statuswechsel auf „Released“ (einzeln)    | Repository, CustomizingService                                  |
 | `GenerateMonthlyCommand`      | Generation | Monat mit Stats generieren                | Validator, Strategy, Repository                                 |
 | `GenerateYearlyCommand`       | Generation | Jahr mit Feiertagen generieren            | Validator, Strategy, HolidayService                             |
 | `GetDefaultParamsCommand`     | Generation | Default-Werte für Generierung             | UserService                                                     |

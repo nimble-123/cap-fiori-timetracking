@@ -21,8 +21,8 @@ export { GetDefaultParamsCommand } from './generation/GetDefaultParamsCommand';
 export { CreateTimeEntryCommand } from './time-entry/CreateTimeEntryCommand';
 export { UpdateTimeEntryCommand } from './time-entry/UpdateTimeEntryCommand';
 export { RecalculateTimeEntryCommand } from './time-entry/RecalculateTimeEntryCommand';
-export { MarkTimeEntriesDoneCommand } from './time-entry/MarkTimeEntriesDoneCommand';
-export { ReleaseTimeEntriesCommand } from './time-entry/ReleaseTimeEntriesCommand';
+export { MarkTimeEntryDoneCommand } from './time-entry/MarkTimeEntryDoneCommand';
+export { ReleaseTimeEntryCommand } from './time-entry/ReleaseTimeEntryCommand';
 
 // Re-export types (optional, for convenience)
 export type { MonthlyGenerationResult } from './generation/GenerateMonthlyCommand';

@@ -81,18 +81,20 @@ annotate service.TimeEntries with @(
         Actions: [
           {
             $Type                      : 'UI.DataFieldForAction',
-            Action                     : 'TrackService.EntityContainer/markTimeEntriesDone',
-            Label                      : '{i18n>action.markTimeEntriesDone}',
+            Action                     : 'TrackService.markTimeEntryDone',
+            Label                      : '{i18n>action.markTimeEntryDone}',
             ![@UI.Importance]          : #Medium,
             ![@Core.OperationAvailable]: status.allowDoneAction,
+            ![@UI.OperationGrouping]   : #Isolated,
             Inline                     : false
           },
           {
             $Type                      : 'UI.DataFieldForAction',
-            Action                     : 'TrackService.EntityContainer/releaseTimeEntries',
-            Label                      : '{i18n>action.releaseTimeEntries}',
+            Action                     : 'TrackService.releaseTimeEntry',
+            Label                      : '{i18n>action.releaseTimeEntry}',
             ![@UI.Importance]          : #High,
             ![@Core.OperationAvailable]: status.allowReleaseAction,
+            ![@UI.OperationGrouping]   : #Isolated,
             Inline                     : false
           }
         ]
@@ -234,18 +236,20 @@ annotate service.TimeEntries with @(
         Actions: [
           {
             $Type                      : 'UI.DataFieldForAction',
-            Action                     : 'TrackService.EntityContainer/markTimeEntriesDone',
-            Label                      : '{i18n>action.markTimeEntriesDone}',
+            Action                     : 'TrackService.TimeEntries/markTimeEntryDone',
+            Label                      : '{i18n>action.markTimeEntryDone}',
             ![@UI.Importance]          : #Medium,
             ![@Core.OperationAvailable]: status.allowDoneAction,
+            ![@UI.OperationGrouping]   : #Isolated,
             Inline                     : false
           },
           {
             $Type                      : 'UI.DataFieldForAction',
-            Action                     : 'TrackService.EntityContainer/releaseTimeEntries',
-            Label                      : '{i18n>action.releaseTimeEntries}',
+            Action                     : 'TrackService.TimeEntries/releaseTimeEntry',
+            Label                      : '{i18n>action.releaseTimeEntry}',
             ![@UI.Importance]          : #High,
             ![@Core.OperationAvailable]: status.allowReleaseAction,
+            ![@UI.OperationGrouping]   : #Isolated,
             Inline                     : false
           }
         ]
@@ -341,18 +345,20 @@ annotate service.TimeEntries with @(
         Actions: [
           {
             $Type                      : 'UI.DataFieldForAction',
-            Action                     : 'TrackService.EntityContainer/markTimeEntriesDone',
-            Label                      : '{i18n>action.markTimeEntriesDone}',
+            Action                     : 'TrackService.TimeEntries/markTimeEntryDone',
+            Label                      : '{i18n>action.markTimeEntryDone}',
             ![@UI.Importance]          : #Medium,
             ![@Core.OperationAvailable]: status.allowDoneAction,
+            ![@UI.OperationGrouping]   : #Isolated,
             Inline                     : false
           },
           {
             $Type                      : 'UI.DataFieldForAction',
-            Action                     : 'TrackService.EntityContainer/releaseTimeEntries',
-            Label                      : '{i18n>action.releaseTimeEntries}',
+            Action                     : 'TrackService.TimeEntries/releaseTimeEntry',
+            Label                      : '{i18n>action.releaseTimeEntry}',
             ![@UI.Importance]          : #High,
             ![@Core.OperationAvailable]: status.allowReleaseAction,
+            ![@UI.OperationGrouping]   : #Isolated,
             Inline                     : false
           }
         ]

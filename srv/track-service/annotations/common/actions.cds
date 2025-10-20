@@ -4,12 +4,12 @@ using TrackService as service from '../../../service-model';
 //  Bound Actions - Annotationen
 ////////////////////////////////////////////////////////////////////////////
 
-/**
- * recalculateTimeEntry Bound Action
- * - Nur im Display Mode verfügbar (nicht im Draft/Edit Mode)
- * - Automatisches UI-Refresh nach Ausführung via SideEffects
- */
 annotate service.TimeEntries actions {
+  /**
+   * recalculateTimeEntry Bound Action
+   * - Nur im Display Mode verfügbar (nicht im Draft/Edit Mode)
+   * - Automatisches UI-Refresh nach Ausführung via SideEffects
+   */
   recalculateTimeEntry @(
     Common.SideEffects     : {TargetProperties: [
       'durationHoursGross',
@@ -23,7 +23,25 @@ annotate service.TimeEntries actions {
     Core.OperationAvailable: IsActiveEntity,
     Common.Label           : '{i18n>action.recalculateTimeEntry}',
     Core.Description       : 'Berechnet alle Zeitwerte neu basierend auf aktuellen User-Sollstunden'
-  )
+  );
+
+  /**
+   * markTimeEntryDone Bound Action
+   * - Setzt ein TimeEntry auf Status "Done"
+   */
+  markTimeEntryDone    @(
+    Common.SideEffects: {TargetProperties: ['status_code']},
+    Common.Label      : '{i18n>action.markTimeEntryDone}'
+  );
+
+  /**
+   * releaseTimeEntry Bound Action
+   * - Setzt ein TimeEntry auf Status "Released"
+   */
+  releaseTimeEntry     @(
+    Common.SideEffects: {TargetProperties: ['status_code']},
+    Common.Label      : '{i18n>action.releaseTimeEntry}'
+  );
 };
 
 ////////////////////////////////////////////////////////////////////////////
@@ -75,24 +93,6 @@ annotate service.getVacationBalance with @(Common.Label: '{i18n>action.getVacati
  * - Liefert Krankheitssaldo für aktuelles Jahr
  */
 annotate service.getSickLeaveBalance with @(Common.Label: '{i18n>action.getSickLeaveBalance}');
-
-/**
- * markTimeEntriesDone Action
- * - Setzt ausgewählte TimeEntries auf Status "Done"
- */
-annotate service.markTimeEntriesDone with @(
-  Common.SideEffects: {TargetEntities: ['/TrackService.EntityContainer/TimeEntries']},
-  Common.Label      : '{i18n>action.markTimeEntriesDone}'
-);
-
-/**
- * releaseTimeEntries Action
- * - Setzt ausgewählte TimeEntries auf Status "Released"
- */
-annotate service.releaseTimeEntries with @(
-  Common.SideEffects: {TargetEntities: ['/TrackService.EntityContainer/TimeEntries']},
-  Common.Label      : '{i18n>action.releaseTimeEntries}'
-);
 
 ////////////////////////////////////////////////////////////////////////////
 //  Functions - Annotationen

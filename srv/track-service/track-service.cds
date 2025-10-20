@@ -59,6 +59,16 @@ service TrackService {
              * Nur im Display Mode verfügbar (nicht im Draft/Edit Mode)
             */
             action recalculateTimeEntry() returns TimeEntries;
+            /**
+             * Bound Action: Setzt TimeEntry auf Status "Done"
+             * Führt Statuswechsel pro ausgewähltem Eintrag durch
+            */
+            action markTimeEntryDone() returns TimeEntries;
+            /**
+             * Bound Action: Setzt TimeEntry auf Status "Released"
+             * Führt Statuswechsel pro ausgewähltem Eintrag durch
+            */
+            action releaseTimeEntry() returns TimeEntries;
         };
 
     // Upsert für einen Tag (UI füllt ein Formular)
@@ -81,16 +91,6 @@ service TrackService {
      * Unbound Action: Generiere TimeEntries für ein ganzes Jahr inkl. Wochenenden und Feiertage
      */
     action   generateYearlyTimeEntries(year: DefaultParamsForGenerateYearly:year, stateCode: DefaultParamsForGenerateYearly:stateCode) returns array of TimeEntries;
-
-    /**
-     * Unbound Action: Markiere TimeEntries als abgeschlossen (Status „Done“)
-     */
-    action   markTimeEntriesDone(entryIDs: array of UUID) returns array of TimeEntries;
-
-    /**
-     * Unbound Action: Markiere TimeEntries als freigegeben (Status „Released“)
-     */
-    action   releaseTimeEntries(entryIDs: array of UUID) returns array of TimeEntries;
 
     // ========================================
     // Monatssaldo-Funktionalität

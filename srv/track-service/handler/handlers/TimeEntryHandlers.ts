@@ -4,8 +4,8 @@ import {
   CreateTimeEntryCommand,
   UpdateTimeEntryCommand,
   RecalculateTimeEntryCommand,
-  MarkTimeEntriesDoneCommand,
-  ReleaseTimeEntriesCommand,
+  MarkTimeEntryDoneCommand,
+  ReleaseTimeEntryCommand,
 } from '../commands';
 import { logger } from '../utils';
 
@@ -20,8 +20,8 @@ export class TimeEntryHandlers {
     private createCommand: CreateTimeEntryCommand,
     private updateCommand: UpdateTimeEntryCommand,
     private recalculateCommand: RecalculateTimeEntryCommand,
-    private markDoneCommand: MarkTimeEntriesDoneCommand,
-    private releaseCommand: ReleaseTimeEntriesCommand,
+    private markDoneCommand: MarkTimeEntryDoneCommand,
+    private releaseCommand: ReleaseTimeEntryCommand,
   ) {}
 
   /**
@@ -113,36 +113,77 @@ export class TimeEntryHandlers {
   }
 
   /**
-   * Handler: Mehrere TimeEntries auf "Done" setzen (Unbound Action)
+   * Handler: TimeEntry auf "Done" setzen (Bound Action)
    */
-  async handleMarkDone(req: any): Promise<TimeEntry[]> {
+  async handleMarkDone(req: any): Promise<TimeEntry> {
+    const entryId = this.extractEntryId(req);
+
+    if (!entryId) {
+      logger.validationWarning('TimeEntry', 'MARK_DONE attempted without ID');
+      return req.reject(400, 'TimeEntry ID ist erforderlich.');
+    }
+
     try {
       const tx = cds.transaction(req) as any;
-      const entryIds = req.data?.entryIDs ?? [];
-      logger.handlerInvoked('TimeEntry', 'MARK_DONE', { count: entryIds.length });
-      const updatedEntries = await this.markDoneCommand.execute(tx, entryIds);
-      logger.handlerCompleted('TimeEntry', 'MARK_DONE', { count: updatedEntries.length });
-      return updatedEntries;
+      logger.handlerInvoked('TimeEntry', 'MARK_DONE', { entryId });
+      const updatedEntry = await this.markDoneCommand.execute(tx, entryId);
+      logger.handlerCompleted('TimeEntry', 'MARK_DONE', { entryId });
+      return updatedEntry;
     } catch (error: any) {
-      logger.error('TimeEntry MARK_DONE handler failed', error, { entryIDs: req.data?.entryIDs });
+      logger.error('TimeEntry MARK_DONE handler failed', error, { entryId });
       return req.reject(error.code || 400, error.message);
     }
   }
 
   /**
-   * Handler: Mehrere TimeEntries auf "Released" setzen (Unbound Action)
+   * Handler: TimeEntry auf "Released" setzen (Bound Action)
    */
-  async handleRelease(req: any): Promise<TimeEntry[]> {
+  async handleRelease(req: any): Promise<TimeEntry> {
+    const entryId = this.extractEntryId(req);
+
+    if (!entryId) {
+      logger.validationWarning('TimeEntry', 'RELEASE attempted without ID');
+      return req.reject(400, 'TimeEntry ID ist erforderlich.');
+    }
+
     try {
       const tx = cds.transaction(req) as any;
-      const entryIds = req.data?.entryIDs ?? [];
-      logger.handlerInvoked('TimeEntry', 'RELEASE', { count: entryIds.length });
-      const updatedEntries = await this.releaseCommand.execute(tx, entryIds);
-      logger.handlerCompleted('TimeEntry', 'RELEASE', { count: updatedEntries.length });
-      return updatedEntries;
+      logger.handlerInvoked('TimeEntry', 'RELEASE', { entryId });
+      const updatedEntry = await this.releaseCommand.execute(tx, entryId);
+      logger.handlerCompleted('TimeEntry', 'RELEASE', { entryId });
+      return updatedEntry;
     } catch (error: any) {
-      logger.error('TimeEntry RELEASE handler failed', error, { entryIDs: req.data?.entryIDs });
+      logger.error('TimeEntry RELEASE handler failed', error, { entryId });
       return req.reject(error.code || 400, error.message);
     }
+  }
+
+  private extractEntryId(req: any): string | undefined {
+    if (req?.params) {
+      const params = Array.isArray(req.params) ? req.params : [req.params];
+      for (const param of params) {
+        if (!param) {
+          continue;
+        }
+        if (typeof param === 'string') {
+          return param;
+        }
+
+        if (typeof param === 'object') {
+          if (typeof param.ID === 'string' && param.ID.length) {
+            return param.ID;
+          }
+          if (typeof param.id === 'string' && param.id.length) {
+            return param.id;
+          }
+        }
+      }
+    }
+
+    if (typeof req?.data?.ID === 'string' && req.data.ID.length) {
+      return req.data.ID;
+    }
+
+    return undefined;
   }
 }
