@@ -1321,7 +1321,7 @@ sequenceDiagram
 │           ├──────────────┬──────────────┐            │
 │           ▼              ▼              ▼            │
 │  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐  │
-│  │ Timetable UI │ │Dashboard UI  │ │ CAP Service  │  │
+│  │ Timetable UI │ │ Dashboard UI │ │ CAP Service  │  │
 │  │ (Static)     │ │ (Static)     │ │ (Node.js)    │  │
 │  └──────────────┘ └──────────────┘ └──────────────┘  │
 │                                            │         │
