@@ -63,6 +63,7 @@ Zeiterfassungsanwendung auf Basis von SAP Cloud Application Programming Model mi
 - [8.7 Performance](#87-performance)
 - [8.8 Dokumentanhänge (Attachments Plugin)](#88-dokumentanhänge-attachments-plugin)
 - [8.9 OpenAPI & Swagger UI](#89-openapi--swagger-ui)
+- [8.10 Security & Compliance](#810-security--compliance)
 
 ### [9. Architekturentscheidungen](#9-architekturentscheidungen)
 
@@ -166,15 +167,16 @@ Die Top-5-Qualitätsziele nach Priorität:
 
 ### 2.1 Technische Randbedingungen
 
-| Randbedingung                  | Beschreibung                                          | Auswirkung                                                    |
-| ------------------------------ | ----------------------------------------------------- | ------------------------------------------------------------- |
-| **SAP CAP Framework**          | Cloud Application Programming Model (Node.js-basiert) | Architektur muss CAP-Events verwenden                         |
-| **TypeScript >= 5.0**          | Vollständig typisierte Codebase                       | Strikte Type-Checks aktiviert                                 |
-| **UI5 >= 1.120**               | SAP UI5 für Frontend-Anwendungen                      | Fiori Guidelines einhalten                                    |
-| **Node.js >= 18 LTS**          | Laufzeitumgebung                                      | Verwendung von ES2022-Features möglich                        |
-| **OData V4**                   | REST-Protokoll für UI-Backend-Kommunikation           | Komplexe Queries via $expand/$filter                          |
-| **@cap-js/attachments**        | Offizielles CAP Attachments Plugin für Dateiablagen   | Standardisierte Upload/Download-Flows, Metadaten & Persistenz |
-| **SQLite (Dev) / HANA (Prod)** | Datenbank-Technologien                                | SQL muss kompatibel sein                                      |
+| Randbedingung                           | Beschreibung                                          | Auswirkung                                                    |
+| --------------------------------------- | ----------------------------------------------------- | ------------------------------------------------------------- |
+| **SAP CAP Framework**                   | Cloud Application Programming Model (Node.js-basiert) | Architektur muss CAP-Events verwenden                         |
+| **TypeScript >= 5.0**                   | Vollständig typisierte Codebase                       | Strikte Type-Checks aktiviert                                 |
+| **UI5 >= 1.120**                        | SAP UI5 für Frontend-Anwendungen                      | Fiori Guidelines einhalten                                    |
+| **Node.js >= 18 LTS**                   | Laufzeitumgebung                                      | Verwendung von ES2022-Features möglich                        |
+| **OData V4**                            | REST-Protokoll für UI-Backend-Kommunikation           | Komplexe Queries via $expand/$filter                          |
+| **@cap-js/attachments**                 | Offizielles CAP Attachments Plugin für Dateiablagen   | Standardisierte Upload/Download-Flows, Metadaten & Persistenz |
+| **SAP Identity Services** (XSUAA / AMS) | Autorisierung & Authentifizierung in der BTP          | JWT-basierte SSO-Tokens, Role Collections, Policy-Management  |
+| **SQLite (Dev) / HANA (Prod)**          | Datenbank-Technologien                                | SQL muss kompatibel sein                                      |
 
 **Entwicklungswerkzeuge:**
 
@@ -182,18 +184,21 @@ Die Top-5-Qualitätsziele nach Priorität:
 - **ESLint + Prettier** für Code-Qualität (verpflichtend)
 - **Jest** für Unit-Tests
 - **Git** für Versionskontrolle
+- **nvm + .nvmrc** um Node-Versionen zu pinnen (23.6.0)
+- **.env/.env.example** für lokale Secrets & Feature-Toggles (niemals ins Repo einchecken)
 
 ---
 
 ### 2.2 Organisatorische Randbedingungen
 
-| Randbedingung     | Beschreibung                                                           |
-| ----------------- | ---------------------------------------------------------------------- |
-| **Team**          | 1-3 Entwickler (Fullstack CAP/UI5)                                     |
-| **Methodik**      | Agile Entwicklung, 2-Wochen-Sprints                                    |
-| **Code Reviews**  | Mandatory für alle Pull Requests                                       |
-| **Dokumentation** | ADRs (Architecture Decision Records) für alle wichtigen Entscheidungen |
-| **Deployment**    | CI/CD-ready, automatisierte Builds                                     |
+| Randbedingung           | Beschreibung                                                                                    |
+| ----------------------- | ----------------------------------------------------------------------------------------------- |
+| **Team**                | 1-3 Entwickler (Fullstack CAP/UI5)                                                              |
+| **Methodik**            | Agile Entwicklung, 2-Wochen-Sprints                                                             |
+| **Code Reviews**        | Mandatory für alle Pull Requests                                                                |
+| **Dokumentation**       | ADRs (Architecture Decision Records) für alle wichtigen Entscheidungen                          |
+| **Deployment**          | CI/CD-ready, automatisierte Builds                                                              |
+| **Security Governance** | Rollenmodell & Policy-Verwaltung via BTP Role Collections, Freigabeprozess für Produktiv-Rollen |
 
 ---
 
@@ -213,6 +218,7 @@ Die Top-5-Qualitätsziele nach Priorität:
 - Business-Logik nur in Commands
 - Daten-Zugriff nur über Repositories
 - Handler sind "thin orchestrators"
+- Secrets/Konfiguration ausschließlich über Environment Variablen (CAP `.env`, BTP Service Bindings); niemals Hard-Coding in Quellcode oder CSV
 
 ---
 
@@ -257,6 +263,7 @@ graph LR
 | **feiertage-api.de**               | Jahr, Bundesland             | JSON mit Feiertagen              | REST/HTTPS   |
 | **HR-System** (zukünftig)          | -                            | CSV/Excel Export                 | File         |
 | **Projekt-Management** (zukünftig) | Projekt-Stammdaten           | -                                | REST API     |
+| **SAP Identity Services**          | OAuth2/SAML Request          | JWT + Role Collections           | HTTPS        |
 
 ---
 
@@ -268,38 +275,55 @@ graph LR
 C4Context
     Person(user, "Endanwender", "Mitarbeiter erfasst Zeiten")
 
-    System_Boundary(app, "CAP Fiori TimeTracking") {
-        Container(ui1, "Timetable App", "Fiori Elements", "List/Detail für Einträge")
-        Container(ui2, "Dashboard App", "Custom UI5", "Übersicht & Charts")
-        Container(srv, "TrackService", "TypeScript CAP", "OData V4 Service")
-        ContainerDb(db, "Database", "SQLite/HANA", "Persistierung")
+    Boundary(btp, "SAP BTP Subaccount") {
+        Container(approuter, "App Router", "Node.js", "SSO, Routing, Destinations")
+
+        System_Boundary(app, "CAP Fiori TimeTracking") {
+            Container(ui1, "Timetable App", "Fiori Elements", "List/Detail für Einträge")
+            Container(ui2, "Dashboard App", "Custom UI5", "Übersicht & Charts")
+            Container(srv, "TrackService", "TypeScript CAP", "OData V4 Service")
+            ContainerDb(db, "Database", "SQLite/HANA", "Persistierung")
+        }
     }
 
+    System_Ext(idp, "SAP Identity Services", "XSUAA / AMS", "AuthN & AuthZ")
     System_Ext(holidays, "Feiertage-API", "feiertage-api.de", "Deutsche Feiertage")
 
-    Rel(user, ui1, "verwendet", "HTTPS")
-    Rel(user, ui2, "verwendet", "HTTPS")
-    Rel(ui1, srv, "OData V4", "HTTPS")
-    Rel(ui2, srv, "OData V4", "HTTPS")
+    Rel(user, approuter, "Browser Request", "HTTPS")
+    Rel(approuter, idp, "OAuth2 / SAML", "HTTPS")
+    Rel_Back(idp, approuter, "JWT Access Token", "HTTPS")
+    Rel(approuter, ui1, "serve static UI", "HTTPS")
+    Rel(approuter, ui2, "serve static UI", "HTTPS")
+    Rel(approuter, srv, "OData V4 + JWT", "HTTPS")
     Rel(srv, db, "SQL Queries", "JDBC")
     Rel(srv, holidays, "REST API", "HTTPS")
 ```
 
 **Technologie-Mapping:**
 
-| Komponente        | Technologie        | Port/URL              | Verantwortlichkeit       |
-| ----------------- | ------------------ | --------------------- | ------------------------ |
-| **Timetable App** | UI5 Fiori Elements | :4004/timetable/      | Annotations-basiertes UI |
-| **Dashboard App** | UI5 Custom         | :4004/timetracking/   | Freies Dashboard-Design  |
-| **TrackService**  | CAP TypeScript     | :4004/odata/v4/track/ | Business-Logik           |
-| **Database**      | SQLite             | In-Memory             | Datenhaltung             |
-| **Feiertage-API** | REST               | feiertage-api.de/api/ | Externe Datenquelle      |
+| Komponente                | Technologie        | Port/URL               | Verantwortlichkeit                  |
+| ------------------------- | ------------------ | ---------------------- | ----------------------------------- |
+| **Timetable App**         | UI5 Fiori Elements | :4004/timetable/       | Annotations-basiertes UI            |
+| **Dashboard App**         | UI5 Custom         | :4004/timetracking/    | Freies Dashboard-Design             |
+| **TrackService**          | CAP TypeScript     | :4004/odata/v4/track/  | Business-Logik                      |
+| **Database**              | SQLite             | In-Memory              | Datenhaltung                        |
+| **Feiertage-API**         | REST               | feiertage-api.de/api/  | Externe Datenquelle                 |
+| **App Router**            | Node.js (BTP)      | Subaccount Route       | Authenticated Routing, Destinations |
+| **SAP Identity Services** | XSUAA / AMS        | OAuth2 / SAML Endpoint | Token-Ausgabe, Role Collections     |
 
 **Wichtige Datenformate:**
 
 - **OData V4**: JSON für Entity-Daten
 - **CDS Types**: Auto-generiert via @cap-js/cds-typer
 - **Feiertage**: JSON `{"Neujahr": {"datum": "2025-01-01", "hinweis": ""}}`
+- **JWT Claims**: Transport der BTP-Rollen (`scope`, `roleCollections`) für CAP `@restrict`
+
+**Security-Kontext & Trust Boundaries:**
+
+- **AuthN-Fluss:** User → App Router → SAP Identity Service (XSUAA/AMS) → App Router → CAP. Der App Router tauscht die Session gegen ein JWT aus (`XSUAA`) bzw. erhält Policies aus AMS.
+- **AuthZ-Fluss:** Role Collections in der BTP mappen auf CAP-Rollen (`@restrict`). UI5-Anwendungen lesen dieselben Rollen (über Launchpad Shell) für Feature Toggles.
+- **Tenant-Isolation:** Jede Subaccount-Instanz nutzt eigene Service-Bindings (HANA Schema, XSUAA/AMS Instanz), wodurch Daten und Rollen mandantenspezifisch isoliert werden.
+- **Entwicklung vs. Produktion:** Lokal mockt CAP den Identity Layer (`cds.requires.auth.kind = mocked`). In BTP kommt der reale IAM-Stack zum Einsatz; alle Endpunkte verlangen gültige JWTs.
 
 ---
 
@@ -1258,6 +1282,13 @@ sequenceDiagram
 └─────────────────────────────────────────────────────┘
 ```
 
+**Security-Hinweise (Dev):**
+
+- Authentifizierung erfolgt über CAP Mock-User (`cds.requires.auth.kind = mocked`) mit klar definierten Test-Rollen.
+- Secrets (API Keys, Feature Toggles) werden lokal in `.env` gepflegt; `.env.example` liefert Defaults.
+- HTTPS ist optional – für lokale Penetration Tests kann `cds watch --ssl` genutzt werden.
+- Tests gegen externe APIs nutzen dedizierte Sandbox-Keys (keine Produktiv-Credentials im Repo).
+
 **Technologie-Stack:**
 
 | Komponente      | Technologie         | Version   | Zweck                     |
@@ -1282,7 +1313,7 @@ sequenceDiagram
 │                                                      │
 │  ┌────────────────────────────────────────────────┐  │
 │  │  App Router (Authentication/Routing)           │  │
-│  │  - XSUAA (User Management)                     │  │
+│  │  - XSUAA / AMS (User Management & Policies)    │  │
 │  │  - Port 443 (HTTPS)                            │  │
 │  └────────────────────────────────────────────────┘  │
 │           │                                          │
@@ -1309,16 +1340,25 @@ sequenceDiagram
 
 **Cloud Foundry Services:**
 
-| Service                                 | Typ                              | Zweck                                    |
-| --------------------------------------- | -------------------------------- | ---------------------------------------- |
-| **XSUAA**                               | Authorization & Trust Management | User Authentication                      |
-| **HANA Cloud**                          | Database                         | Production-Datenbank                     |
-| **Application Logging**                 | Logging                          | Centralized Logs                         |
-| **Application Autoscaler**              | Scaling                          | Auto-Scaling bei Last                    |
-| **SAP Object Store** (optional)         | Object Storage                   | Auslagerung von Attachment-Binärdaten    |
-| **Malware Scanning Service** (optional) | Security Service                 | Viren-/Malware-Prüfung für Datei-Uploads |
+| Service                                         | Typ                              | Zweck                                    |
+| ----------------------------------------------- | -------------------------------- | ---------------------------------------- |
+| **XSUAA**                                       | Authorization & Trust Management | User Authentication                      |
+| **Authorization Management Service** (optional) | Policy Management                | Fein granularer Zugriff (Role Policies)  |
+| **HANA Cloud**                                  | Database                         | Production-Datenbank                     |
+| **Application Logging**                         | Logging                          | Centralized Logs                         |
+| **Application Autoscaler**                      | Scaling                          | Auto-Scaling bei Last                    |
+| **SAP Object Store** (optional)                 | Object Storage                   | Auslagerung von Attachment-Binärdaten    |
+| **Malware Scanning Service** (optional)         | Security Service                 | Viren-/Malware-Prüfung für Datei-Uploads |
 
 > Optional: Das Attachments Plugin (`@cap-js/attachments`) kann so konfiguriert werden, dass Binärdaten im **SAP Object Store** abgelegt und Uploads über den **Malware Scanning Service** geprüft werden. Beide Services werden nur benötigt, wenn Dateiablagen nicht in der Datenbank erfolgen sollen bzw. Compliance-Richtlinien einen Malware-Scan verlangen.
+
+**Security-Hinweise (BTP Prod):**
+
+- Authentifizierung via App Router + Identity Service (XSUAA heute, AMS zukünftig). Tokens enthalten Scope/Role-Informationen, die CAP `@restrict` nutzt.
+- Autorisierung wird über BTP Role Collections gesteuert; Transport zwischen Subaccounts erfolgt über CI/CD bzw. Transport Management.
+- Secrets (HANA Credentials, API Keys) werden ausschließlich über Service Bindings oder das SAP Credential Store Plug-in injiziert – keine `.env` in Produktion.
+- TLS wird durch den App Router und den BTP Load Balancer bereitgestellt. Für Integrationen werden Destinations mit mTLS oder OAuth2 Client Credentials verwendet.
+- Logs enthalten keine personenbezogenen Daten (PII); für Security Audits werden Identity Logs und CAP Audit Trails zentral gesammelt.
 
 ---
 
@@ -1336,13 +1376,13 @@ sequenceDiagram
 
 **Szenario 2: Cloud Foundry (BTP)**
 
-| Aspekt       | Konfiguration                             |
-| ------------ | ----------------------------------------- |
-| **Command**  | `npm run build && cf push`                |
-| **Database** | HANA Cloud                                |
-| **Auth**     | XSUAA (SAP ID Service)                    |
-| **URL**      | https://app.cfapps.eu10.hana.ondemand.com |
-| **Scaling**  | Auto-Scaling aktiviert                    |
+| Aspekt       | Konfiguration                                  |
+| ------------ | ---------------------------------------------- |
+| **Command**  | `npm run build && cf push`                     |
+| **Database** | HANA Cloud                                     |
+| **Auth**     | App Router + SAP Identity Services (XSUAA/AMS) |
+| **URL**      | https://app.cfapps.eu10.hana.ondemand.com      |
+| **Scaling**  | Auto-Scaling aktiviert                         |
 
 **Szenario 3: Docker Container**
 
@@ -1353,6 +1393,18 @@ sequenceDiagram
 | **Auth**       | OAuth2 (Keycloak)                 |
 | **Port**       | 8080                              |
 | **Volume**     | `/app/data` für SQLite-Persistenz |
+
+---
+
+### 7.4 Secret Management & Transport
+
+| Umgebung        | Credentials / Secrets                                   | Transport / Rotation                           | Zertifikate / TLS                                    |
+| --------------- | ------------------------------------------------------- | ---------------------------------------------- | ---------------------------------------------------- |
+| **Development** | `.env` (lokal, nicht eingecheckt), Mock-User Passwörter | Manuell je Entwickler, Dokumentation in README | Selbst-signierte Zertifikate für Tests (`cds --ssl`) |
+| **Test / QA**   | BTP Service-Bindings (XSUAA, HANA), Destination Service | Automatisierte Deployments via CI/CD Pipeline  | BTP Managed TLS, optionale mTLS Destinations         |
+| **Production**  | Credential Store / Service Bindings, Managed Identity   | Transport Management Service (TMS) oder GitOps | SAP Certificate Service, Rotations über BTP          |
+
+> Hinweis: API-Schlüssel für externe Systeme (z. B. Feiertags-API) werden zur Laufzeit via BTP Destination Parameters injiziert. CAP liest sie über `cds.env.requires.<destination>.credentials`.
 
 ---
 
@@ -1664,6 +1716,77 @@ Um die OData-APIs des TrackService schnell nachvollziehen zu können, setzen wir
 - Schnelles API-Explorieren ohne externe Tools
 - Dokumentationsgrundlage für Frontend- und Integrations-Teams
 - Konsistentes Spiegelbild der aktuellen CDS-Modelle dank on-the-fly-Kompilierung
+
+### 8.10 Security & Compliance
+
+Die Sicherheitsarchitektur folgt einem mehrstufigen Ansatz aus **Vertrauensgrenzen (Trust Boundaries)**, **rollenbasierter Autorisierung** und **harten Governance-Regeln** für Transport & Secrets. Ziel ist es, Authentifizierung, Autorisierung und Mandantentrennung konsistent über UI5, CAP und SAP BTP zu implementieren – von der lokalen Entwicklung bis zur produktiven Cloud-Instanz.
+
+**Schutzziele & Zuordnung:**
+
+| Ebene / Boundary                 | Fokus                          | Maßnahmen & Technologien                                                                            | Referenzen         |
+| -------------------------------- | ------------------------------ | --------------------------------------------------------------------------------------------------- | ------------------ |
+| **Fiori UI & App Router**        | AuthN, SSO, Session Management | SAP Launchpad / App Router, OAuth2/SAML gegen XSUAA oder AMS, JWT Weitergabe an CAP, HTTPS enforced | Kap. 3.2, Kap. 7.2 |
+| **CAP TrackService**             | AuthZ & Business Policies      | `@restrict` in CDS, CAP Authorization Hooks, Role Templates, Logging & Audit Trail                  | Kap. 5, ADR-0010   |
+| **Database & Persistenz**        | Daten-/Mandantentrennung       | Separate HANA Schemas pro Subaccount, DB-Rollen, Restriktive Views, Encryption at Rest (HANA)       | Kap. 7.2           |
+| **Externe APIs & Integrationen** | Vertraulichkeit, mTLS/OAuth    | BTP Destinations mit Client Credentials/mTLS, Rate Limiting, Response Validation                    | Kap. 7.4           |
+| **Operations & Lifecycle**       | Secrets, Transport, Monitoring | Service Bindings, Credential Store, Transport Management, zentralisiertes Logging & Alerting        | Kap. 7.4, ADR-0016 |
+
+#### Authentication & Single Sign-On
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User
+    participant Browser
+    participant AppRouter as App Router (BTP)
+    participant Identity as SAP Identity Service (XSUAA/AMS)
+    participant CAP as TrackService (CAP)
+
+    User->>Browser: Aufruf https://time-tracking
+    Browser->>AppRouter: GET /timetable
+    AppRouter->>Identity: OAuth2 Authorization Code
+    Identity-->>AppRouter: JWT Access Token + Refresh Token
+    AppRouter-->>Browser: Set-Cookie (Session) + Weiterleitung
+    Browser->>AppRouter: OData Request mit Session
+    AppRouter->>CAP: Forward + Authorization Header (JWT)
+    CAP->>CAP: Validate JWT (aud, exp, scopes)
+    CAP-->>AppRouter: Business Response
+    AppRouter-->>Browser: JSON / UI Content
+```
+
+- **Lokale Entwicklung:** CAP Mock Auth (`cds.requires.auth.kind = mocked`) stellt zwei Test-User bereit. Der App Router ist optional.
+- **Produktiv:** App Router führt den OAuth2-Flow mit XSUAA bzw. AMS aus und signiert JWTs. Tokens enthalten `tenant-id`, `user-name`, `scope` und optional `Custom Attributes`.
+- **SSO:** Integration mit SAP Identity Authentication Service (IAS) oder Corporate IdP (SAML). AMS erlaubt Policy-Definition auf Business-Attributen (z. B. Projekt, Kostenstelle).
+
+#### Authorization & Role Collections
+
+- **CAP @restrict:** Alle sensitiven Entities/Actions (TimeEntries, Balance Actions, Attachments) sind mit Role Templates gesichert.
+- **Role Templates:** `TimeTrackingUser`, `TimeTrackingApprover`, `TimeTrackingAdmin`; werden in `xs-security.json` definiert und auf CAP-Rollen gemappt.
+- **Role Collections:** Im BTP Subaccount werden Role Templates gebündelt und identitätsbezogen vergeben. Transport via CI/CD Pipeline oder BTP Transport Management.
+- **UI Feature Toggles:** UI5 liest `sap.ushell.Container.getServiceAsync("UserInfo")` bzw. Launchpad Services, um Buttons/Facets basierend auf Rollen auszublenden.
+- **AMS Policies (optional):** Feingranulare Regeln (z. B. Attribut-basierte Freigaben) können zentral verwaltet und über Policies auf CAP weitergegeben werden.
+
+#### Tenant Isolation & Datenzugriff
+
+- **Subaccount-Isolation:** Jeder Mandant läuft in einem eigenen SAP BTP Subaccount mit separaten Service-Instanzen (HANA Schema, XSUAA/AMS, Object Store).
+- **Database Security:** HANA nutzt rollenbasierte Zugriffe; CAP nutzt Service-Bindings mit technischen Benutzern, keine End-User Credentials.
+- **Attachments:** Optionaler SAP Object Store oder Malware Scanning Service trennt Binärdaten pro Tenant und unterstützt Lifecycle Policies.
+- **Audit & Logging:** CAP Audit Log (optional), Application Logging Service und Identity Logs werden für Compliance (z. B. GoBD) zentral gespeichert.
+
+#### Secure Configuration & Secrets
+
+- **Development:** `.env` (lokal, in `.gitignore`), `cds.env.for("requires").auth` für Mock-Konfiguration. Keine Produktiv-Credentials.
+- **Test/Prod:** Secrets ausschließlich über Service-Bindings, SAP Credential Store oder Destination Service. Rotationen erfolgen automatisiert (z. B. über AMS Policy oder Credential Store).
+- **Certificates:** TLS kommt vom BTP Load Balancer. Für Outbound-Verbindungen empfiehlt sich mTLS (Destinations) oder OAuth2 Client Credentials.
+- **Environment Governance:** `.npmrc` (engine-strict) und `.editorconfig` verhindern ungesicherte Build-Umgebungen. CI/CD-Pipelines prüfen `npm audit`.
+
+#### Transport & Lifecycle Governance
+
+- **CI/CD Pipeline:** Build (`npm run build`), Tests (`npm test`), Security Checks (`npm audit`) und Deploy (`cf push` oder `btp deploy`). Secrets werden aus der Pipeline heraus injiziert.
+- **Transport Management Service (TMS):** Optionale Freigabe von Role Collections, Destinations und App Router-Konfigurationen zwischen Subaccounts (Dev → QA → Prod).
+- **ADR & Reviews:** Sicherheitsrelevante Änderungen (z. B. XSUAA → AMS Migration) erhalten eigene ADRs + Security Review.
+
+> Zusammengefasst: Security ist kein Add-on, sondern ein integriertes Querschnittsthema – von der UI über CAP bis zum Betrieb in der BTP. Die beschriebenen Bausteine stellen sicher, dass Authentifizierung, Autorisierung, Mandantentrennung und Secret-Handling in jeder Umgebung konsistent und auditierbar bleiben.
 
 ---
 
