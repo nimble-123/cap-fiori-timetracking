@@ -52,7 +52,7 @@
     "watch": "cds-tsx w",
     "build": "cds build",
     "generate-entry-point": "dev-cap-tools gen-entrypoint",
-    "format": "prettier --write \"{src,app,srv,db,test}/**/*.{js,ts,json,md,yaml,yml,html,css}\"",
+    "format": "prettier --write \"{src,app,srv,db,tests}/**/*.{js,ts,json,md,yaml,yml,html,css}\"",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage"
