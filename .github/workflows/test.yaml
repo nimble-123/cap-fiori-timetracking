@@ -32,8 +32,11 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
-      - run: npm i -g @sap/cds-dk typescript tsx
-      - run: npx cds-typer "*"
+      - name: Install Global Tools
+        run: npm i -g @sap/cds-dk typescript tsx
+
+      - name: Run Type Generation
+        run: npx cds-typer "*"
 
       - name: Build TypeScript
         run: npm run build
@@ -48,15 +51,15 @@ jobs:
         if: success()
         run: npm run test:coverage
 
-      - name: Upload Coverage to Codecov
-        if: success()
-        uses: codecov/codecov-action@v5
-        with:
-          files: ./coverage/lcov.info
-          flags: unittests
-          name: cap-fiori-timetracking-coverage
-          fail_ci_if_error: false
-          token: ${{ secrets.CODECOV_TOKEN }}
+      # - name: Upload Coverage to Codecov
+      #   if: success()
+      #   uses: codecov/codecov-action@v5
+      #   with:
+      #     files: ./coverage/lcov.info
+      #     flags: unittests
+      #     name: cap-fiori-timetracking-coverage
+      #     fail_ci_if_error: false
+      #     token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Upload Test Results
         if: always()
@@ -108,8 +111,14 @@ jobs:
           node-version: 22.x
           cache: "npm"
 
+      - name: Install Global Tools
+        run: npm i -g @sap/cds-dk typescript tsx
+
       - name: Install Dependencies
         run: npm ci
+
+      - name: Run Type Generation
+        run: npx cds-typer "*"
 
       - name: Build Production
         run: npm run build
