@@ -1,6 +1,6 @@
 {
   "name": "cap-fiori-timetracking",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "SAP CAP-based time tracking solution with Fiori UI and a TypeScript backend.",
   "repository": "https://github.com/nimble-123/cap-fiori-timetracking",
   "license": "MIT",
