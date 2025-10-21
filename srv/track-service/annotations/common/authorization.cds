@@ -10,7 +10,8 @@ annotate service.TimeEntries with @(restrict: [
       'WRITE',
       'recalculateTimeEntry',
       'markTimeEntryDone',
-      'releaseTimeEntry'
+      'releaseTimeEntry',
+      'getMonthlyBalance'
     ],
     to   : 'authenticated-user',
     where: 'user_ID = $user'
