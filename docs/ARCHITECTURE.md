@@ -1784,7 +1784,27 @@ sequenceDiagram
 #### Transport & Lifecycle Governance
 
 - **CI/CD Pipeline:** Build (`npm run build`), Tests (`npm test`), Security Checks (`npm audit`) und Deploy (`cf push` oder `btp deploy`). Secrets werden aus der Pipeline heraus injiziert.
-- **Release-Automatisierung:** GitHub Action [`release-please`](../.github/workflows/release-please.yaml) erzeugt Release-PRs auf Basis der Conventional Commits, synchronisiert Versionen (Root + `app/*`) via `node-workspace`-Plugin und pflegt den zentralen `CHANGELOG.md`.
+- **Release-Automatisierung:** GitHub Action [`release-please`](../.github/workflows/release-please.yaml) verarbeitet Conventional Commits und pflegt `CHANGELOG.md`, Git-Tags sowie Versionsnummern. Die Manifest-Konfiguration (`release-please-config.json` + `.release-please-manifest.json`) listet die UI5-Apps unter `app/timetable` und `app/timetracking` als `extra-files`, damit deren `package.json`-Versionen mit dem Root-Package synchron bleiben.
+  - Workflow: (1) Feature-Branches werden via PR auf `main` gemergt, (2) die Action erstellt eine Manifest-PR mit Titelmuster `chore: release v${version}` inklusive automatischem Header/Footer, (3) `release-please` gruppiert Commits nach den konfigurierten Changelog-Sektionen (Features, Fixes, Docs, CI etc.) und führt den Versionsbump durch, (4) nach Freigabe entsteht das GitHub-Release samt Tag und aktualisierten Artefakten, (5) anschließend kann der geplante Cloud-Foundry-Deploy-Job anschließen.
+  - Governance: Maintainer führen vor Konfigurationsänderungen einen lokalen Dry-Run (`npx release-please release-pr --config-file release-please-config.json --manifest-file .release-please-manifest.json --dry-run`) aus, um Auswirkungen auf Versionen, Changelog und Manifest zu verifizieren.
+  - Visualisierung:
+    ```mermaid
+    gitGraph
+      commit id: "main@1.0.0"
+      branch feature/balance-kpi
+      checkout feature/balance-kpi
+      commit id: "feat: expose balance KPI"
+      commit id: "test: cover balance KPI"
+      checkout main
+      merge feature/balance-kpi
+      branch release-please/main
+      checkout release-please/main
+      commit id: "chore: release v1.1.0"
+      checkout main
+      merge release-please/main tag: "v1.1.0"
+      branch deploy/cf
+      commit id: "ci: deploy to CF (planned)"
+    ```
 - **Transport Management Service (TMS):** Optionale Freigabe von Role Collections, Destinations und App Router-Konfigurationen zwischen Subaccounts (Dev → QA → Prod).
 - **ADR & Reviews:** Sicherheitsrelevante Änderungen (z. B. XSUAA → AMS Migration) erhalten eigene ADRs + Security Review.
 

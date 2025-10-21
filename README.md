@@ -49,18 +49,6 @@ npm run watch
 
 ---
 
-## 📦 Release-Prozess
-
-- Automatisierte Release-PRs entstehen über [release-please](https://github.com/googleapis/release-please-action) auf Basis unserer Conventional Commits.
-- Die Konfiguration (`release-please-config.json`, `.release-please-manifest.json`) nutzt das `node-workspace`-Plugin, sodass Root- und UI5-App-Packages (`app/timetable`, `app/timetracking`) synchron versioniert werden.
-- Ein Merge der Release-PR auf `main` erzeugt Git-Tags und aktualisiert den zentralen `CHANGELOG.md`; keine npm-Publikation vorgesehen.
-- Vor der ersten Ausführung im CI empfiehlt sich ein lokaler Dry-Run:
-  ```bash
-  npx release-please release-pr --config-file release-please-config.json --manifest-file manifest.json --dry-run
-  ```
-
----
-
 ## 🏗️ Architektur-Übersicht
 
 **5-Tier Clean Architecture** mit klarer Separation of Concerns:
@@ -330,6 +318,35 @@ Willst du zum Projekt beitragen? **Awesome!** 🎉
 - ✅ Conventional Commits (`feat:`, `fix:`, `docs:`, ...)
 
 📖 **Vollständige Guidelines:** Siehe [CONTRIBUTING.md](CONTRIBUTING.md)
+
+---
+
+## 📦 Release-Prozess
+
+- Automatisierte Release-PRs entstehen über [release-please](https://github.com/googleapis/release-please-action) auf Basis unserer Conventional Commits.
+- Die Konfiguration (`release-please-config.json`, `.release-please-manifest.json`) hält Root- und UI5-App-Versionen (`app/timetable`, `app/timetracking`) über `extra-files` synchron.
+- Ein Merge der Release-PR auf `main` erzeugt Git-Tags und aktualisiert den zentralen `CHANGELOG.md`; keine npm-Publikation vorgesehen.
+- Vor der ersten Ausführung im CI empfiehlt sich ein lokaler Dry-Run:
+  ```bash
+  npx release-please manifest-pr --config-file release-please-config.json --manifest-file manifest.json --dry-run
+  ```
+- Visualer Ablauf (vereinfacht):
+  ```mermaid
+  gitGraph
+    commit id: "main@HEAD"
+    branch feature/holiday-sync
+    checkout feature/holiday-sync
+    commit id: "feat: holiday API cache"
+    commit id: "test: cover holiday cache"
+    checkout main
+    merge feature/holiday-sync
+    branch release-please/main
+    checkout release-please/main
+    commit id: "chore: release v1.1.0"
+    checkout main
+    merge release-please/main tag: "v1.1.0"
+    commit id: "ci: deploy to BTP (future)"
+  ```
 
 ---
 

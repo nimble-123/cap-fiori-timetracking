@@ -106,6 +106,7 @@ Damit alle Contributors dieselben Standards nutzen, bringt das Projekt mehrere M
 - `.env.example` – Beispielkonfiguration für lokale Umgebungsvariablen. Kopiere sie wie oben beschrieben nach `.env`.
 - `CODE_OF_CONDUCT.md` & `SECURITY.md` – beschreiben Verhaltensregeln sowie den Ablauf für Sicherheitsmeldungen.
 - `.github/ISSUE_TEMPLATE/*`, `.github/PULL_REQUEST_TEMPLATE.md`, `.github/dependabot.yml`, `.github/CODEOWNERS` – sorgen für saubere Issues/PRs, automatische Dependency-Updates und klar zugewiesene Reviews.
+- `release-please-config.json` & `.release-please-manifest.json` – steuern die automatisierte Release-PR-Erstellung; vor produktiven Läufen empfiehlt sich ein lokaler Dry-Run (`npx release-please release-pr --config-file release-please-config.json --manifest-file .release-please-manifest.json --dry-run`, Details in der README). Die Versionsnummern der UI5-Apps werden dabei über `extra-files` mitgezogen.
 
 Bitte beachte diese Richtlinien, bevor du einen PR erstellst.
 
