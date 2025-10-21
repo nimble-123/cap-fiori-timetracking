@@ -51,6 +51,16 @@ jobs:
         if: success()
         run: npm run test:coverage
 
+      - name: Publish Test Report
+        if: always()
+        uses: dorny/test-reporter@v1
+        with:
+          name: Jest Tests
+          path: junit.xml
+          reporter: jest-junit
+          fail-on-error: false
+          fail-on-empty: false
+
       # - name: Upload Coverage to Codecov
       #   if: success()
       #   uses: codecov/codecov-action@v5
