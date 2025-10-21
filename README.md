@@ -6,6 +6,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-100%25-blue?logo=typescript)](https://www.typescriptlang.org/)
 [![SAP CAP](https://img.shields.io/badge/SAP%20CAP-v9-0FAAFF?logo=sap)](https://cap.cloud.sap)
 [![UI5](https://img.shields.io/badge/SAPUI5-≥1.120-blue?logo=sap)](https://ui5.sap.com)
+[![GitHub Release](https://img.shields.io/github/v/release/nimble-123/cap-fiori-timetracking?display_name=tag)](https://github.com/nimble-123/cap-fiori-timetracking/releases)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 ---
@@ -45,6 +46,18 @@ npm run watch
 **🧭 Swagger UI (Dev):** `http://localhost:4004/$api-docs/odata/v4/track/`
 
 👉 **Ausführliche Installation:** Siehe [GETTING_STARTED.md](GETTING_STARTED.md)
+
+---
+
+## 📦 Release-Prozess
+
+- Automatisierte Release-PRs entstehen über [release-please](https://github.com/googleapis/release-please-action) auf Basis unserer Conventional Commits.
+- Die Konfiguration (`release-please-config.json`, `.release-please-manifest.json`) nutzt das `node-workspace`-Plugin, sodass Root- und UI5-App-Packages (`app/timetable`, `app/timetracking`) synchron versioniert werden.
+- Ein Merge der Release-PR auf `main` erzeugt Git-Tags und aktualisiert den zentralen `CHANGELOG.md`; keine npm-Publikation vorgesehen.
+- Vor der ersten Ausführung im CI empfiehlt sich ein lokaler Dry-Run:
+  ```bash
+  npx release-please release-pr --config-file release-please-config.json --manifest-file manifest.json --dry-run
+  ```
 
 ---
 

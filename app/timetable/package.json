@@ -1,7 +1,7 @@
 {
   "name": "timetable",
   "version": "0.0.1",
-  "description": "An SAP Fiori application.",
+  "description": "Fiori Elements List Report for capturing and reviewing project time entries via annotations.",
   "keywords": [
     "ui5",
     "openui5",

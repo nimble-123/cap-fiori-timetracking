@@ -1,7 +1,7 @@
 {
   "name": "timetracking",
   "version": "0.0.1",
-  "description": "An SAP Fiori application.",
+  "description": "Custom UI5 dashboard surfacing balances, KPIs, and time tracking actions.",
   "keywords": [
     "ui5",
     "openui5",

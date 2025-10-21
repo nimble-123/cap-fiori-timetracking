@@ -1784,6 +1784,7 @@ sequenceDiagram
 #### Transport & Lifecycle Governance
 
 - **CI/CD Pipeline:** Build (`npm run build`), Tests (`npm test`), Security Checks (`npm audit`) und Deploy (`cf push` oder `btp deploy`). Secrets werden aus der Pipeline heraus injiziert.
+- **Release-Automatisierung:** GitHub Action [`release-please`](../.github/workflows/release-please.yaml) erzeugt Release-PRs auf Basis der Conventional Commits, synchronisiert Versionen (Root + `app/*`) via `node-workspace`-Plugin und pflegt den zentralen `CHANGELOG.md`.
 - **Transport Management Service (TMS):** Optionale Freigabe von Role Collections, Destinations und App Router-Konfigurationen zwischen Subaccounts (Dev → QA → Prod).
 - **ADR & Reviews:** Sicherheitsrelevante Änderungen (z. B. XSUAA → AMS Migration) erhalten eigene ADRs + Security Review.
 
