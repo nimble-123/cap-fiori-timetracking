@@ -49,7 +49,7 @@
   "scripts": {
     "start": "cds-serve",
     "watch": "cds-tsx w",
-    "build": "npx cds build",
+    "build": "cds build",
     "generate-entry-point": "dev-cap-tools gen-entrypoint",
     "format": "prettier --write \"{src,app,srv,db,test}/**/*.{js,ts,json,md,yaml,yml,html,css}\"",
     "test": "jest",
