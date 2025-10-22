@@ -1,18 +1,18 @@
+/* global QUnit */
 sap.ui.define(['sap/ui/test/opaQunit', './pages/JourneyRunner'], function (opaTest, runner) {
   'use strict';
 
   function journey() {
-    // eslint-disable-next-line no-use-before-define
     QUnit.module('First journey');
 
-    // eslint-disable-next-line no-use-before-define
     opaTest('Start application', function (Given, When, Then) {
+      void When;
+
       Given.iStartMyApp();
 
       Then.onTheTimeEntriesList.iSeeThisPage();
     });
 
-    // eslint-disable-next-line no-use-before-define
     opaTest('Navigate to ObjectPage', function (Given, When, Then) {
       // Note: this test will fail if the ListReport page doesn't show any data
 
@@ -24,8 +24,10 @@ sap.ui.define(['sap/ui/test/opaQunit', './pages/JourneyRunner'], function (opaTe
       Then.onTheTimeEntriesObjectPage.iSeeThisPage();
     });
 
-    // eslint-disable-next-line no-use-before-define
     opaTest('Teardown', function (Given, When, Then) {
+      void When;
+      void Then;
+
       // Cleanup
       Given.iTearDownMyApp();
     });
