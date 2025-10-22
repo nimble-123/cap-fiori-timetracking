@@ -1,6 +1,6 @@
 import SmartTable from 'sap/ui/comp/smarttable/SmartTable';
 import Controller from 'sap/ui/core/mvc/Controller';
-import ODataModel from 'sap/ui/model/odata/v4/ODataModel';
+import ODataModel from 'sap/ui/model/odata/v2/ODataModel';
 import Table from 'sap/ui/table/Table';
 
 /**
@@ -20,13 +20,13 @@ export default class Main extends Controller {
     const smartTable = this.byId('smartTable') as SmartTable;
     const innerTable = smartTable.getTable() as Table;
     const model = smartTable.getModel() as ODataModel;
-    //model.submitChanges();
+    model.submitChanges();
   }
 
   public async onSubmitChanges(): Promise<void> {
     const smartTable = this.byId('smartTable') as SmartTable;
     const innerTable = smartTable.getTable() as Table;
     const model = smartTable.getModel() as ODataModel;
-    //model.submitChanges();
+    model.submitChanges();
   }
 }
