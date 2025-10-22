@@ -11,20 +11,16 @@ const testEnv = cds.test(projectRoot, '--in-memory');
 
 let GET;
 let POST;
-let PATCH;
-let DELETE;
+//let PATCH;
+//let DELETE;
 let expect;
 
 beforeAll(async () => {
-  ({ GET, POST, PATCH, DELETE, expect } = testEnv);
+  ({ GET, POST, /* PATCH, DELETE, */ expect } = testEnv);
   await testEnv; // wartet, bis der CDS Testserver bereit ist
 });
 
 describe('TrackService - Basic Setup', () => {
-  // Mock User für Authentication (aus package.json)
-  const maxUser = { auth: { username: 'max.mustermann@test.de', password: 'max' } };
-  const erikaUser = { auth: { username: 'erika.musterfrau@test.de', password: 'erika' } };
-
   it('should serve $metadata document in v4', async () => {
     const { headers, status, data } = await GET`/odata/v4/track/$metadata`;
     expect(status).to.equal(200);
@@ -40,7 +36,7 @@ describe('TrackService - Basic Setup', () => {
 describe('TrackService - TimeEntries CRUD', () => {
   // Mock User für Authentication (aus package.json)
   const maxUser = { auth: { username: 'max.mustermann@test.de', password: 'max' } };
-  const erikaUser = { auth: { username: 'erika.musterfrau@test.de', password: 'erika' } };
+  //const erikaUser = { auth: { username: 'erika.musterfrau@test.de', password: 'erika' } };
 
   describe('CREATE TimeEntry', () => {
     // it('should create a new work time entry', async () => {

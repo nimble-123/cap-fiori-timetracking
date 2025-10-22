@@ -8,16 +8,16 @@
     "sapui5"
   ],
   "main": "webapp/index.html",
-  "dependencies": {},
   "devDependencies": {
-    "@ui5/cli": "^4.0.30",
+    "@sap-ux/eslint-plugin-fiori-tools": "^0.6.1",
     "@sap/ux-ui5-tooling": "^1.19.1",
     "@sapui5/types": "^1.141.2",
-    "ui5-tooling-transpile": "^3.9.2",
-    "typescript": "^5.9.3",
+    "@types/mocha": "^10.0.10",
     "@typescript-eslint/eslint-plugin": "^8.46.2",
     "@typescript-eslint/parser": "^8.46.2",
-    "@sap-ux/eslint-plugin-fiori-tools": "^0.6.1"
+    "@ui5/cli": "^4.0.30",
+    "typescript": "^5.9.3",
+    "ui5-tooling-transpile": "^3.9.2"
   },
   "scripts": {
     "deploy-config": "npx -p @sap/ux-ui5-tooling fiori add deploy-config cf"

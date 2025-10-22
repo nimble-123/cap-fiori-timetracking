@@ -1,5 +1,7 @@
 import { wdi5 } from 'wdio-ui5-service';
 import {} from '../pageobjects/timeTableListReport.page';
+import { describe, it } from 'mocha';
+import { expect } from 'expect-webdriverio';
 
 describe('Manage Time Entries', () => {
   it('should log', () => {
@@ -16,6 +18,7 @@ describe('Manage Time Entries', () => {
       },
     };
 
+    // eslint-disable-next-line no-use-before-define
     const app = await browser.asControl(appLocator);
     expect(app).toBeDefined();
   });
