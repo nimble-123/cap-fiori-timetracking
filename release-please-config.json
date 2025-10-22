@@ -27,8 +27,18 @@
         },
         {
           "type": "json",
+          "path": "app/timetable/webapp/manifest.json",
+          "jsonpath": "$.sap.app.applicationVersion.version"
+        },
+        {
+          "type": "json",
           "path": "app/timetracking/package.json",
           "jsonpath": "$.version"
+        },
+        {
+          "type": "json",
+          "path": "app/timetracking/webapp/manifest.json",
+          "jsonpath": "$.sap.app.applicationVersion.version"
         }
       ]
     }
