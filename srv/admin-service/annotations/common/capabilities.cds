@@ -1,0 +1,82 @@
+using AdminService as service from '../../../service-model';
+
+////////////////////////////////////////////////////////////////////////////
+//  Users - Capabilities (Read-only)
+////////////////////////////////////////////////////////////////////////////
+annotate service.Users with @(Capabilities: {
+  DeleteRestrictions: {Deletable: true},
+  InsertRestrictions: {Insertable: true},
+  UpdateRestrictions: {Updatable: true}
+});
+
+////////////////////////////////////////////////////////////////////////////
+//  Projects - Capabilities (Read-only)
+////////////////////////////////////////////////////////////////////////////
+annotate service.Projects with @(Capabilities: {
+  DeleteRestrictions: {Deletable: true},
+  InsertRestrictions: {Insertable: true},
+  UpdateRestrictions: {Updatable: true}
+});
+
+////////////////////////////////////////////////////////////////////////////
+//  ActivityTypes - Capabilities (Read-only)
+////////////////////////////////////////////////////////////////////////////
+annotate service.ActivityTypes with @(Capabilities: {
+  DeleteRestrictions: {Deletable: true},
+  InsertRestrictions: {Insertable: true},
+  UpdateRestrictions: {Updatable: true}
+});
+
+////////////////////////////////////////////////////////////////////////////
+//  ActivityTypes - Capabilities (Read-only)
+////////////////////////////////////////////////////////////////////////////
+annotate service.EntryTypes with @(Capabilities: {
+  DeleteRestrictions: {Deletable: true},
+  InsertRestrictions: {Insertable: true},
+  UpdateRestrictions: {Updatable: true}
+});
+
+////////////////////////////////////////////////////////////////////////////
+//  ActivityTypes - Capabilities (Read-only)
+////////////////////////////////////////////////////////////////////////////
+annotate service.WorkLocations with @(Capabilities: {
+  DeleteRestrictions: {Deletable: true},
+  InsertRestrictions: {Insertable: true},
+  UpdateRestrictions: {Updatable: true}
+});
+
+////////////////////////////////////////////////////////////////////////////
+//  ActivityTypes - Capabilities (Read-only)
+////////////////////////////////////////////////////////////////////////////
+annotate service.TravelTypes with @(Capabilities: {
+  DeleteRestrictions: {Deletable: true},
+  InsertRestrictions: {Insertable: true},
+  UpdateRestrictions: {Updatable: true}
+});
+
+////////////////////////////////////////////////////////////////////////////
+//  ActivityTypes - Capabilities (Read-only)
+////////////////////////////////////////////////////////////////////////////
+annotate service.TimeEntryStatuses with @(Capabilities: {
+  DeleteRestrictions: {Deletable: true},
+  InsertRestrictions: {Insertable: true},
+  UpdateRestrictions: {Updatable: true}
+});
+
+////////////////////////////////////////////////////////////////////////////
+//  ActivityTypes - Capabilities (Read-only)
+////////////////////////////////////////////////////////////////////////////
+annotate service.Region with @(Capabilities: {
+  DeleteRestrictions: {Deletable: true},
+  InsertRestrictions: {Insertable: true},
+  UpdateRestrictions: {Updatable: true}
+});
+
+////////////////////////////////////////////////////////////////////////////
+//  ActivityTypes - Capabilities (Read-only)
+////////////////////////////////////////////////////////////////////////////
+annotate service.Customizing with @(Capabilities: {
+  DeleteRestrictions: {Deletable: true},
+  InsertRestrictions: {Insertable: true},
+  UpdateRestrictions: {Updatable: true}
+});
