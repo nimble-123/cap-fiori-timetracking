@@ -28,7 +28,7 @@
         {
           "type": "json",
           "path": "app/timetable/webapp/manifest.json",
-          "jsonpath": "$.sap.app.applicationVersion.version"
+          "jsonpath": "$.['sap.app'].applicationVersion.version"
         },
         {
           "type": "json",
@@ -38,7 +38,7 @@
         {
           "type": "json",
           "path": "app/timetracking/webapp/manifest.json",
-          "jsonpath": "$.sap.app.applicationVersion.version"
+          "jsonpath": "$.['sap.app'].applicationVersion.version"
         }
       ]
     }

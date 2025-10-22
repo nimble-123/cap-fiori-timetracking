@@ -36,3 +36,6 @@ mta_archives/
 
 # @cap-js/cds-typer
 @cds-models
+
+# UI5 manifest.json
+app/**/webapp/manifest.json

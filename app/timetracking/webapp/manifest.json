@@ -110,7 +110,9 @@
         {
           "name": "RouteHome",
           "pattern": ":?query:",
-          "target": ["TargetHome"]
+          "target": [
+            "TargetHome"
+          ]
         }
       ],
       "targets": {
@@ -123,8 +125,7 @@
     "rootView": {
       "viewName": "io.nimble.timetracking.view.App",
       "type": "XML",
-      "id": "App",
-      "async": true
+      "id": "App"
     }
   }
 }

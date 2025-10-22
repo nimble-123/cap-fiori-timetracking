@@ -106,12 +106,17 @@
         {
           "pattern": ":?query:",
           "name": "TimeEntriesList",
-          "target": ["TimeEntriesList"]
+          "target": [
+            "TimeEntriesList"
+          ]
         },
         {
           "pattern": "TimeEntries({key}):?query:",
           "name": "TimeEntriesObjectPage",
-          "target": ["TimeEntriesList", "TimeEntriesObjectPage"]
+          "target": [
+            "TimeEntriesList",
+            "TimeEntriesObjectPage"
+          ]
         }
       ],
       "targets": {
@@ -208,7 +213,6 @@
     "rootView": {
       "viewName": "sap.fe.templates.RootContainer.view.Fcl",
       "type": "XML",
-      "async": true,
       "id": "appRootView"
     }
   },
