@@ -102,7 +102,8 @@
   },
   "sapux": [
     "app/timetable",
-    "app/timetracking"
+    "app/timetracking",
+    "app/manage-activity-types"
   ],
   "imports": {
     "#cds-models/*": "./@cds-models/*/index.js"

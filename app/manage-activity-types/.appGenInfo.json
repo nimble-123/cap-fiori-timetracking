@@ -1,0 +1,24 @@
+{
+  "generationParameters": {
+    "generationDate": "Wed Oct 22 2025 19:44:14 GMT+0200 (Mitteleuropäische Sommerzeit)",
+    "generatorPlatform": "Visual Studio Code",
+    "serviceType": "Local CAP",
+    "metadataFilename": "",
+    "serviceUrl": "http://localhost:4004/odata/v4/track/",
+    "appName": "manage-activity-types",
+    "appTitle": "Manage Actitivity Types",
+    "appDescription": "An SAP Fiori application.",
+    "appNamespace": "io.nimble",
+    "ui5Theme": "sap_horizon",
+    "ui5Version": "1.141.3",
+    "enableCodeAssist": true,
+    "enableEslint": false,
+    "enableTypeScript": true,
+    "showMockDataInfo": false,
+    "generatorVersion": "1.19.1",
+    "template": "Basic V4",
+    "generatorName": "SAP Fiori Application Generator",
+    "entityRelatedConfig": [],
+    "launchText": "To launch the generated app, start your CAP project:  and navigate to the following location in your browser:\n\nhttp://localhost:4004/io.nimble.manageactivitytypes/index.html"
+  }
+}

@@ -1,0 +1,44 @@
+<mvc:View controllerName="io.nimble.manageactivitytypes.controller.Main"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:table="sap.ui.table"
+    xmlns:f="sap.f"
+    xmlns:smarttable="sap.ui.comp.smarttable"
+    xmlns:smartvariants="sap.ui.comp.smartvariants"
+    xmlns:smartfilterbar="sap.ui.comp.smartfilterbar"
+    xmlns:app="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1"
+    xmlns:core="sap.ui.core">
+    <Page id="page" title="{i18n>title}">
+        <f:DynamicPage id="dynamicPageId" headerExpanded="true" toggleHeaderOnTitleClick="true">
+            <f:title>
+                <f:DynamicPageTitle>
+                    <f:heading>
+                        <smartvariants:SmartVariantManagement id="svm" persistencyKey="ActivityTypesVariants" showShare="true"/>
+                    </f:heading>
+                </f:DynamicPageTitle>
+            </f:title>
+
+            <f:header>
+                <f:DynamicPageHeader pinnable="true">
+                    <smartfilterbar:SmartFilterBar id="smartFilterBar" entitySet="ActivityTypes" persistencyKey="ActivityTypesFilter" useToolbar="false">
+                    </smartfilterbar:SmartFilterBar>
+                </f:DynamicPageHeader>
+            </f:header>
+
+            <f:content>
+                <smarttable:SmartTable id="smartTable" entitySet="ActivityTypes" smartFilterId="smartFilterBar" smartVariant="svm" tableType="Table" enableExport="true" editable="false" editTogglable="true" app:useSmartToggle="true" app:useSmartField="true" beforeExport=".onBeforeExport" useVariantManagement="true" useTablePersonalisation="true" header="{i18n>ui.table.header}" showRowCount="true" enableAutoColumnWidth="true" enableAutoBinding="true" persistencyKey="ActivityTypesSmartTable" fieldChange=".onFieldChange" class="sapUiResponsiveMargin">
+                    <smarttable:layoutData>
+                        <FlexItemData growFactor="1" baseSize="0%"/>
+                    </smarttable:layoutData>
+                    <smarttable:customToolbar>
+                        <OverflowToolbar>
+                            <ToolbarSpacer/>
+                            <Button text="Refresh Table" type="Emphasized" press=".onRefreshTable"/>
+                            <Button text="Save Changes" type="Emphasized" press=".onSubmitChanges"/>
+                        </OverflowToolbar>
+                    </smarttable:customToolbar>
+                </smarttable:SmartTable>
+            </f:content>
+        </f:DynamicPage>
+    </Page>
+</mvc:View>
