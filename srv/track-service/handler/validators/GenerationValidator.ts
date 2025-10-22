@@ -13,7 +13,7 @@ import { CustomizingService } from '../services/CustomizingService';
 export class GenerationValidator {
   /**
    * Liste der gültigen deutschen Bundesland-Codes
-   * Siehe: db/data/io.nimble-GermanStates.csv
+   * Siehe: db/data/io.nimble-Region.csv
    */
   private static readonly VALID_STATE_CODES = new Set([
     'BW', // Baden-Württemberg
@@ -82,7 +82,7 @@ export class GenerationValidator {
     if (!GenerationValidator.VALID_STATE_CODES.has(normalizedCode)) {
       const validCodes = Array.from(GenerationValidator.VALID_STATE_CODES).join(', ');
       throw new Error(
-        `Ungültiger Bundesland-Code: '${stateCode}'. Gültige Codes: ${validCodes}. Siehe: db/data/io.nimble-GermanStates.csv`,
+        `Ungültiger Bundesland-Code: '${stateCode}'. Gültige Codes: ${validCodes}. Siehe: db/data/io.nimble-Region.csv`,
       );
     }
 

@@ -46,19 +46,19 @@ annotate service.Customizing with @(restrict: [
 ////////////////////////////////////////////////////////////////////////////
 //  Users - Authorization (Read-only für alle)
 ////////////////////////////////////////////////////////////////////////////
-// annotate service.Users with @(restrict: [
-//   {
-//     grant: ['READ'],
-//     to   : 'authenticated-user'
-//   },
-//   {
-//     grant: [
-//       'READ',
-//       'WRITE'
-//     ],
-//     to   : 'Admin'
-//   }
-// ]);
+annotate service.Users with @(restrict: [
+  {
+    grant: ['READ'],
+    to   : 'authenticated-user'
+  },
+  {
+    grant: [
+      'READ',
+      'WRITE'
+    ],
+    to   : 'Admin'
+  }
+]);
 
 ////////////////////////////////////////////////////////////////////////////
 //  Projects - Authorization (Read-only für alle)
@@ -77,10 +77,81 @@ annotate service.Projects with @(restrict: [
   }
 ]);
 
+
 ////////////////////////////////////////////////////////////////////////////
-//  ActivityTypes - Authorization (Read-only für alle)
+//  CodeLists - Authorization (lesen alle, schreiben nur Admin)
 ////////////////////////////////////////////////////////////////////////////
 annotate service.ActivityTypes with @(restrict: [
+  {
+    grant: ['READ'],
+    to   : 'authenticated-user'
+  },
+  {
+    grant: [
+      'READ',
+      'WRITE'
+    ],
+    to   : 'Admin'
+  }
+]);
+
+annotate service.EntryTypes with @(restrict: [
+  {
+    grant: ['READ'],
+    to   : 'authenticated-user'
+  },
+  {
+    grant: [
+      'READ',
+      'WRITE'
+    ],
+    to   : 'Admin'
+  }
+]);
+
+annotate service.WorkLocations with @(restrict: [
+  {
+    grant: ['READ'],
+    to   : 'authenticated-user'
+  },
+  {
+    grant: [
+      'READ',
+      'WRITE'
+    ],
+    to   : 'Admin'
+  }
+]);
+
+annotate service.TravelTypes with @(restrict: [
+  {
+    grant: ['READ'],
+    to   : 'authenticated-user'
+  },
+  {
+    grant: [
+      'READ',
+      'WRITE'
+    ],
+    to   : 'Admin'
+  }
+]);
+
+annotate service.TimeEntryStatuses with @(restrict: [
+  {
+    grant: ['READ'],
+    to   : 'authenticated-user'
+  },
+  {
+    grant: [
+      'READ',
+      'WRITE'
+    ],
+    to   : 'Admin'
+  }
+]);
+
+annotate service.Region with @(restrict: [
   {
     grant: ['READ'],
     to   : 'authenticated-user'

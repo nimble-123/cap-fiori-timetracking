@@ -19,7 +19,7 @@ using from './annotations/ui/balance-ui'; // MonthlyBalances UI Layout
 using from './annotations/ui/customizing-ui'; // Customizing UI Layout
 using from './annotations/ui/entrytypes-ui'; // EntryTypes UI Layout
 using from './annotations/ui/projects-ui'; // Projects UI Layout
-using from './annotations/ui/states-ui'; // GermanStates UI Layout
+using from './annotations/ui/states-ui'; // Region UI Layout
 using from './annotations/ui/timeentries-ui'; // TimeEntries UI Layout
 using from './annotations/ui/timeentrystatuses-ui'; // TimeEntryStatuses UI Layout
 using from './annotations/ui/traveltypes-ui'; // TravelTypes UI Layout

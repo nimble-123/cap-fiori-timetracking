@@ -134,7 +134,7 @@ cap-fiori-timetracking/
 │   │
 │   ├── data-model.cds                     # Core Domain Model
 │   │   ├── Users, Projects, TimeEntries
-│   │   └── ActivityTypes, EntryTypes, GermanStates (CodeLists)
+│   │   └── ActivityTypes, EntryTypes, Region (CodeLists)
 │   └── data/                              # CSV Test & Master Data
 │
 ├── ⚙️ srv/                                # Backend Service Layer (100% TypeScript!)

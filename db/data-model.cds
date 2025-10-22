@@ -18,7 +18,7 @@ entity Users : managed {
       expectedDailyHoursDec : Decimal(4, 2);
 
       // Bevorzugtes Bundesland für Feiertage
-      preferredState        : Association to GermanStates;
+      preferredState        : Association to Region;
 
       // Urlaubstage pro Jahr
       annualVacationDays    : Decimal(4, 1);
@@ -43,7 +43,7 @@ entity EntryTypes : CodeList {
       criticality : Integer default 0; // UI5 Criticality: 0=neutral, 1=negative(red), 2=critical(orange), 3=positive(green), 5=information(blue)
 }
 
-entity GermanStates : CodeList {
+entity Region : CodeList {
   key code : String(2);
 }
 

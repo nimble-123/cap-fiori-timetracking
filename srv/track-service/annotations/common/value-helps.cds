@@ -162,7 +162,7 @@ annotate service.TimeEntries with {
 // generateYearlyTimeEntries Action - Parameter Annotations
 annotate service.generateYearlyTimeEntries with(stateCode @(
   Common.ValueList               : {
-    CollectionPath: 'GermanStates',
+    CollectionPath: 'Region',
     Parameters    : [
       {
         $Type            : 'Common.ValueListParameterInOut',

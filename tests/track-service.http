@@ -258,7 +258,7 @@ GET {{odata}}/EntryTypes
 {{maxAuth}}
 
 ### Get German States
-GET {{odata}}/GermanStates
+GET {{odata}}/Region
 {{maxAuth}}
 
 ### Get Work Locations

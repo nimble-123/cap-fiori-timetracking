@@ -622,7 +622,7 @@ erDiagram
     ActivityTypes ||--o{ TimeEntry : has_activity
     WorkLocations ||--o{ TimeEntry : has_location
     TravelTypes ||--o{ TimeEntry : has_travel_type
-    GermanStates ||--o{ Users : preferred_state
+    Region ||--o{ Users : preferred_state
     WorkLocations ||--o{ Users : default_location
     TimeEntry ||--o{ Attachments : stores_files
     TimeEntryStatuses ||--o{ TimeEntry : has_status
@@ -707,7 +707,7 @@ erDiagram
         string text "localized"
     }
 
-    GermanStates {
+    Region {
         string code PK "BY,BW,BE..."
         string text "localized"
     }
