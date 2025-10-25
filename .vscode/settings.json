@@ -1,11 +1,12 @@
 {
-  // uncomment entries once all libraries have been installed via 'npm install'
   "eslint.validate": [
-    // "cds",
-    // "csn",
-    // "csv",
-    // "csv (semicolon)",
-    // "tab",
-    // "tsv"
+    "cds",
+    "csn",
+    "csv",
+    "csv (semicolon)",
+    "tsv",
+    "tab",
+    "javascript",
+    "typescript"
   ]
 }

@@ -1,13 +1,8 @@
 {
   "name": "cap-fiori-timetracking",
   "version": "0.0.1",
+  "private": true,
   "description": "SAP CAP-based time tracking solution with Fiori UI and a TypeScript backend.",
-  "repository": "https://github.com/nimble-123/cap-fiori-timetracking",
-  "license": "MIT",
-  "author": {
-    "name": "nimble-123",
-    "url": "https://github.com/nimble-123"
-  },
   "keywords": [
     "sap",
     "cap",
@@ -16,10 +11,30 @@
     "time-tracking",
     "typescript"
   ],
-  "engines": {
-    "node": ">=18 <25"
+  "repository": "https://github.com/nimble-123/cap-fiori-timetracking",
+  "license": "MIT",
+  "author": {
+    "name": "nimble-123",
+    "url": "https://github.com/nimble-123"
   },
-  "private": true,
+  "imports": {
+    "#cds-models/*": "./@cds-models/*/index.js"
+  },
+  "workspaces": [
+    "app/*"
+  ],
+  "scripts": {
+    "build": "cds build",
+    "format": "prettier --write \"{src,app,srv,db,tests}/**/*.{js,ts,json,md,yaml,yml,html,css}\"",
+    "generate-entry-point": "dev-cap-tools gen-entrypoint",
+    "lint": "cds lint",
+    "start": "cds-serve",
+    "test": "jest ./tests",
+    "test:coverage": "jest --coverage ./tests",
+    "test:watch": "jest --watch ./tests",
+    "watch": "cds-tsx w",
+    "wdi5": "wdio run ./app/timetable/webapp/test/wdi5/wdio.conf.ts"
+  },
   "dependencies": {
     "@cap-js-community/odata-v2-adapter": "^1.15.5",
     "@cap-js/attachments": "^3.1.0",
@@ -38,6 +53,7 @@
     "@openui5/types": "^1.141.2",
     "@sap/cds-dk": "^9.4.2",
     "@sap/dev-cap-tools": "^1.47.10",
+    "@sap/eslint-plugin-cds": "^4.1.0",
     "@sap/eslint-plugin-ui5-jsdocs": "^2.0.8",
     "@sap/ux-ui5-tooling": "^1.19.1",
     "@sapui5/ts-types": "^1.141.2",
@@ -49,6 +65,7 @@
     "@wdio/spec-reporter": "^9.20.0",
     "cds-plugin-ui5": "^0.13.6",
     "cds-swagger-ui-express": "^0.10.0",
+    "eslint": "^9.38.0",
     "jest": "^30.2.0",
     "jest-junit": "^16.0.0",
     "prettier": "3.6.2",
@@ -59,20 +76,9 @@
     "wdio-timeline-reporter": "^5.1.4",
     "wdio-ui5-service": "^3.0.0"
   },
-  "scripts": {
-    "start": "cds-serve",
-    "watch": "cds-tsx w",
-    "build": "cds build",
-    "generate-entry-point": "dev-cap-tools gen-entrypoint",
-    "format": "prettier --write \"{src,app,srv,db,tests}/**/*.{js,ts,json,md,yaml,yml,html,css}\"",
-    "test": "jest ./tests",
-    "test:watch": "jest --watch ./tests",
-    "test:coverage": "jest --coverage ./tests",
-    "wdi5": "wdio run ./app/timetable/webapp/test/wdi5/wdio.conf.ts"
+  "engines": {
+    "node": ">=18 <25"
   },
-  "workspaces": [
-    "app/*"
-  ],
   "cds": {
     "requires": {
       "auth": {
@@ -100,7 +106,8 @@
         "[production]": {
           "kind": "hana"
         }
-      }
+      },
+      "malware-scanner": true
     },
     "log": {
       "levels": {
@@ -115,8 +122,5 @@
     "app/timetable",
     "app/timetracking",
     "app/manage-activity-types"
-  ],
-  "imports": {
-    "#cds-models/*": "./@cds-models/*/index.js"
-  }
+  ]
 }
