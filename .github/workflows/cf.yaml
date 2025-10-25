@@ -1,0 +1,55 @@
+name: Cloud Foundry
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        default: Staging
+        type: string
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  deployments: write
+
+concurrency:
+  group: cf-${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+env:
+  APP_NAME: cap-fiori-timetracking
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - uses: ./.github/actions/cf-setup
+        with:
+          cf-api: ${{ vars.CF_API }}
+          cf-org: ${{ vars.CF_ORG }}
+          cf-space: ${{ vars.CF_SPACE }}
+          cf-username: ${{ vars.CF_USERNAME }}
+          cf-password: ${{ secrets.CF_PASSWORD }}
+      - run: npm install
+      - run: npx cds up
+
+      - run: cf logs "${{ env.APP_NAME }}-srv" --recent
+        if: always()
+      - run: cf logs "${{ env.APP_NAME }}-db-deployer" --recent
+        if: always()
+
+      - name: Get application URL
+        id: route
+        shell: bash
+        run: |
+          host=$(cf app "${APP_NAME}" | awk '/routes:/ {print $2}' | sed -E 's#^https?://##; s/,.*$//')
+          echo "url=https://$host" >> "$GITHUB_OUTPUT"
+    environment:
+      name: ${{ inputs.environment || 'Staging' }}
+      url:  ${{ steps.route.outputs.url }}
