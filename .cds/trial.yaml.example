@@ -1,0 +1,14 @@
+globalAccount: trial
+globalAccountId: f1a2b3c4-d5e6-7f89-0a1b-2c3d4e5f6a7b
+globalAccountSubdomain: trial
+subaccount: Trial
+subaccountId: e3fbbd2e-ff5b-4f3b-9f4e-1d2c8e4a5b6c
+subaccountSubdomain: trial-z3mr03u9
+subaccountRegion: eu12
+cloudProvider: cf
+cfLandscape: cf-eu12
+cfUrl: https://api.cf.eu12.hana.ondemand.com
+cfOrg: trial-123234
+cfOrgId: a1b2c3d4-e5f6-7g89-0h1i-2j3k4l5m6n7o
+cfSpace: trial-123234-dev
+cfSpaceId: o7n6m5l4-k3j2-i1h0-9g8f-7e6d5c4b3a2b
