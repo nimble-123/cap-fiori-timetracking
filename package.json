@@ -24,6 +24,7 @@
     "@cap-js-community/odata-v2-adapter": "^1.15.5",
     "@cap-js/attachments": "^3.1.0",
     "@cap-js/console": "^1.0.1",
+    "@cap-js/hana": "^2.3.4",
     "@sap/cds": "^9.4.3",
     "eslint": "^9.38.0",
     "express": "^4.21.2"
@@ -90,6 +91,14 @@
               "authenticated-user"
             ]
           }
+        }
+      },
+      "db": {
+        "[development]": {
+          "kind": "sqlite"
+        },
+        "[production]": {
+          "kind": "hana"
         }
       }
     },
