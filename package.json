@@ -26,6 +26,7 @@
   "scripts": {
     "build": "cds build",
     "format": "prettier --write \"{src,app,srv,db,tests}/**/*.{js,ts,json,md,yaml,yml,html,css}\"",
+    "format:check": "prettier --check \"{src,app,srv,db,tests}/**/*.{js,ts,json,md,yaml,yml,html,css}\"",
     "generate-entry-point": "dev-cap-tools gen-entrypoint",
     "lint": "cds lint",
     "start": "cds-serve",
