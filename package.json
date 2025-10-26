@@ -58,6 +58,7 @@
     "@sap/dev-cap-tools": "^1.47.10",
     "@sap/eslint-plugin-cds": "^4.1.0",
     "@sap/eslint-plugin-ui5-jsdocs": "^2.0.8",
+    "@sap/ux-specification": "^1.136.9",
     "@sap/ux-ui5-tooling": "^1.19.3",
     "@sapui5/ts-types": "^1.141.3",
     "@types/jest": "^30.0.0",
@@ -86,35 +87,36 @@
   "cds": {
     "requires": {
       "application-logging": true,
+      "connectivity": true,
+      "destinations": true,
       "malware-scanner": true,
-      "auth": {
-        "kind": "mocked",
-        "users": {
-          "max.mustermann@test.de": {
-            "password": "max",
-            "roles": [
-              "authenticated-user",
-              "admin"
-            ]
-          },
-          "erika.musterfrau@test.de": {
-            "password": "erika",
-            "roles": [
-              "authenticated-user"
-            ]
+      "[development]": {
+        "auth": {
+          "kind": "mocked",
+          "users": {
+            "max.mustermann@test.de": {
+              "password": "max",
+              "roles": [
+                "authenticated-user",
+                "admin"
+              ]
+            },
+            "erika.musterfrau@test.de": {
+              "roles": [
+                "authenticated-user"
+              ]
+            }
           }
+        },
+        "db": {
+          "kind": "sqlite"
         }
       },
-      "db": {
-        "[development]": {
-          "kind": "sqlite"
-        },
-        "[production]": {
+      "[production]": {
+        "db": {
           "kind": "hana"
         }
-      },
-      "connectivity": true,
-      "destinations": true
+      }
     },
     "log": {
       "levels": {
