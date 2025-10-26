@@ -173,7 +173,7 @@ Die Top-5-Qualitätsziele nach Priorität:
 | **SAP CAP Framework**                   | Cloud Application Programming Model (Node.js-basiert) | Architektur muss CAP-Events verwenden                         |
 | **TypeScript >= 5.0**                   | Vollständig typisierte Codebase                       | Strikte Type-Checks aktiviert                                 |
 | **UI5 >= 1.120**                        | SAP UI5 für Frontend-Anwendungen                      | Fiori Guidelines einhalten                                    |
-| **Node.js >= 18 LTS**                   | Laufzeitumgebung                                      | Verwendung von ES2022-Features möglich                        |
+| **Node.js >= 22 LTS**                   | Laufzeitumgebung                                      | Verwendung von ES2022-Features möglich                        |
 | **OData V4**                            | REST-Protokoll für UI-Backend-Kommunikation           | Komplexe Queries via $expand/$filter                          |
 | **@cap-js/attachments**                 | Offizielles CAP Attachments Plugin für Dateiablagen   | Standardisierte Upload/Download-Flows, Metadaten & Persistenz |
 | **SAP Identity Services** (XSUAA / AMS) | Autorisierung & Authentifizierung in der BTP          | JWT-basierte SSO-Tokens, Role Collections, Policy-Management  |
@@ -309,18 +309,19 @@ C4Context
 
 **Technologie-Mapping:**
 
-| Komponente                | Technologie        | Port/URL                             | Verantwortlichkeit                     |
-| ------------------------- | ------------------ | ------------------------------------ | -------------------------------------- |
-| **Timetable App**         | UI5 Fiori Elements | :4004/io.nimble.timetable/           | Annotations-basiertes UI               |
-| **Manage Activity Types** | UI5 Fiori Elements | :4004/io.nimble.manageactivitytypes/ | Stammdatenpflege Activity Types        |
-| **Dashboard App**         | UI5 Custom         | :4004/io.nimble.timetracking/        | Freies Dashboard-Design                |
-| **TrackService**          | CAP TypeScript     | :4004/odata/v4/track/                | Business-Logik                         |
-| **Database**              | SQLite             | In-Memory                            | Datenhaltung                           |
-| **Feiertage-API**         | REST               | feiertage-api.de/api/                | Externe Datenquelle                    |
-| **App Router**            | Node.js (BTP)      | Subaccount Route                     | Authenticated Routing, Destinations    |
-| **SAP Identity Services** | XSUAA / AMS        | OAuth2 / SAML Endpoint               | Token-Ausgabe, Role Collections        |
-| **Connectivity Service**  | SAP BTP Service    | cf:<space>/connectivity              | Outbound Proxy für Holiday API         |
-| **Destination Service**   | SAP BTP Service    | cf:<space>/destination               | Holiday API Destinations & Credentials |
+| Komponente                | Technologie        | Port/URL                             | Verantwortlichkeit                             |
+| ------------------------- | ------------------ | ------------------------------------ | ---------------------------------------------- |
+| **Timetable App**         | UI5 Fiori Elements | :4004/io.nimble.timetable/           | Annotations-basiertes UI                       |
+| **Manage Activity Types** | UI5 Fiori Elements | :4004/io.nimble.manageactivitytypes/ | Stammdatenpflege Activity Types (AdminService) |
+| **Dashboard App**         | UI5 Custom         | :4004/io.nimble.timetracking/        | Freies Dashboard-Design                        |
+| **TrackService**          | CAP TypeScript     | :4004/odata/v4/track/                | Time Tracking Domain-Logik                     |
+| **AdminService**          | CAP TypeScript     | :4004/odata/v2/admin/                | Stammdaten & Customizing API                   |
+| **Database**              | SQLite             | In-Memory                            | Datenhaltung                                   |
+| **Feiertage-API**         | REST               | feiertage-api.de/api/                | Externe Datenquelle                            |
+| **App Router**            | Node.js (BTP)      | Subaccount Route                     | Authenticated Routing, Destinations            |
+| **SAP Identity Services** | XSUAA / AMS        | OAuth2 / SAML Endpoint               | Token-Ausgabe, Role Collections                |
+| **Connectivity Service**  | SAP BTP Service    | cf:<space>/connectivity              | Outbound Proxy für Holiday API                 |
+| **Destination Service**   | SAP BTP Service    | cf:<space>/destination               | Holiday API Destinations & Credentials         |
 
 **Wichtige Datenformate:**
 
@@ -433,9 +434,10 @@ graph TB
         UI2["🏠 Custom UI5 App<br/>Dashboard & Charts"]
     end
 
-    subgraph "⚙️ Application Layer - CAP Service"
+    subgraph "⚙️ Application Layer - CAP Services"
         SVC["🎬 TrackService<br/>Orchestrator"]
         HANDLERS["🎭 Handler Classes<br/>TimeEntry | Generation | Balance"]
+        ADMIN["📑 AdminService<br/>Generic OData V2 Provider"]
     end
 
     subgraph "💼 Business Logic Layer - Domain Services"
@@ -459,7 +461,7 @@ graph TB
     %% UI to Service
     UI1 --> SVC
     UI2 --> SVC
-    UI3 --> SVC
+    UI3 --> ADMIN
 
     %% Service Infrastructure
     SVC --> REGISTRY
@@ -479,6 +481,7 @@ graph TB
     %% Services to Repos
     SRV --> REPO
     VAL --> REPO
+    ADMIN --> DB
 
     %% Repos to DB
     REPO --> DB
@@ -506,6 +509,7 @@ graph TB
     style UI1 fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
     style UI2 fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
     style UI3 fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
+    style ADMIN fill:#e1f5fe,stroke:#0277bd,stroke-width:2px
 ```
 
 **Enthaltene Bausteine (Ebene 1):**
@@ -594,6 +598,23 @@ sequenceDiagram
 - **Generation (Bulk):** Command erzeugt Array, expliziter `repository.insertBatch()` Call
 
 **Weiterführende Pattern-Dokumentation:** Für detaillierte Beschreibungen der eingesetzten Design-Patterns (ServiceContainer, HandlerRegistry, Commands, Repositories, Factories, Strategies, Validators) siehe das Pattern-Index-Dokument: [Pattern-Index](./patterns/README.md)
+
+---
+
+### 5.2a Application Layer: AdminService (Generic Provider)
+
+- **Definition:** `srv/admin-service/admin-service.cds` publiziert das `AdminService` mit Projektionen auf die Stammdaten (`Users`, `Projects`, `ActivityTypes`, `EntryTypes`, `Region`, `WorkLocations`, `TravelTypes`, `TimeEntryStatuses`) sowie das `Customizing`-Singleton.
+- **Provider-Typ:** Der Service wird vollständig über CAPs generische OData V2 Provider bedient – keine individuellen Handler, Commands oder Container-Registrierungen erforderlich.
+- **OData-Version:** V2, damit Fiori Elements Basic Apps (z. B. Manage Activity Types) Out-of-the-box Templates nutzen können.
+- **Annotationsarchitektur:**
+  - `srv/admin-service/annotations.cds` aggregiert Moduldateien.
+  - `annotations/common/*` kapseln wiederverwendbare Concerns (Labels, Field Controls, Capabilities, Authorization, ValueHelps, Actions).
+  - `annotations/ui/*` liefern Entity-spezifische UI-Layouts (LineItem, SelectionFields, Identification) für jede Stammdaten-Entität.
+  - Die modulare Struktur ermöglicht parallele Pflege (z. B. UX-Team in `ui/*`, Compliance-Team in `common/authorization.cds`).
+- **Verbraucher:** Die Fiori Elements App „Manage Activity Types“ konsumiert primär `AdminService.ActivityTypes`, nutzt aber auch weitere Entitäten (z. B. `EntryTypes`, `Users`) für Value Helps und Customizing.
+- **Security:** Zugriffskontrolle erfolgt über Annotationen in `common/authorization.cds` (z. B. `@restrict`) sowie Launchpad-Rollen; produktiv greift das Service über Connectivity/Destination auf externe Ressourcen (Holiday API) nur indirekt via TrackService zu.
+
+> Fazit: AdminService bündelt stammdaten-orientierte Projektionen unter einem generischen Endpoint, trennt sie klar von der TrackService-Domainlogik und stellt zentral gepflegte Annotationspakete bereit.
 
 ---
 
@@ -898,15 +919,17 @@ annotate TrackService.TimeEntries with @(
 
 #### 🛠️ Manage Activity Types (Fiori Elements Basic V4) - Stammdatenpflege
 
-- Ergänzt die Timetable-App um eine schlanke Maintenance-Oberfläche für Activity Types.
+- Ergänzt die Timetable-App um eine schlanke Maintenance-Oberfläche für Activity Types und angrenzende Stammdaten.
 - Nutzt das Fiori Tools Basic V4 Template, wodurch Inline-Edit, Filterbar und Tabellenfunktionen sofort verfügbar sind.
-- Bindet sich an denselben TrackService und profitiert von Validation/Authorization Rules aus dem Backend.
+- Konsumiert primär den `AdminService` (OData V2) – Stammdatenprojektionen plus `Customizing` – und profitiert von den modularen Annotationen unter `srv/admin-service/annotations/`.
+- Value Helps & Security leiten sich aus `annotations/common` (FieldControls, Authorization, ValueHelps) ab; Layouts stammen aus `annotations/ui/*`.
 
 **Technische Details:**
 
 - **App-Typ**: Fiori Elements Basic V4 (List/Detail ohne Draft)
 - **Quellcode**: `app/manage-activity-types/webapp` (TypeScript aktiviert)
 - **Routing**: Launchpad Preview Tile `Manage Activity Types` (`/io.nimble.manageactivitytypes/`)
+- **Datenquelle**: `AdminService` (`/odata/v2/admin/`) mit Manager-spezifischen Annotationen
 - **UI5 Tooling**: Generiert via SAP Fiori Tools (Version 1.19.x), eingebunden über `sapux` im Root `package.json`
 
 #### 📊 Timetracking Dashboard (Custom UI5) - Der flexible Weg
