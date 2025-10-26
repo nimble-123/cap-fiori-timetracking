@@ -2,12 +2,28 @@ const { createDefaultPreset } = require('ts-jest');
 
 const tsJestTransformCfg = createDefaultPreset().transform;
 
-/** @type {import("jest").Config} **/
+/** @type {import('jest').Config} **/
 module.exports = {
   testEnvironment: 'node',
   transform: {
     ...tsJestTransformCfg,
+    '^.+node_modules/@cap-js/console/.+\\.js$': [
+      'babel-jest',
+      {
+        presets: [
+          [
+            '@babel/preset-env',
+            {
+              targets: {
+                node: 'current',
+              },
+            },
+          ],
+        ],
+      },
+    ],
   },
+  transformIgnorePatterns: ['/node_modules/(?!(?:@cap-js/console)/)'],
   reporters: [
     'default',
     [

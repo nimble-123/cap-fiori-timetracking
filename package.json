@@ -46,6 +46,8 @@
     "express": "^4.21.2"
   },
   "devDependencies": {
+    "@babel/core": "^7.28.5",
+    "@babel/preset-env": "^7.28.5",
     "@cap-js/cds-test": "^0.4.0",
     "@cap-js/cds-typer": ">=0.38.0",
     "@cap-js/cds-types": "^0.15.0",
@@ -64,6 +66,7 @@
     "@wdio/local-runner": "^9.20.0",
     "@wdio/mocha-framework": "^9.20.0",
     "@wdio/spec-reporter": "^9.20.0",
+    "babel-jest": "^30.2.0",
     "cds-plugin-ui5": "^0.13.6",
     "cds-swagger-ui-express": "^0.10.0",
     "eslint": "^9.38.0",
