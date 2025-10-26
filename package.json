@@ -56,7 +56,7 @@
     "@sap/eslint-plugin-cds": "^4.1.0",
     "@sap/eslint-plugin-ui5-jsdocs": "^2.0.8",
     "@sap/ux-ui5-tooling": "^1.19.1",
-    "@sapui5/ts-types": "^1.141.2",
+    "@sapui5/ts-types": "^1.141.3",
     "@types/jest": "^30.0.0",
     "@types/node": "^24.9.1",
     "@wdio/cli": "^9.20.0",
