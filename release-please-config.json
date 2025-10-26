@@ -41,6 +41,16 @@
           "jsonpath": "$.['sap.app'].applicationVersion.version"
         },
         {
+          "type": "json",
+          "path": "app/manage-activity-types/package.json",
+          "jsonpath": "$.version"
+        },
+        {
+          "type": "json",
+          "path": "app/manage-activity-types/webapp/manifest.json",
+          "jsonpath": "$.['sap.app'].applicationVersion.version"
+        },
+        {
           "type": "yaml",
           "path": "mta.yaml",
           "jsonpath": "$.version"
