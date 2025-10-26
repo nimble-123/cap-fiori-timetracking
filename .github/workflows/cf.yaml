@@ -10,6 +10,11 @@ on:
   push:
     branches:
       - main
+  workflow_run:
+    workflows:
+      - release-please
+    types:
+      - completed
 
 permissions:
   contents: read
@@ -24,6 +29,7 @@ env:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -51,5 +57,5 @@ jobs:
           host=$(cf app "${APP_NAME}" | awk '/routes:/ {print $2}' | sed -E 's#^https?://##; s/,.*$//')
           echo "url=https://$host" >> "$GITHUB_OUTPUT"
     environment:
-      name: ${{ inputs.environment || 'Staging' }}
-      url:  ${{ steps.route.outputs.url }}
+      name: ${{ inputs.environment || 'Production' }}
+      url: ${{ steps.route.outputs.url }}
