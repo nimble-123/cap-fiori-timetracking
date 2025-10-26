@@ -77,7 +77,7 @@
     "wdio-ui5-service": "^3.0.0"
   },
   "engines": {
-    "node": ">=18 <25"
+    "node": ">=22 <25"
   },
   "cds": {
     "requires": {
