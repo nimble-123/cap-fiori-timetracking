@@ -5,8 +5,8 @@ import {
   GetRecentBalancesCommand,
   GetVacationBalanceCommand,
   GetSickLeaveBalanceCommand,
-} from '../commands';
-import { logger } from '../utils';
+} from '../commands/index.js';
+import { logger } from '../utils/index.js';
 
 /**
  * Handler für Zeitkonto-Balance-Operationen

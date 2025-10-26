@@ -1,6 +1,6 @@
 import { Transaction } from '@sap/cds';
-import { ActivityTypeRepository } from '../repositories';
-import { logger } from '../utils';
+import { ActivityTypeRepository } from '../repositories/index.js';
+import { logger } from '../utils/index.js';
 
 /**
  * Validator für ActivityType-Operationen

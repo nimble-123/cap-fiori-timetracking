@@ -1,1 +1,1 @@
-export { ServiceContainer } from './ServiceContainer';
+export { ServiceContainer } from './ServiceContainer.js';

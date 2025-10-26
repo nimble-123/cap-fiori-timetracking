@@ -1,3 +1,3 @@
-export { TimeEntryHandlers } from './TimeEntryHandlers';
-export { GenerationHandlers } from './GenerationHandlers';
-export { BalanceHandlers } from './BalanceHandlers';
+export { TimeEntryHandlers } from './TimeEntryHandlers.js';
+export { GenerationHandlers } from './GenerationHandlers.js';
+export { BalanceHandlers } from './BalanceHandlers.js';

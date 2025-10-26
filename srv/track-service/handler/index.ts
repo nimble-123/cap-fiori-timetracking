@@ -1,41 +1,69 @@
 // Infrastructure
-export { ServiceContainer } from './container';
-export { HandlerRegistry, HandlerRegistrar } from './registry';
-export { HandlerSetup } from './setup';
+export { ServiceContainer } from './container/index.js';
+export { HandlerRegistry, HandlerRegistrar } from './registry/index.js';
+export { HandlerSetup } from './setup/index.js';
 
 // Repositories
-export { UserRepository, ProjectRepository, ActivityTypeRepository, TimeEntryRepository } from './repositories';
+export {
+  ActivityTypeRepository,
+  CustomizingRepository,
+  ProjectRepository,
+  TimeEntryRepository,
+  TravelTypeRepository,
+  UserRepository,
+  WorkLocationRepository,
+} from './repositories/index.js';
 
 // Services
-export { UserService, HolidayService, TimeBalanceService, TimeCalculationService } from './services';
+export {
+  CustomizingService,
+  HolidayService,
+  SickLeaveBalanceService,
+  TimeBalanceService,
+  TimeCalculationService,
+  UserService,
+  VacationBalanceService,
+} from './services/index.js';
 
 // Validators
-export { TimeEntryValidator, GenerationValidator, BalanceValidator } from './validators';
+export {
+  ActivityTypeValidator,
+  BalanceValidator,
+  GenerationValidator,
+  ProjectValidator,
+  TimeEntryValidator,
+  TravelTypeValidator,
+  WorkLocationValidator,
+} from './validators/index.js';
 
 // Strategies
-export { MonthlyGenerationStrategy, YearlyGenerationStrategy } from './strategies';
+export { MonthlyGenerationStrategy, YearlyGenerationStrategy } from './strategies/index.js';
 
 // Factories
-export { TimeEntryFactory, HandlerFactory } from './factories';
+export { TimeEntryFactory, HandlerFactory } from './factories/index.js';
 
 // Utils
-export { DateUtils, logger, TrackLogger } from './utils';
+export { DateUtils, logger, TrackLogger } from './utils/index.js';
 
 // Commands
 export {
   CreateTimeEntryCommand,
-  UpdateTimeEntryCommand,
-  RecalculateTimeEntryCommand,
   GenerateMonthlyCommand,
   GenerateYearlyCommand,
   GetDefaultParamsCommand,
-  GetMonthlyBalanceCommand,
+  GetSickLeaveBalanceCommand,
+  MarkTimeEntryDoneCommand,
+  ReleaseTimeEntryCommand,
+  RecalculateTimeEntryCommand,
+  UpdateTimeEntryCommand,
   GetCurrentBalanceCommand,
+  GetMonthlyBalanceCommand,
   GetRecentBalancesCommand,
-} from './commands';
+  GetVacationBalanceCommand,
+} from './commands/index.js';
 
 // Command Result Types
-export type { MonthlyGenerationResult, YearlyGenerationResult } from './commands';
+export type { MonthlyGenerationResult, YearlyGenerationResult } from './commands/index.js';
 
 // Handlers
-export { TimeEntryHandlers, GenerationHandlers, BalanceHandlers } from './handlers';
+export { BalanceHandlers, GenerationHandlers, TimeEntryHandlers } from './handlers/index.js';

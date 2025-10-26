@@ -1,6 +1,6 @@
-import { HandlerRegistry } from './HandlerRegistry';
 import { TimeEntries } from '#cds-models/TrackService';
-import { TimeEntryHandlers, GenerationHandlers, BalanceHandlers } from '../handlers';
+import { HandlerRegistry } from './HandlerRegistry.js';
+import { TimeEntryHandlers, GenerationHandlers, BalanceHandlers } from '../handlers/index.js';
 
 /**
  * Registriert Handler bei der HandlerRegistry

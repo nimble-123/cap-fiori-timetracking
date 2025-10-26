@@ -1,5 +1,5 @@
 import { ApplicationService } from '@sap/cds';
-import { logger } from '../utils';
+import { logger } from '../utils/index.js';
 
 /**
  * Handler-Konfiguration für Event-Registrierung

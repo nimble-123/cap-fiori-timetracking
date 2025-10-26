@@ -1,6 +1,6 @@
 import { TimeEntry, User } from '#cds-models/TrackService';
-import { logger } from '../utils';
-import { CustomizingService } from '../services/CustomizingService';
+import { CustomizingService } from '../services/index.js';
+import { logger } from '../utils/index.js';
 
 /**
  * Validator für Generierungs-Operationen

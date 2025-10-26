@@ -1,6 +1,6 @@
 import { Transaction } from '@sap/cds';
-import { ProjectRepository } from '../repositories';
-import { logger } from '../utils';
+import { ProjectRepository } from '../repositories/index.js';
+import { logger } from '../utils/index.js';
 
 /**
  * Validator für Project-Operationen

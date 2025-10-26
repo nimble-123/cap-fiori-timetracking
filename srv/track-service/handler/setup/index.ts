@@ -1,1 +1,1 @@
-export { HandlerSetup } from './HandlerSetup';
+export { HandlerSetup } from './HandlerSetup.js';

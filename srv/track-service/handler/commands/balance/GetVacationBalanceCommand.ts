@@ -1,7 +1,7 @@
 import { Transaction } from '@sap/cds';
 import type { VacationBalance } from '#cds-models/TrackService';
-import { VacationBalanceService, UserService } from '../../services';
-import { logger } from '../../utils';
+import { VacationBalanceService, UserService } from '../../services/index.js';
+import { logger } from '../../utils/index.js';
 
 // Type definitions
 interface VacationBalanceDependencies {

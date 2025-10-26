@@ -1,9 +1,9 @@
 import { randomUUID } from 'crypto';
 import { Transaction } from '@sap/cds';
 import { TimeEntry, User } from '#cds-models/TrackService';
-import { TimeCalculationService, UserService } from '../services';
-import { CustomizingService } from '../services/CustomizingService';
-import { DateUtils, logger } from '../utils';
+import { TimeCalculationService, UserService } from '../services/index.js';
+import { CustomizingService } from '../services/CustomizingService.js';
+import { DateUtils, logger } from '../utils/index.js';
 
 // Type definitions
 interface WorkTimeData {

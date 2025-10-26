@@ -6,24 +6,20 @@
  */
 
 // Balance Commands
-export { GetMonthlyBalanceCommand } from './balance/GetMonthlyBalanceCommand';
-export { GetCurrentBalanceCommand } from './balance/GetCurrentBalanceCommand';
-export { GetRecentBalancesCommand } from './balance/GetRecentBalancesCommand';
-export { GetVacationBalanceCommand } from './balance/GetVacationBalanceCommand';
-export { GetSickLeaveBalanceCommand } from './balance/GetSickLeaveBalanceCommand';
+export { GetMonthlyBalanceCommand } from './balance/GetMonthlyBalanceCommand.js';
+export { GetCurrentBalanceCommand } from './balance/GetCurrentBalanceCommand.js';
+export { GetRecentBalancesCommand } from './balance/GetRecentBalancesCommand.js';
+export { GetVacationBalanceCommand } from './balance/GetVacationBalanceCommand.js';
+export { GetSickLeaveBalanceCommand } from './balance/GetSickLeaveBalanceCommand.js';
 
 // Generation Commands
-export { GenerateMonthlyCommand } from './generation/GenerateMonthlyCommand';
-export { GenerateYearlyCommand } from './generation/GenerateYearlyCommand';
-export { GetDefaultParamsCommand } from './generation/GetDefaultParamsCommand';
+export { GenerateMonthlyCommand, MonthlyGenerationResult } from './generation/GenerateMonthlyCommand.js';
+export { GenerateYearlyCommand, YearlyGenerationResult } from './generation/GenerateYearlyCommand.js';
+export { GetDefaultParamsCommand } from './generation/GetDefaultParamsCommand.js';
 
 // TimeEntry Commands
-export { CreateTimeEntryCommand } from './time-entry/CreateTimeEntryCommand';
-export { UpdateTimeEntryCommand } from './time-entry/UpdateTimeEntryCommand';
-export { RecalculateTimeEntryCommand } from './time-entry/RecalculateTimeEntryCommand';
-export { MarkTimeEntryDoneCommand } from './time-entry/MarkTimeEntryDoneCommand';
-export { ReleaseTimeEntryCommand } from './time-entry/ReleaseTimeEntryCommand';
-
-// Re-export types (optional, for convenience)
-export type { MonthlyGenerationResult } from './generation/GenerateMonthlyCommand';
-export type { YearlyGenerationResult } from './generation/GenerateYearlyCommand';
+export { CreateTimeEntryCommand } from './time-entry/CreateTimeEntryCommand.js';
+export { UpdateTimeEntryCommand } from './time-entry/UpdateTimeEntryCommand.js';
+export { RecalculateTimeEntryCommand } from './time-entry/RecalculateTimeEntryCommand.js';
+export { MarkTimeEntryDoneCommand } from './time-entry/MarkTimeEntryDoneCommand.js';
+export { ReleaseTimeEntryCommand } from './time-entry/ReleaseTimeEntryCommand.js';

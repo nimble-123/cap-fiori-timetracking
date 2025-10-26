@@ -1,5 +1,5 @@
 import { logger } from '../utils';
-import { CustomizingService } from './CustomizingService';
+import { CustomizingService } from './CustomizingService.js';
 
 /**
  * Service zur Ermittlung von deutschen Feiertagen

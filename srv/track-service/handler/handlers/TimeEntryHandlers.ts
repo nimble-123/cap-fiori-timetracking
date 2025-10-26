@@ -6,8 +6,8 @@ import {
   RecalculateTimeEntryCommand,
   MarkTimeEntryDoneCommand,
   ReleaseTimeEntryCommand,
-} from '../commands';
-import { logger } from '../utils';
+} from '../commands/index.js';
+import { logger } from '../utils/index.js';
 
 /**
  * Handler für TimeEntry CRUD-Operationen

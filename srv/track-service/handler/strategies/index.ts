@@ -1,2 +1,2 @@
-export { MonthlyGenerationStrategy } from './MonthlyGenerationStrategy';
-export { YearlyGenerationStrategy } from './YearlyGenerationStrategy';
+export { MonthlyGenerationStrategy } from './MonthlyGenerationStrategy.js';
+export { YearlyGenerationStrategy } from './YearlyGenerationStrategy.js';

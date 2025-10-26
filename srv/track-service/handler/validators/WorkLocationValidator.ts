@@ -1,6 +1,6 @@
 import { Transaction } from '@sap/cds';
-import { WorkLocationRepository } from '../repositories';
-import { logger } from '../utils';
+import { WorkLocationRepository } from '../repositories/index.js';
+import { logger } from '../utils/index.js';
 
 /**
  * Validator für WorkLocation-Referenzen

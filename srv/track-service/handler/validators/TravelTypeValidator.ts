@@ -1,6 +1,6 @@
 import { Transaction } from '@sap/cds';
-import { TravelTypeRepository } from '../repositories';
-import { logger } from '../utils';
+import { TravelTypeRepository } from '../repositories/index.js';
+import { logger } from '../utils/index.js';
 
 /**
  * Validator für TravelType-Referenzen
