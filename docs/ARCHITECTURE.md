@@ -1492,22 +1492,25 @@ Die Holiday-API wird produktiv über Destination + Connectivity konsumiert; loka
 
 ### 7.5 CI/CD Workflow-Übersicht
 
-- **`test.yaml` (CI/CD Tests & Build):** Trigger auf Push/PR für `main`/`develop`. Führt `npm ci`, `cds-typer`, `npm run build`, Jest + Coverage sowie ESLint/Prettier Checks aus. Artifacts werden für 7 Tage bereitgestellt.
-- **`release-please.yaml`:** Automatisiert Versionierung & Changelog auf `main` mittels GitHub `release-please` Action (vgl. [ADR-0017](ADR/0017-release-automation-mit-release-please.md)).
-- **`cf.yaml` + Composite Action `cf-setup`:** Wiederverwendbarer Workflow (`workflow_call`, `workflow_dispatch`) für Cloud Foundry Deployments. Installiert `cf` CLI, `mbt`, MultiApps-Plugin, authentifiziert gegen Ziel-Org/Space und liest Logs (`cf logs ... --recent`). Optional ermittelt er über `cf app` die Route für das GitHub-Environment.
+- **`test.yaml` (CI/CD Tests & Build):** Startet auf Push/PR zu `main`, `develop` und `feature/**` mit separaten Lint- und Test-Jobs (fail-fast). Nur wenn beide erfolgreich sind, läuft der Build-Job (`cds-typer`, `npm run build`) und veröffentlicht Artefakte (`gen/`, `@cds-models/`, Coverage, JUnit).
+- **`release-please.yaml`:** Wird ausschließlich nach erfolgreichem Build/Test-Workflow (Push auf `main`) ausgeführt und aktualisiert Release-PRs, Tags und Changelog (vgl. [ADR-0017](ADR/0017-release-automation-mit-release-please.md)).
+- **`cf.yaml` + Composite Action `cf-setup`:** Trigger erfolgt nach erfolgreichem Release-Workflow oder manuell via Dispatch. Nutzt GitHub-Environments für manuelle Freigaben, installiert `cf` CLI, `mbt`, MultiApps-Plugin und erledigt `cf deploy` inkl. Log-Abgriff.
 
 ```mermaid
 flowchart TD
     subgraph CI
-        A["Push/PR on main or develop"] --> B["test.yaml: Test & Lint"]
-        B --> C["test.yaml: Build"]
-        C --> D["Artifacts (gen/, @cds-models/, coverage)"]
+        A["Push/PR → main|develop|feature/**"] --> B["test.yaml: Lint"]
+        A --> C["test.yaml: Tests"]
+        B --> D{Lint & Test ok?}
+        C --> D
+        D --> E["test.yaml: Build"]
+        E --> F["Artefakte & Reports"]
     end
-    E["Push on main"] --> F["release-please.yaml"]
-    F --> G["Release PR / Tag / CHANGELOG"]
-    E --> H["cf.yaml (auto/manual)"]
-    H --> I["Composite cf-setup (cf, mbt, multiapps)"]
-    I --> J["cf deploy / Logs"]
+    E --> G["release-please.yaml"]
+    G --> H["Release PR / Tag / CHANGELOG"]
+    H --> I["cf.yaml (workflow_run)"]
+    I --> J["Environment Approval"]
+    I --> K["Composite cf-setup → cf deploy"]
 ```
 
 > Die gleiche Toolchain (`cf`, MultiApps-Plugin, `mbt`) ist lokal erforderlich, um die in README/Getting Started beschriebenen Deployments auszuführen.

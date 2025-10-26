@@ -290,13 +290,13 @@ cap-fiori-timetracking/
 
 ## 🛠️ Development Scripts
 
-| Befehl                         | Zweck                      | Wann verwenden?                    |
-| ------------------------------ | -------------------------- | ---------------------------------- |
-| `npm run watch`                | Dev-Server mit Auto-Reload | ⭐ **Hauptbefehl für Development** |
-| `npm run build`                | TypeScript kompilieren     | Vor Commit (prüft Syntax)          |
-| `npm run format`               | Prettier Formatierung      | **Vor jedem Commit (Pflicht!)**    |
+| Befehl                         | Zweck                                              | Wann verwenden?                         |
+| ------------------------------ | -------------------------------------------------- | --------------------------------------- |
+| `npm run watch`                | Dev-Server mit Auto-Reload                         | ⭐ **Hauptbefehl für Development**      |
+| `npm run build`                | TypeScript kompilieren                             | Vor Commit (prüft Syntax)               |
+| `npm run format`               | Prettier Formatierung                              | **Vor jedem Commit (Pflicht!)**         |
 | `npm run generate-entry-point` | Service Entry Points für Dev Tools (dev-cap-tools) | Nach neuen Services/Commands (optional) |
-| `npm test`                     | Jest Tests ausführen       | Nach Code-Änderungen               |
+| `npm test`                     | Jest Tests ausführen                               | Nach Code-Änderungen                    |
 
 📖 **Vollständiger Workflow:** Siehe [GETTING_STARTED.md](GETTING_STARTED.md#-wichtige-npm-scripts)
 
@@ -317,15 +317,15 @@ Die Konsole ergänzt unsere lokalen Tools (REST Client, Swagger UI) und wird in 
 
 ## 🔁 Inner Loop Development
 
-1. **Watch & Hot Reload**  
+1. **Watch & Hot Reload**
    `npm run watch` setzt auf `cds watch`/`cds-tsx` und nutzt CAPs Entwicklungsprofil mit lokalen Mock-Services (SQLite, Mock Auth). Damit bleibt die Schleife auch offline („airplane mode“) schnell.
-2. **CAP Console & REST Client**  
+2. **CAP Console & REST Client**
    Die CAP Console (s.o.) liefert Monitoring, Deploy-Wizard und Log-Level Switching. REST Client Files in `tests/` und Swagger UI (`/$api-docs/…`) ergänzen manuelle Checks.
-3. **Typsicherheit & Linting**  
+3. **Typsicherheit & Linting**
    `@cap-js/cds-typer` aktualisiert Typen automatisch bei `.cds`-Änderungen. `npm run build` + ESLint/Prettier (`npx eslint …`, `npx prettier --check …`) sichern Stil & Regeln. `npm run generate-entry-point` liefert bei Bedarf aktualisierte Entry Points für Tooling.
-4. **Tests & Coverage**  
+4. **Tests & Coverage**
    `npm test` bzw. `npm run test:watch` decken Jest-Suites ab; Coverage liegt unter `coverage/`. Neue Businesslogik → neue Tests in `tests/`.
-5. **Optional Rapid UI Feedback**  
+5. **Optional Rapid UI Feedback**
    UI5 Tooling (`npm run watch -- --open`) oder Live-Logs in der CAP Console unterstützen schnelles UI-Tuning, bevor es in den äußeren Loop (PR/CI) geht.
 
 > Ziel: Schleife „Ändern → Beobachten → Validieren“ in wenigen Minuten halten, bevor Features in den äußeren Loop (PR, CI, Deployment) gehen.
@@ -334,18 +334,23 @@ Die Konsole ergänzt unsere lokalen Tools (REST Client, Swagger UI) und wird in 
 
 ## ⚙️ Automatisierung & DevOps
 
-- **CI/CD Tests & Build** (`.github/workflows/test.yaml`): Matrix-Job für Node.js 22.x inkl. `npm ci`, `@sap/cds-dk`, `cds-typer`, `npm run build`, Jest + Coverage sowie ESLint/Prettier Checks. Ergebnisse werden als Artifacts (Coverage, `@cds-models`, `gen`) 7 Tage bereitgestellt.
-- **Release Automation** (`.github/workflows/release-please.yaml`): Beobachtet `main` und lässt `release-please` Release-PRs, Tags und Changelog aktualisieren (siehe [ADR-0017](docs/ADR/0017-release-automation-mit-release-please.md)).
-- **Cloud Foundry Deploy** (`.github/workflows/cf.yaml` + Composite Action `.github/actions/cf-setup`): Wiederverwendbares Workflow-Call für Staging/Prod. Installiert `cf` CLI, `mbt`, MultiApps-Plugin, authentifiziert und kann Logs (`cf logs`) sowie vorbereitende Tasks (`npx cds up`) ausführen.
+- **CI/CD Tests & Build** (`.github/workflows/test.yaml`): Startet mit Lint- und Test-Jobs (fail-fast) auf `main`, `develop`, Feature-Branches & PRs. Nur wenn beide erfolgreich sind, läuft der Build-Job (`cds-typer`, `npm run build`) und veröffentlicht Artefakte (`gen/`, `@cds-models/`, Coverage, JUnit).
+- **Release Automation** (`.github/workflows/release-please.yaml`): Startet nur, wenn der Build/Test-Workflow erfolgreich war und ein Push auf `main` vorliegt; erstellt Release-PRs/Tags (siehe [ADR-0017](docs/ADR/0017-release-automation-mit-release-please.md)).
+- **Cloud Foundry Deploy** (`.github/workflows/cf.yaml` + `.github/actions/cf-setup`): Trigger erfolgt ausschließlich nach erfolgreichem Release-Workflow (oder manuell via Dispatch); setzt auf geschützte GitHub-Environments für manuelle Approvals und installiert `cf` CLI, `mbt`, MultiApps-Plugin.
 
 ```mermaid
 flowchart LR
-    A["Push/PR on main or develop"] -->|"test.yaml"| B["Test & Lint Jobs"]
-    B --> C["Build Artifacts"]
-    C --> D["(Artifacts: gen/, @cds-models/, coverage)"]
-    E["Push on main"] -->|"release-please.yaml"| F["Release PR & Tagging"]
-    E -->|"cf.yaml (dispatch/main)"| G["Cloud Foundry Deploy"]
-    G --> H["Composite cf-setup"]
+    A["Push/PR → main|develop|feature/**"] -->|test.yaml| B["Lint Job"]
+    A -->|test.yaml| C["Test Job"]
+    B --> D{Lint & Test successful?}
+    C --> D
+    D --> E["Build Job"]
+    E --> F["Artefakte & Coverage"]
+    E --> G["release-please.yaml"]
+    G --> H["Release PR & Tagging"]
+    H --> I["cf.yaml (workflow_run)"]
+    I --> J["Environment Approval"]
+    I --> K["Composite cf-setup"]
 ```
 
 > Lokale Voraussetzung für Deployments: `cf` CLI ≥8 mit MultiApps-Plugin (`cf install-plugin multiapps`) und `mbt` CLI (`npm install -g mbt`). Die GitHub-Action installiert diese Tools automatisch, lokal müssen sie manuell eingerichtet werden.
