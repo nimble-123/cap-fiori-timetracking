@@ -1,7 +1,7 @@
 _schema-version: 3.3.0
 ID: cap-fiori-timetracking
-version: 0.0.1
-description: 'SAP CAP-based time tracking solution with Fiori UI and a TypeScript backend.'
+version: 0.1.0
+description: SAP CAP-based time tracking solution with Fiori UI and a TypeScript backend.
 parameters:
   enable-parallel-deployments: true
 build-parameters:
@@ -20,7 +20,7 @@ modules:
     build-parameters:
       builder: npm-ci
     provides:
-      - name: srv-api # required by consumers of CAP services (e.g. approuter)
+      - name: srv-api
         properties:
           srv-url: ${default-url}
     requires:
@@ -28,7 +28,6 @@ modules:
       - name: cap-fiori-timetracking-db
       - name: cap-fiori-timetracking-malware-scanner
       - name: cap-fiori-timetracking-logging
-
   - name: cap-fiori-timetracking-db-deployer
     type: hdb
     path: gen/db
@@ -36,7 +35,6 @@ modules:
       buildpack: nodejs_buildpack
     requires:
       - name: cap-fiori-timetracking-db
-
 resources:
   - name: cap-fiori-timetracking-attachments
     type: org.cloudfoundry.managed-service
