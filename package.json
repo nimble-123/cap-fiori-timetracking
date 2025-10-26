@@ -81,6 +81,8 @@
   },
   "cds": {
     "requires": {
+      "application-logging": true,
+      "malware-scanner": true,
       "auth": {
         "kind": "mocked",
         "users": {
@@ -106,8 +108,7 @@
         "[production]": {
           "kind": "hana"
         }
-      },
-      "malware-scanner": true
+      }
     },
     "log": {
       "levels": {
