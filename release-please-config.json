@@ -39,6 +39,11 @@
           "type": "json",
           "path": "app/timetracking/webapp/manifest.json",
           "jsonpath": "$.['sap.app'].applicationVersion.version"
+        },
+        {
+          "type": "yaml",
+          "path": "mta.yaml",
+          "jsonpath": "$.version"
         }
       ]
     }

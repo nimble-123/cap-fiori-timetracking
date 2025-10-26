@@ -1,0 +1,60 @@
+_schema-version: 3.3.0
+ID: cap-fiori-timetracking
+version: 0.0.1
+description: 'SAP CAP-based time tracking solution with Fiori UI and a TypeScript backend.'
+parameters:
+  enable-parallel-deployments: true
+build-parameters:
+  before-all:
+    - builder: custom
+      commands:
+        - npm ci
+        - npx cds build --production
+modules:
+  - name: cap-fiori-timetracking-srv
+    type: nodejs
+    path: gen/srv
+    parameters:
+      instances: 1
+      buildpack: nodejs_buildpack
+    build-parameters:
+      builder: npm-ci
+    provides:
+      - name: srv-api # required by consumers of CAP services (e.g. approuter)
+        properties:
+          srv-url: ${default-url}
+    requires:
+      - name: cap-fiori-timetracking-attachments
+      - name: cap-fiori-timetracking-db
+      - name: cap-fiori-timetracking-malware-scanner
+      - name: cap-fiori-timetracking-logging
+
+  - name: cap-fiori-timetracking-db-deployer
+    type: hdb
+    path: gen/db
+    parameters:
+      buildpack: nodejs_buildpack
+    requires:
+      - name: cap-fiori-timetracking-db
+
+resources:
+  - name: cap-fiori-timetracking-attachments
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: objectstore
+      service-plan: standard
+  - name: cap-fiori-timetracking-db
+    type: com.sap.xs.hdi-container
+    parameters:
+      service: hana
+      service-plan: hdi-shared
+  - name: cap-fiori-timetracking-malware-scanner
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: malware-scanner
+      service-plan: clamav
+  - name: cap-fiori-timetracking-logging
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: application-logs
+      service-plan: standard
