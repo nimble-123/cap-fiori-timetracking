@@ -10,22 +10,12 @@
     "skipLibCheck": true,
     "sourceMap": true,
     "allowJs": true,
-    "types": ["@cap-js/cds-types"],
+    "types": ["@cap-js/cds-types", "jest", "node"],
     "paths": {
-      "@sap/cds": [
-        "./node_modules/@cap-js/cds-types"
-      ],
-      "#cds-models/*": [
-        "./@cds-models/*"
-      ]
+      "@sap/cds": ["./node_modules/@cap-js/cds-types"],
+      "#cds-models/*": ["./@cds-models/*"]
     }
   },
-  "include": [
-    "srv/**/*",
-    "@cds-models/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "gen"
-  ]
+  "include": ["srv/**/*", "@cds-models/**/*", "test/**/*"],
+  "exclude": ["node_modules", "gen"]
 }

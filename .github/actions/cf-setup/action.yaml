@@ -1,25 +1,25 @@
 name: Cloud Foundry Setup
-description: "Installs dependencies for Cloud Foundry deployment"
+description: 'Installs dependencies for Cloud Foundry deployment'
 
 inputs:
   cf-version:
-    description: "The version of the Cloud Foundry CLI to install"
+    description: 'The version of the Cloud Foundry CLI to install'
     required: false
-    default: "8.8.3"
+    default: '8.8.3'
   cf-api:
-    description: "The Cloud Foundry API endpoint to connect to"
+    description: 'The Cloud Foundry API endpoint to connect to'
     required: true
   cf-org:
-    description: "The Cloud Foundry organization to target"
+    description: 'The Cloud Foundry organization to target'
     required: true
   cf-space:
-    description: "The Cloud Foundry space to target"
+    description: 'The Cloud Foundry space to target'
     required: true
   cf-username:
-    description: "The Cloud Foundry username to authenticate with"
+    description: 'The Cloud Foundry username to authenticate with'
     required: true
   cf-password:
-    description: "The Cloud Foundry password to authenticate with"
+    description: 'The Cloud Foundry password to authenticate with'
     required: true
 
 runs:

@@ -1,47 +1,47 @@
 version: 2
 updates:
-  - package-ecosystem: "npm"
-    directory: "/"
+  - package-ecosystem: 'npm'
+    directory: '/'
     schedule:
-      interval: "weekly"
-      day: "monday"
+      interval: 'weekly'
+      day: 'monday'
     open-pull-requests-limit: 10
     versioning-strategy: increase
     allow:
       - dependency-type: direct
       - dependency-type: development
     ignore:
-      - dependency-name: "@sap/cds"
-        versions: ["<9"]
+      - dependency-name: '@sap/cds'
+        versions: ['<9']
     groups:
       sap-cap:
         patterns:
-          - "@sap/*"
-          - "@cap-js/*"
-  - package-ecosystem: "npm"
-    directory: "/app/timetable"
+          - '@sap/*'
+          - '@cap-js/*'
+  - package-ecosystem: 'npm'
+    directory: '/app/timetable'
     schedule:
-      interval: "weekly"
-      day: "monday"
+      interval: 'weekly'
+      day: 'monday'
     open-pull-requests-limit: 5
     groups:
       ui5:
         patterns:
-          - "@sapui5/*"
-          - "sap/ui*"
-  - package-ecosystem: "npm"
-    directory: "/app/timetracking"
+          - '@sapui5/*'
+          - 'sap/ui*'
+  - package-ecosystem: 'npm'
+    directory: '/app/timetracking'
     schedule:
-      interval: "weekly"
-      day: "monday"
+      interval: 'weekly'
+      day: 'monday'
     open-pull-requests-limit: 5
     groups:
       ui5:
         patterns:
-          - "@sapui5/*"
-          - "sap/ui*"
-  - package-ecosystem: "github-actions"
-    directory: "/"
+          - '@sapui5/*'
+          - 'sap/ui*'
+  - package-ecosystem: 'github-actions'
+    directory: '/'
     schedule:
-      interval: "weekly"
+      interval: 'weekly'
     open-pull-requests-limit: 5

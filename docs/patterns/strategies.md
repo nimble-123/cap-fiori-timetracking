@@ -13,7 +13,7 @@ export class MonthlyGenerationStrategy {
     private timeEntryFactory: TimeEntryFactory,
     private customizingService: CustomizingService,
   ) {}
-  
+
   generateMissingEntries(userID: string, user: User, existingDates: Set<string>): TimeEntry[] {
     const monthData = DateUtils.getCurrentMonthData();
 
@@ -30,7 +30,7 @@ export class MonthlyGenerationStrategy {
       }
 
       const dateString = DateUtils.toLocalDateString(currentDate);
-      if (existingDates.has(dateString))  continue;
+      if (existingDates.has(dateString)) continue;
 
       // Factory erstellt perfekt berechnete Entries
       const entry = this.timeEntryFactory.createDefaultEntry(userID, currentDate, user);
