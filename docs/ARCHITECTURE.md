@@ -177,6 +177,7 @@ Die Top-5-Qualitätsziele nach Priorität:
 | **OData V4**                            | REST-Protokoll für UI-Backend-Kommunikation           | Komplexe Queries via $expand/$filter                          |
 | **@cap-js/attachments**                 | Offizielles CAP Attachments Plugin für Dateiablagen   | Standardisierte Upload/Download-Flows, Metadaten & Persistenz |
 | **SAP Identity Services** (XSUAA / AMS) | Autorisierung & Authentifizierung in der BTP          | JWT-basierte SSO-Tokens, Role Collections, Policy-Management  |
+| **Cloud-native Prinzipien**             | 12-Factor-konformes App-Design auf SAP BTP            | Konfigurationsentkopplung, deklarative Deployments (MTA)      |
 | **SQLite (Dev) / HANA (Prod)**          | Datenbank-Technologien                                | SQL muss kompatibel sein                                      |
 
 **Entwicklungswerkzeuge:**
@@ -185,7 +186,7 @@ Die Top-5-Qualitätsziele nach Priorität:
 - **ESLint + Prettier** für Code-Qualität (verpflichtend)
 - **Jest** für Unit-Tests
 - **Git** für Versionskontrolle
-- **nvm + .nvmrc** um Node-Versionen zu pinnen (23.6.0)
+- **nvm + .nvmrc** um Node-Versionen zu pinnen (22.20.0)
 - **.env/.env.example** für lokale Secrets & Feature-Toggles (niemals ins Repo einchecken)
 
 ---
@@ -258,13 +259,13 @@ graph LR
 
 **Schnittstellen-Beschreibung:**
 
-| Partner                            | Eingabe                      | Ausgabe                          | Protokoll    |
-| ---------------------------------- | ---------------------------- | -------------------------------- | ------------ |
-| **Mitarbeiter**                    | Zeitbuchungen, Abfrage Saldo | Berechnete Zeiten, Balance-Daten | UI5 Frontend |
-| **feiertage-api.de**               | Jahr, Bundesland             | JSON mit Feiertagen              | REST/HTTPS   |
-| **HR-System** (zukünftig)          | -                            | CSV/Excel Export                 | File         |
-| **Projekt-Management** (zukünftig) | Projekt-Stammdaten           | -                                | REST API     |
-| **SAP Identity Services**          | OAuth2/SAML Request          | JWT + Role Collections           | HTTPS        |
+| Partner                            | Eingabe                      | Ausgabe                          | Protokoll / Vermittler                    |
+| ---------------------------------- | ---------------------------- | -------------------------------- | ----------------------------------------- |
+| **Mitarbeiter**                    | Zeitbuchungen, Abfrage Saldo | Berechnete Zeiten, Balance-Daten | UI5 Frontend                              |
+| **feiertage-api.de**               | Jahr, Bundesland             | JSON mit Feiertagen              | SAP BTP Connectivity + Destination → REST |
+| **HR-System** (zukünftig)          | -                            | CSV/Excel Export                 | File                                      |
+| **Projekt-Management** (zukünftig) | Projekt-Stammdaten           | -                                | REST API                                  |
+| **SAP Identity Services**          | OAuth2/SAML Request          | JWT + Role Collections           | HTTPS                                     |
 
 ---
 
@@ -278,9 +279,12 @@ C4Context
 
     Boundary(btp, "SAP BTP Subaccount") {
         Container(approuter, "App Router", "Node.js", "SSO, Routing, Destinations")
+        Container(connectivity, "SAP BTP Connectivity", "Connectivity Service", "Secure Outbound Proxy")
+        Container(destination, "SAP BTP Destination", "Destination Service", "Holiday API Config")
 
         System_Boundary(app, "CAP Fiori TimeTracking") {
             Container(ui1, "Timetable App", "Fiori Elements", "List/Detail für Einträge")
+            Container(ui3, "Manage Activity Types App", "Fiori Elements", "Pflege der Activity Types")
             Container(ui2, "Dashboard App", "Custom UI5", "Übersicht & Charts")
             Container(srv, "TrackService", "TypeScript CAP", "OData V4 Service")
             ContainerDb(db, "Database", "SQLite/HANA", "Persistierung")
@@ -295,22 +299,28 @@ C4Context
     Rel_Back(idp, approuter, "JWT Access Token", "HTTPS")
     Rel(approuter, ui1, "serve static UI", "HTTPS")
     Rel(approuter, ui2, "serve static UI", "HTTPS")
+    Rel(approuter, ui3, "serve static UI", "HTTPS")
     Rel(approuter, srv, "OData V4 + JWT", "HTTPS")
     Rel(srv, db, "SQL Queries", "JDBC")
-    Rel(srv, holidays, "REST API", "HTTPS")
+    Rel(srv, connectivity, "via CAP Destinations", "RFC/HTTPS (managed)")
+    Rel(connectivity, destination, "Destination Lookup", "HTTPS")
+    Rel(connectivity, holidays, "REST API", "HTTPS")
 ```
 
 **Technologie-Mapping:**
 
-| Komponente                | Technologie        | Port/URL               | Verantwortlichkeit                  |
-| ------------------------- | ------------------ | ---------------------- | ----------------------------------- |
-| **Timetable App**         | UI5 Fiori Elements | :4004/timetable/       | Annotations-basiertes UI            |
-| **Dashboard App**         | UI5 Custom         | :4004/timetracking/    | Freies Dashboard-Design             |
-| **TrackService**          | CAP TypeScript     | :4004/odata/v4/track/  | Business-Logik                      |
-| **Database**              | SQLite             | In-Memory              | Datenhaltung                        |
-| **Feiertage-API**         | REST               | feiertage-api.de/api/  | Externe Datenquelle                 |
-| **App Router**            | Node.js (BTP)      | Subaccount Route       | Authenticated Routing, Destinations |
-| **SAP Identity Services** | XSUAA / AMS        | OAuth2 / SAML Endpoint | Token-Ausgabe, Role Collections     |
+| Komponente                | Technologie        | Port/URL                             | Verantwortlichkeit                     |
+| ------------------------- | ------------------ | ------------------------------------ | -------------------------------------- |
+| **Timetable App**         | UI5 Fiori Elements | :4004/io.nimble.timetable/           | Annotations-basiertes UI               |
+| **Manage Activity Types** | UI5 Fiori Elements | :4004/io.nimble.manageactivitytypes/ | Stammdatenpflege Activity Types        |
+| **Dashboard App**         | UI5 Custom         | :4004/io.nimble.timetracking/        | Freies Dashboard-Design                |
+| **TrackService**          | CAP TypeScript     | :4004/odata/v4/track/                | Business-Logik                         |
+| **Database**              | SQLite             | In-Memory                            | Datenhaltung                           |
+| **Feiertage-API**         | REST               | feiertage-api.de/api/                | Externe Datenquelle                    |
+| **App Router**            | Node.js (BTP)      | Subaccount Route                     | Authenticated Routing, Destinations    |
+| **SAP Identity Services** | XSUAA / AMS        | OAuth2 / SAML Endpoint               | Token-Ausgabe, Role Collections        |
+| **Connectivity Service**  | SAP BTP Service    | cf:<space>/connectivity              | Outbound Proxy für Holiday API         |
+| **Destination Service**   | SAP BTP Service    | cf:<space>/destination               | Holiday API Destinations & Credentials |
 
 **Wichtige Datenformate:**
 
@@ -345,13 +355,14 @@ Die Anwendung folgt einer **strikten 3-Tier-Architektur** mit klarer Trennung:
 
 **Architektur-Treiber:**
 
-| Qualitätsziel       | Gewählter Ansatz           | Umsetzung                                    |
-| ------------------- | -------------------------- | -------------------------------------------- |
-| **Wartbarkeit**     | Clean Architecture + SOLID | Jede Klasse hat genau eine Verantwortung     |
-| **Testbarkeit**     | Dependency Injection       | ServiceContainer managed alle Abhängigkeiten |
-| **Erweiterbarkeit** | Design Patterns            | Strategy (Algorithmen), Command (Operations) |
-| **Typsicherheit**   | TypeScript Strict Mode     | Auto-generierte Types aus CDS-Models         |
-| **Performance**     | Repository-Pattern         | Batch-Operations, Caching (HolidayService)   |
+| Qualitätsziel       | Gewählter Ansatz           | Umsetzung                                                             |
+| ------------------- | -------------------------- | --------------------------------------------------------------------- |
+| **Wartbarkeit**     | Clean Architecture + SOLID | Jede Klasse hat genau eine Verantwortung                              |
+| **Testbarkeit**     | Dependency Injection       | ServiceContainer managed alle Abhängigkeiten                          |
+| **Erweiterbarkeit** | Design Patterns            | Strategy (Algorithmen), Command (Operations)                          |
+| **Typsicherheit**   | TypeScript Strict Mode     | Auto-generierte Types aus CDS-Models                                  |
+| **Performance**     | Repository-Pattern         | Batch-Operations, Caching (HolidayService)                            |
+| **Cloud Native**    | 12-Factor + MTA Deployment | Externe Konfiguration, Build/Run-Trennung, deklarative CF-Deployments |
 
 ---
 
@@ -365,7 +376,7 @@ Die Anwendung folgt einer **strikten 3-Tier-Architektur** mit klarer Trennung:
 4. **Command Pattern** → Kapselt Business-Operations
 5. **Repository Pattern** → Abstrahiert Datenzugriff
 6. **Factory Pattern** → Konsistente Domain-Objekte
-7. **Dual UI Strategy** → Fiori Elements (schnell) + Custom (flexibel)
+7. **Multi-App UI Strategy** → Zwei Fiori Elements Apps + Custom Dashboard (je nach Use Case)
 8. **Modular CDS Annotations** → common/ + ui/ statt Monolith
 9. **Customizing Singleton** → Globale Defaults zentral via CustomizingService gepflegt
 10. **ADR-Dokumentation & Tooling** → Nachvollziehbare Entscheidungen + REST Client Tests
@@ -388,6 +399,18 @@ Details zu allen Entscheidungen: siehe [Kapitel 9 - Architekturentscheidungen](#
 
 ---
 
+### 4.4 Inner Loop Development & Airplane Mode
+
+- **Lokale Mocks:** CAPs Entwicklungspreset (`profile: development`) verwendet SQLite, Mock Auth & generische Provider → schnelle Schleifen ohne Cloud-Anbindung („airplane mode“).
+- **`cds watch` & Hot Reload:** `npm run watch` startet CAP, UI5 Workspaces (sapux) und TypeScript Watcher parallel. Änderungen werden in Sekunden sichtbar.
+- **Hybrid & Cloud Loops:** Bei Bedarf schaltet `cds` automatisch auf echte Services (HANA, XSUAA, Connectivity/Destination) um, sobald `profile: production` oder BTP-Bindings greifen.
+- **Parallelisierte Teams:** Frontend & Backend können unabhängig arbeiten; CDS-Services liefern generische REST/OData-Repositories, die später durch Custom Handler ersetzt werden.
+- **Spätes Schneiden (Modulith → Microservices):** Wir folgen dem CAP-Modulith-Ansatz; mehrere Services laufen lokal im selben Prozess und werden erst bei Bedarf als eigenständige Deployments (z. B. Microservices) geschnitten.
+
+> Ergebnis: Sehr schnelle „code → run → test“-Zyklen im Inner Loop, während der Outer Loop (PR, CI, cf deploy) nur bei stabilen Ergebnissen aktiviert wird.
+
+---
+
 ## 5. Bausteinsicht
 
 ### 5.1 Ebene 1: Gesamtsystem (Whitebox)
@@ -406,6 +429,7 @@ config:
 graph TB
     subgraph "🖥️ Presentation Layer - TypeScript UI5"
         UI1["📊 Fiori Elements App<br/>Timetable List/Detail"]
+        UI3["🛠️ Fiori Elements App<br/>Manage Activity Types"]
         UI2["🏠 Custom UI5 App<br/>Dashboard & Charts"]
     end
 
@@ -435,6 +459,7 @@ graph TB
     %% UI to Service
     UI1 --> SVC
     UI2 --> SVC
+    UI3 --> SVC
 
     %% Service Infrastructure
     SVC --> REGISTRY
@@ -480,6 +505,7 @@ graph TB
     style REGISTRY fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
     style UI1 fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
     style UI2 fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
+    style UI3 fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
 ```
 
 **Enthaltene Bausteine (Ebene 1):**
@@ -826,7 +852,7 @@ Damit ist der Infrastruktur-Layer die „Schaltzentrale“ des TrackService und 
 
 ### 5.6 Ebene 6: User Interface Layer (Fiori Elements & Freestyle Apps)
 
-Wir haben zwei verschiedene UI5-Apps, die zeigen, wie unterschiedlich man an Fiori-Entwicklung rangehen kann:
+Wir haben drei UI5-Apps, die zeigen, wie unterschiedlich man an Fiori-Entwicklung rangehen kann:
 
 #### 📋 Timetable App (Fiori Elements) - Der schnelle Weg
 
@@ -869,6 +895,19 @@ annotate TrackService.TimeEntries with @(
 ```
 
 > Hinweis: Über die Annotation `Hidden: { $Path: 'Customizing/hideAttachmentFacet' }` wird das Attachment-Facet der Object Page dynamisch gesteuert. Der Boolean lebt im Singleton `Customizing` und kann von Key Usern ohne Code-Deployment angepasst werden.
+
+#### 🛠️ Manage Activity Types (Fiori Elements Basic V4) - Stammdatenpflege
+
+- Ergänzt die Timetable-App um eine schlanke Maintenance-Oberfläche für Activity Types.
+- Nutzt das Fiori Tools Basic V4 Template, wodurch Inline-Edit, Filterbar und Tabellenfunktionen sofort verfügbar sind.
+- Bindet sich an denselben TrackService und profitiert von Validation/Authorization Rules aus dem Backend.
+
+**Technische Details:**
+
+- **App-Typ**: Fiori Elements Basic V4 (List/Detail ohne Draft)
+- **Quellcode**: `app/manage-activity-types/webapp` (TypeScript aktiviert)
+- **Routing**: Launchpad Preview Tile `Manage Activity Types` (`/io.nimble.manageactivitytypes/`)
+- **UI5 Tooling**: Generiert via SAP Fiori Tools (Version 1.19.x), eingebunden über `sapux` im Root `package.json`
 
 #### 📊 Timetracking Dashboard (Custom UI5) - Der flexible Weg
 
@@ -1377,13 +1416,32 @@ sequenceDiagram
 
 **Szenario 2: Cloud Foundry (BTP)**
 
-| Aspekt       | Konfiguration                                  |
-| ------------ | ---------------------------------------------- |
-| **Command**  | `npm run build && cf push`                     |
-| **Database** | HANA Cloud                                     |
-| **Auth**     | App Router + SAP Identity Services (XSUAA/AMS) |
-| **URL**      | https://app.cfapps.eu10.hana.ondemand.com      |
-| **Scaling**  | Auto-Scaling aktiviert                         |
+| Aspekt       | Konfiguration                                                                     |
+| ------------ | --------------------------------------------------------------------------------- |
+| **Command**  | `npx mbt build -p cf && cf deploy mta_archives/cap-fiori-timetracking_0.0.1.mtar` |
+| **Database** | HANA Cloud                                                                        |
+| **Auth**     | App Router + SAP Identity Services (XSUAA/AMS)                                    |
+| **URL**      | https://app.cfapps.eu10.hana.ondemand.com                                         |
+| **Scaling**  | Auto-Scaling aktiviert                                                            |
+
+`mta.yaml` beschreibt die Module (`cap-fiori-timetracking-srv`, `cap-fiori-timetracking-db-deployer`) sowie die benötigten CF-Services (HANA HDI, Object Store, Malware Scanning, Application Logging, Connectivity, Destination). Die `before-all` Build-Hook führt `npm ci` und `cds build --production` aus, sodass der Deploy über `cf deploy` ohne manuelle Zwischenschritte erfolgt. Details zur Entscheidung stehen in [ADR-0018](ADR/0018-mta-deployment-cloud-foundry.md).
+
+#### MTA-Module & Ressourcen
+
+| Typ       | Name                                     | Zweck                                                              |
+| --------- | ---------------------------------------- | ------------------------------------------------------------------ |
+| Module    | `cap-fiori-timetracking-srv`             | CAP Service (Node.js) – stellt OData & Handlers bereit             |
+| Module    | `cap-fiori-timetracking-db-deployer`     | HDI-Deployer für HANA Artefakte                                    |
+| Ressource | `cap-fiori-timetracking-db`              | HANA HDI Container                                                 |
+| Ressource | `cap-fiori-timetracking-attachments`     | Object Store für Binary Attachments                                |
+| Ressource | `cap-fiori-timetracking-malware-scanner` | Malware Scanning Service für Upload-Prüfungen                      |
+| Ressource | `cap-fiori-timetracking-logging`         | Application Logging Service                                        |
+| Ressource | `cap-fiori-timetracking-connectivity`    | SAP BTP Connectivity – Outbound Proxy zur Holiday API              |
+| Ressource | `cap-fiori-timetracking-destination`     | Destination Service – verwaltet Holiday-API-Endpoint & Credentials |
+
+> Lokale Deployments benötigen `cf` CLI ≥8, das MultiApps-Plugin (`cf install-plugin multiapps`) sowie das Multi-Target Build Tool (`npm install -g mbt`).
+
+Die Holiday-API wird produktiv über Destination + Connectivity konsumiert; lokal erfolgt der Zugriff direkt via HTTP. `package.json → cds.requires` spiegelt beide Varianten wider (Mock Auth lokal, echte Bindings in BTP).
 
 **Szenario 3: Docker Container**
 
@@ -1406,6 +1464,30 @@ sequenceDiagram
 | **Production**  | Credential Store / Service Bindings, Managed Identity   | Transport Management Service (TMS) oder GitOps | SAP Certificate Service, Rotations über BTP          |
 
 > Hinweis: API-Schlüssel für externe Systeme (z. B. Feiertags-API) werden zur Laufzeit via BTP Destination Parameters injiziert. CAP liest sie über `cds.env.requires.<destination>.credentials`.
+
+---
+
+### 7.5 CI/CD Workflow-Übersicht
+
+- **`test.yaml` (CI/CD Tests & Build):** Trigger auf Push/PR für `main`/`develop`. Führt `npm ci`, `cds-typer`, `npm run build`, Jest + Coverage sowie ESLint/Prettier Checks aus. Artifacts werden für 7 Tage bereitgestellt.
+- **`release-please.yaml`:** Automatisiert Versionierung & Changelog auf `main` mittels GitHub `release-please` Action (vgl. [ADR-0017](ADR/0017-release-automation-mit-release-please.md)).
+- **`cf.yaml` + Composite Action `cf-setup`:** Wiederverwendbarer Workflow (`workflow_call`, `workflow_dispatch`) für Cloud Foundry Deployments. Installiert `cf` CLI, `mbt`, MultiApps-Plugin, authentifiziert gegen Ziel-Org/Space und liest Logs (`cf logs ... --recent`). Optional ermittelt er über `cf app` die Route für das GitHub-Environment.
+
+```mermaid
+flowchart TD
+    subgraph CI
+        A["Push/PR on main or develop"] --> B["test.yaml: Test & Lint"]
+        B --> C["test.yaml: Build"]
+        C --> D["Artifacts (gen/, @cds-models/, coverage)"]
+    end
+    E["Push on main"] --> F["release-please.yaml"]
+    F --> G["Release PR / Tag / CHANGELOG"]
+    E --> H["cf.yaml (auto/manual)"]
+    H --> I["Composite cf-setup (cf, mbt, multiapps)"]
+    I --> J["cf deploy / Logs"]
+```
+
+> Die gleiche Toolchain (`cf`, MultiApps-Plugin, `mbt`) ist lokal erforderlich, um die in README/Getting Started beschriebenen Deployments auszuführen.
 
 ---
 
@@ -1572,6 +1654,8 @@ logger.error('Database error', error, context);
 - 💼 Service
 - 💾 Repository
 - ❌ Error
+
+> Produktion: Über `cds.requires['application-logging'] = true` und die Resource `cap-fiori-timetracking-logging` in der `mta.yaml` werden alle Log-Events zusätzlich an den SAP Application Logging Service weitergeleitet.
 
 ---
 
@@ -1783,8 +1867,8 @@ sequenceDiagram
 
 #### Transport & Lifecycle Governance
 
-- **CI/CD Pipeline:** Build (`npm run build`), Tests (`npm test`), Security Checks (`npm audit`) und Deploy (`cf push` oder `btp deploy`). Secrets werden aus der Pipeline heraus injiziert.
-- **Release-Automatisierung:** GitHub Action [`release-please`](../.github/workflows/release-please.yaml) verarbeitet Conventional Commits und pflegt `CHANGELOG.md`, Git-Tags sowie Versionsnummern. Die Manifest-Konfiguration (`release-please-config.json` + `.release-please-manifest.json`) listet die UI5-Apps unter `app/timetable` und `app/timetracking` als `extra-files`, damit deren `package.json`-Versionen mit dem Root-Package synchron bleiben.
+- **CI/CD Pipeline:** Build (`npm run build`), Tests (`npm test`), Security Checks (`npm audit`) und Deploy (`cf deploy` über das MTA-Plugin oder `btp deploy`). Secrets werden aus der Pipeline heraus injiziert.
+- **Release-Automatisierung:** GitHub Action [`release-please`](../.github/workflows/release-please.yaml) verarbeitet Conventional Commits und pflegt `CHANGELOG.md`, Git-Tags sowie Versionsnummern. Die Manifest-Konfiguration (`release-please-config.json` + `.release-please-manifest.json`) listet die UI5-Apps unter `app/timetable`, `app/timetracking` und `app/manage-activity-types` als `extra-files`, damit deren `package.json`-Versionen mit dem Root-Package synchron bleiben.
   - Workflow: (1) Feature-Branches werden via PR auf `main` gemergt, (2) die Action erstellt eine Manifest-PR mit Titelmuster `chore: release v${version}` inklusive automatischem Header/Footer, (3) `release-please` gruppiert Commits nach den konfigurierten Changelog-Sektionen (Features, Fixes, Docs, CI etc.) und führt den Versionsbump durch, (4) nach Freigabe entsteht das GitHub-Release samt Tag und aktualisierten Artefakten, (5) anschließend kann der geplante Cloud-Foundry-Deploy-Job anschließen.
   - Governance: Maintainer führen vor Konfigurationsänderungen einen lokalen Dry-Run (`npx release-please release-pr --config-file release-please-config.json --manifest-file .release-please-manifest.json --dry-run`) aus, um Auswirkungen auf Versionen, Changelog und Manifest zu verifizieren.
   - Visualisierung:
@@ -1847,28 +1931,56 @@ Der Einsatz von LLMs wird bewusst orchestriert, um **Requirements Engineering**,
 
 ---
 
+### 8.12 Developer Experience: SAP CAP Console
+
+- **Native Desktop-App:** Verfügbar für Windows & macOS; inspiriert vom CAP Developer Dashboard & OpenLens. Download über [SAP Tools](https://tools.hana.ondemand.com/#cloud-capconsole).
+- **Projekt-Discovery:** Scannt laufende CAP-Instanzen automatisch (Java & JavaScript); Projekte lassen sich „remembern“ oder manuell hinzufügen. Filter nach Status (running/stopped) oder Herkunft (detected/saved) helfen bei großen Workspaces.
+- **Monitoring & Insights:** Visualisiert die MTA-Struktur, Status-LEDs, CPU/RAM-Kennzahlen und Live-Logs. Dank unseres Plugins `@cap-js/console` können Log-Level on-the-fly gewechselt werden; ohne Plugin zeigt die Konsole Cloud-Foundry-Logs.
+- **Deployment Workflow:** Geführter Dialog für SAP BTP Cloud Foundry – Authentifizierung, Entitlement-Check, Service-Anlage und Deployment (In-App mit gebundleten CLIs oder als Export der CLI-Kommandos). Standardverbindungen (Global Account/Subaccount/Space) sind konfigurierbar.
+- **Environments:** Projektinterne `.cds/*.yaml`-Files definieren Umgebungen (z. B. local, dev, prod); Umschalten erfolgt direkt in der UI. Als Vorlage dient `.cds/trial.yaml.example`. Berechtigungen richten sich nach dem angemeldeten BTP-Benutzer.
+- **Security & SSH:** Für Plugin-Funktionen in BTP wird ein temporärer SSH-Tunnel aufgebaut. Teams müssen die CF-SSH-Sicherheitsimplikationen kennen; Tunnel werden beim Wechsel/Beenden automatisch geschlossen.
+- **Einschränkungen:** Noch kein Support für µ-Services, MTX oder Kyma; Fokus auf CAP-on-CF-Szenarien.
+
+Die CAP Console ergänzt REST Client, Swagger UI und AI Prompts als zentrales Werkzeug für Troubleshooting, Live-Monitoring und „First Deploy“ Experiences.
+
+---
+
+### 8.13 CAP Plugins & Calesi Pattern
+
+- **Calesi („CAP-level Service Integrations“)** beschreibt das CAP-Plugin-Ökosystem, das Services auf CAP-Niveau integriert (GraphQL, OData V2, WebSockets, OpenTelemetry, Messaging, Audit Logging, Attachments, …).
+- **Verwendung im Projekt:** `@cap-js/attachments`, `@cap-js/console`, `@cap-js-community/odata-v2-adapter` u. a. folgen dem Calesi-Ansatz: plug & play über `cds add …` oder Dependency, danach Registrierung im ServiceContainer bzw. automatische Aktivierung.
+- **Golden Path:** CAP propagiert „late binding“ – Features (z. B. SAP Cloud Logging, Personal Data Management) werden erst ergänzt, wenn der Bedarf entsteht. Plugins lassen sich lokal mocken und produktiv anbinden, ohne Codeänderungen.
+- **Ökosystem:** Neben dem CAP Team liefern BTP-Service-Teams, SAP-Produkte, Partner und Community neue Plugins. Übersicht: [CAP Plugins Directory](https://cap.cloud.sap/docs/plugins/).
+- **Governance:** Evaluierte Plugins dokumentieren wir in ADRs/Docs (z. B. Attachments, Logging). Neue Add-ons folgen denselben Qualitäts-Gates (Tests, DI, Observability) wie unsere Kernkomponenten.
+
+> Motto: „Start small, grow as you go“ – CAP + Calesi erlauben es, Enterprise-Features iterativ nachzurüsten, ohne in technische Schulden zu geraten.
+
+---
+
 ## 9. Architekturentscheidungen
 
 Alle Architekturentscheidungen sind als ADRs dokumentiert unter `docs/ADR/`:
 
-| ADR                                                            | Titel                              | Status        |
-| -------------------------------------------------------------- | ---------------------------------- | ------------- |
-| [ADR-0001](ADR/0001-clean-architecture-trackservice.md)        | Clean Architecture TrackService    | ✅ Akzeptiert |
-| [ADR-0002](ADR/0002-command-pattern-business-logik.md)         | Command Pattern Business Logik     | ✅ Akzeptiert |
-| [ADR-0003](ADR/0003-zeitberechnung-und-factories.md)           | Zeitberechnung und Factories       | ✅ Akzeptiert |
-| [ADR-0004](ADR/0004-typescript-tooling-und-workflow.md)        | TypeScript Tooling und Workflow    | ✅ Akzeptiert |
-| [ADR-0005](ADR/0005-duale-ui5-strategie.md)                    | Duale UI5-Strategie                | ✅ Akzeptiert |
-| [ADR-0006](ADR/0006-modularisierung-cds-annotationen.md)       | Modularisierung CDS Annotationen   | ✅ Akzeptiert |
-| [ADR-0007](ADR/0007-repository-pattern-datenzugriff.md)        | Repository Pattern Datenzugriff    | ✅ Akzeptiert |
-| [ADR-0008](ADR/0008-strukturiertes-logging.md)                 | Strukturiertes Logging             | ✅ Akzeptiert |
-| [ADR-0009](ADR/0009-source-feld-datenherkunft.md)              | Source-Feld Datenherkunft          | ✅ Akzeptiert |
-| [ADR-0010](ADR/0010-mocked-authentication-test-user.md)        | Mocked Authentication Test User    | ✅ Akzeptiert |
-| [ADR-0011](ADR/0011-test-strategie-jest-rest-client.md)        | Test-Strategie Jest REST Client    | ✅ Akzeptiert |
-| [ADR-0012](ADR/0012-customizing-singleton-defaults.md)         | Customizing Singleton Defaults     | ✅ Akzeptiert |
-| [ADR-0013](ADR/0013-attachments-plugin-integration.md)         | CAP Attachments Plugin             | ✅ Akzeptiert |
-| [ADR-0014](ADR/0014-openapi-swagger-ui-preview.md)             | Swagger UI Preview im Development  | ✅ Akzeptiert |
-| [ADR-0015](ADR/0015-timeentry-status-workflow.md)              | TimeEntry Status Workflow          | ✅ Akzeptiert |
-| [ADR-0016](ADR/0016-repository-meta-dateien-und-governance.md) | Repository Meta Files & Governance | ✅ Akzeptiert |
+| ADR                                                            | Titel                                 | Status        |
+| -------------------------------------------------------------- | ------------------------------------- | ------------- |
+| [ADR-0001](ADR/0001-clean-architecture-trackservice.md)        | Clean Architecture TrackService       | ✅ Akzeptiert |
+| [ADR-0002](ADR/0002-command-pattern-business-logik.md)         | Command Pattern Business Logik        | ✅ Akzeptiert |
+| [ADR-0003](ADR/0003-zeitberechnung-und-factories.md)           | Zeitberechnung und Factories          | ✅ Akzeptiert |
+| [ADR-0004](ADR/0004-typescript-tooling-und-workflow.md)        | TypeScript Tooling und Workflow       | ✅ Akzeptiert |
+| [ADR-0005](ADR/0005-duale-ui5-strategie.md)                    | Duale UI5-Strategie                   | ✅ Akzeptiert |
+| [ADR-0006](ADR/0006-modularisierung-cds-annotationen.md)       | Modularisierung CDS Annotationen      | ✅ Akzeptiert |
+| [ADR-0007](ADR/0007-repository-pattern-datenzugriff.md)        | Repository Pattern Datenzugriff       | ✅ Akzeptiert |
+| [ADR-0008](ADR/0008-strukturiertes-logging.md)                 | Strukturiertes Logging                | ✅ Akzeptiert |
+| [ADR-0009](ADR/0009-source-feld-datenherkunft.md)              | Source-Feld Datenherkunft             | ✅ Akzeptiert |
+| [ADR-0010](ADR/0010-mocked-authentication-test-user.md)        | Mocked Authentication Test User       | ✅ Akzeptiert |
+| [ADR-0011](ADR/0011-test-strategie-jest-rest-client.md)        | Test-Strategie Jest REST Client       | ✅ Akzeptiert |
+| [ADR-0012](ADR/0012-customizing-singleton-defaults.md)         | Customizing Singleton Defaults        | ✅ Akzeptiert |
+| [ADR-0013](ADR/0013-attachments-plugin-integration.md)         | CAP Attachments Plugin                | ✅ Akzeptiert |
+| [ADR-0014](ADR/0014-openapi-swagger-ui-preview.md)             | Swagger UI Preview im Development     | ✅ Akzeptiert |
+| [ADR-0015](ADR/0015-timeentry-status-workflow.md)              | TimeEntry Status Workflow             | ✅ Akzeptiert |
+| [ADR-0016](ADR/0016-repository-meta-dateien-und-governance.md) | Repository Meta Files & Governance    | ✅ Akzeptiert |
+| [ADR-0017](ADR/0017-release-automation-mit-release-please.md)  | Release-Automation mit release-please | ✅ Akzeptiert |
+| [ADR-0018](ADR/0018-mta-deployment-cloud-foundry.md)           | MTA-Deployment für SAP BTP CF         | ✅ Akzeptiert |
 
 ---
 

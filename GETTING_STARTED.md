@@ -10,14 +10,22 @@ Stelle sicher, dass folgende Software installiert ist:
 
 ### Erforderlich
 
-| Tool           | Version                                    | Download                            | Zweck                 |
-| -------------- | ------------------------------------------ | ----------------------------------- | --------------------- |
-| **Node.js**    | ≥23.x LTS (empfohlen 23.6.0 laut `.nvmrc`) | [nodejs.org](https://nodejs.org/)   | Runtime für CAP & UI5 |
-| **npm**        | ≥10.x                                      | (kommt mit Node.js)                 | Package Manager       |
-| **TypeScript** | ≥5.0                                       | `npm install -g typescript`         | Compiler              |
-| **Git**        | Latest                                     | [git-scm.com](https://git-scm.com/) | Version Control       |
+| Tool           | Version                                 | Download                            | Zweck                 |
+| -------------- | --------------------------------------- | ----------------------------------- | --------------------- |
+| **Node.js**    | ≥18.x (empfohlen 22.20.0 laut `.nvmrc`) | [nodejs.org](https://nodejs.org/)   | Runtime für CAP & UI5 |
+| **npm**        | ≥10.x                                   | (kommt mit Node.js)                 | Package Manager       |
+| **TypeScript** | ≥5.0                                    | `npm install -g typescript`         | Compiler              |
+| **Git**        | Latest                                  | [git-scm.com](https://git-scm.com/) | Version Control       |
 
-> Tipp: Falls du `nvm` verwendest, kannst du mit `nvm use` automatisch die in `.nvmrc` definierte Node-Version (23.6.0) aktivieren. Bei Bedarf installiert `nvm install` die Version einmalig.
+> Tipp: Falls du `nvm` verwendest, kannst du mit `nvm use` automatisch die in `.nvmrc` definierte Node-Version (22.20.0) aktivieren. Bei Bedarf installiert `nvm install` die Version einmalig.
+
+#### Zusatz-Tools für SAP BTP Deployments
+
+| Tool                         | Version | Installationsschritt                                                              | Zweck                              |
+| ---------------------------- | ------- | --------------------------------------------------------------------------------- | ---------------------------------- |
+| **Cloud Foundry CLI (`cf`)** | ≥8.8    | [docs.cloudfoundry.org](https://docs.cloudfoundry.org/cf-cli/install-go-cli.html) | Deployments, Service-Management    |
+| **CF MultiApps Plugin**      | Latest  | `cf install-plugin multiapps`                                                     | `cf deploy` für MTA-Unterstützung  |
+| **MBT (`mbt`)**              | Latest  | `npm install -g mbt`                                                              | Baut `.mtar` für Multi-Target Apps |
 
 ### Empfohlen
 
@@ -31,10 +39,12 @@ Stelle sicher, dass folgende Software installiert ist:
 ### Prüfen der Installation
 
 ```bash
-node --version    # sollte v20.x.x oder höher sein
+node --version    # sollte v22.x.x (oder >=18 LTS) sein
 npm --version     # sollte 10.x.x oder höher sein
 tsc --version     # sollte Version 5.x.x oder höher sein
 git --version     # sollte installiert sein
+cf --version      # sollte installiert sein
+mbt --version     # sollte installiert sein
 ```
 
 ---
@@ -82,17 +92,10 @@ cp .env.example .env
 
 Alle Variablen sind optional. Nicht gesetzte Werte fallen auf die Defaults aus `Customizing` bzw. den Services zurück.
 
-### 4. TypeScript-Typen generieren
+### 4. TypeScript-Typen & Entry Points
 
-```bash
-npm run generate-entry-point
-```
-
-Dies erzeugt:
-
-- `@cds-models/` Verzeichnis mit TypeScript-Typen
-- Entry Points für alle CDS-Entities
-- Import-Aliases (`#cds-models/TrackService`)
+- **Typen:** `@cap-js/cds-typer` läuft automatisch (über `npm run watch`, `npm run build` oder `cds-typer --watch`) und aktualisiert `@cds-models/*` bei jeder `.cds`-Änderung – kein manueller Befehl erforderlich.
+- **Optionale Entry Points:** Falls du `dev-cap-tools` Skripte nutzt (z. B. für CLI-Aufrufe), kannst du optional `npm run generate-entry-point` ausführen, um aktualisierte Entry Points zu erzeugen. Das beeinflusst die generierten Typen nicht.
 
 ---
 
@@ -100,10 +103,11 @@ Dies erzeugt:
 
 Damit alle Contributors dieselben Standards nutzen, bringt das Projekt mehrere Meta-Dateien mit:
 
-- `.nvmrc` – definiert Node.js 23.6.0. `nvm use` stellt sicher, dass du exakt diese Version nutzt.
+- `.nvmrc` – definiert Node.js 22.20.0. `nvm use` stellt sicher, dass du exakt diese Version nutzt.
 - `.npmrc` – erzwingt kompatible Node-Versionen (`engine-strict=true`) und aktiviert Sicherheitsprüfungen (`audit=true`).
 - `.editorconfig` – legt Formatierungsregeln fest (2 Spaces, LF, keine trailing spaces), passend zu Prettier.
 - `.env.example` – Beispielkonfiguration für lokale Umgebungsvariablen. Kopiere sie wie oben beschrieben nach `.env`.
+- `@cap-js/console` – aktiviert das CAP-Console-Plugin für Monitoring & Log-Level-Switches innerhalb der [SAP CAP Console](https://cap.cloud.sap/docs/tools/console) (Desktop-App).
 - `CODE_OF_CONDUCT.md` & `SECURITY.md` – beschreiben Verhaltensregeln sowie den Ablauf für Sicherheitsmeldungen.
 - `.github/ISSUE_TEMPLATE/*`, `.github/PULL_REQUEST_TEMPLATE.md`, `.github/dependabot.yml`, `.github/CODEOWNERS` – sorgen für saubere Issues/PRs, automatische Dependency-Updates und klar zugewiesene Reviews.
 - `release-please-config.json` & `.release-please-manifest.json` – steuern die automatisierte Release-PR-Erstellung; vor produktiven Läufen empfiehlt sich ein lokaler Dry-Run (`npx release-please release-pr --config-file release-please-config.json --manifest-file .release-please-manifest.json --dry-run`, Details in der README). Die Versionsnummern der UI5-Apps werden dabei über `extra-files` mitgezogen.
@@ -250,7 +254,7 @@ cap-fiori-timetracking/
 ├── test/                     # 🧪 Tests (Jest + REST Client)
 ├── .env.example              # ⚙️ Beispiel-Umgebungsvariablen
 ├── .editorconfig             # 🧹 Formatierungsregeln (2 Spaces, LF)
-├── .nvmrc                    # 🟦 Node-Version 23.6.0
+├── .nvmrc                    # 🟦 Node-Version 22.20.0
 ├── .npmrc                    # 📦 npm Richtlinien (engine-strict, audit)
 ├── CODE_OF_CONDUCT.md        # 🤝 Community Guidelines
 ├── SECURITY.md               # 🔐 Responsible Disclosure
@@ -261,14 +265,14 @@ cap-fiori-timetracking/
 
 ## 🛠️ Wichtige npm Scripts
 
-| Befehl                         | Zweck                      | Wann verwenden?                 |
-| ------------------------------ | -------------------------- | ------------------------------- |
-| `npm run watch`                | Dev-Server mit Auto-Reload | **Hauptbefehl für Development** |
-| `npm run build`                | TypeScript kompilieren     | Vor Commit (prüft Syntax)       |
-| `npm run format`               | Prettier Formatierung      | **Vor jedem Commit (Pflicht!)** |
-| `npm run generate-entry-point` | CDS-Typen generieren       | Nach CDS-Model-Änderungen       |
-| `npm test`                     | Jest Tests ausführen       | Nach Code-Änderungen            |
-| `npm start`                    | Production-like Serve      | Finaler Check vor Deployment    |
+| Befehl                         | Zweck                                | Wann verwenden?                 |
+| ------------------------------ | ------------------------------------ | ------------------------------- |
+| `npm run watch`                | Dev-Server mit Auto-Reload           | **Hauptbefehl für Development** |
+| `npm run build`                | TypeScript kompilieren               | Vor Commit (prüft Syntax)       |
+| `npm run format`               | Prettier Formatierung                | **Vor jedem Commit (Pflicht!)** |
+| `npm run generate-entry-point` | Service Entry Points (dev-cap-tools) | Optional bei neuen Services     |
+| `npm test`                     | Jest Tests ausführen                 | Nach Code-Änderungen            |
+| `npm start`                    | Production-like Serve                | Finaler Check vor Deployment    |
 
 ### Typischer Development-Workflow
 
@@ -314,15 +318,23 @@ git push
 **Fiori Elements Timetable:**
 
 ```
-http://localhost:4004/timetable/webapp/index.html
+http://localhost:4004/io.nimble.timetable/index.html
 ```
 
 Features: List Report, Object Page, Drafts, F4 Value Helps
 
+**Manage Activity Types (Fiori Elements Basic V4):**
+
+```
+http://localhost:4004/io.nimble.manageactivitytypes/index.html
+```
+
+Features: Stammdatenpflege der Activity Types, Tabellenfilter, Inline-Edit; alternativ über Launchpad-Vorschau `http://localhost:4004/fiori.html` erreichbar.
+
 **Custom UI5 Dashboard:**
 
 ```
-http://localhost:4004/timetracking/webapp/index.html
+http://localhost:4004/io.nimble.timetracking/index.html
 ```
 
 Features: Dashboard, SinglePlanningCalendar, Charts
@@ -363,6 +375,29 @@ npm run watch
 
 ---
 
+### 5. SAP CAP Console einrichten
+
+Die [SAP CAP Console](https://cap.cloud.sap/docs/tools/console) ist eine native Desktop-App (Windows/macOS), inspiriert vom CAP Developer Dashboard & OpenLens, die lokale Entwicklung, BTP-Deployments und Monitoring in einer Oberfläche bündelt.
+
+1. **Download & Installation**
+   Lade die Anwendung über [SAP Tools](https://tools.hana.ondemand.com/#cloud-capconsole) herunter und installiere sie. Vor dem Start unseres Projekts optional `npm run watch`, damit die Konsole das lokale CAP-Backend erkennt.
+
+2. **Projekt hinzufügen**
+   Beim Start scannt die Konsole laufende CAP-Prozesse (Java/JS). Unser Projekt erscheint automatisch in der Liste; über das Menü (`…`) kannst du „Remember Project“ wählen, um es dauerhaft anzuzeigen. Alternativ `Add Project` → Root-Ordner wählen.
+
+3. **Monitoring & Struktur**
+   Die App visualisiert die `mta.yaml`, zeigt pro Modul Status, CPU/RAM und Live-Logs. Durch das im Projekt installierte Plugin `@cap-js/console` lassen sich Log-Level ohne Neustart anpassen. Ohne laufenden Service fallen die Live-Metriken weg, aber Metadaten bleiben sichtbar.
+
+4. **Environments & Deployment**
+   Environment-Konfigurationen liegen als `.cds/*.yaml` in deinem Projekt (siehe Beispiel `.cds/trial.yaml.example`). Wechsel per Top-Bar zwischen `local`, `dev`, `prod`. Für Cloud Foundry Deployments führt ein Wizard durch Authentifizierung, Entitlement-Check und Service-Anlage – wahlweise komplett „In-App“ (mit gebundleten CLIs) oder als Befehlssammlung für dein Terminal.
+
+5. **Security & SSH**
+   Für Plugin-Features in BTP erzeugt die Konsole bei Bedarf einen SSH-Tunnel zum Applikations-Container. Stelle sicher, dass du und dein Team die Implikationen kennen (siehe „Security“-Kapitel in der Produktdoku) und SSH nur so lange aktiviert ist wie nötig.
+
+> Hinweis: Derzeit unterstützt die CAP Console keine µ-Services, kein MTX und keine Kyma-Deployments. Fokus liegt auf CAP-Projekten Richtung SAP BTP Cloud Foundry.
+
+---
+
 ## ☁️ Attachments auf SAP BTP konfigurieren (optional)
 
 Standardmäßig speichert das Attachments Plugin (`@cap-js/attachments`) Binärdaten in der angebundenen Datenbank. Für produktive Szenarien mit größeren Dateien oder Compliance-Anforderungen kannst du zusätzliche SAP BTP Services anbinden:
@@ -373,16 +408,37 @@ Standardmäßig speichert das Attachments Plugin (`@cap-js/attachments`) Binärd
 **Beispielhafte Schritte (Cloud Foundry):**
 
 ```bash
-# Optional: Object Store für Attachments
-cf create-service objectstore standard attachments-objectstore
+# Object Store für Attachments
+cf create-service objectstore standard cap-fiori-timetracking-attachments
 
-# Optional: Malware Scanner für Uploads
-cf create-service malwarescanning standard attachments-malware
+# Malware Scanner für Uploads
+cf create-service malwarescanning standard cap-fiori-timetracking-malware-scanner
 
-# Service-Bindings beim Deploy hinzufügen (manifest.yaml)
+# Application Logging Service für zentrale Logs
+cf create-service application-logs standard cap-fiori-timetracking-logging
+
+# Service-Bindings übernimmt die mta.yaml beim cf deploy
+
+# Connectivity + Destination für Holiday API
+cf create-service connectivity lite cap-fiori-timetracking-connectivity
+cf create-service destination lite cap-fiori-timetracking-destination
 ```
 
 > Konkrete Konfigurationsdetails (Binding-Names, Destinations, Environment Variables) findest du in der offiziellen Plugin-Dokumentation: [SAP Object Store](https://github.com/cap-js/attachments#using-sap-object-store) und [Malware Scanning Service](https://github.com/cap-js/attachments#using-sap-malware-scanning-service).
+
+---
+
+## ☁️ Deploy auf SAP BTP (Cloud Foundry)
+
+1. **Voraussetzungen:** Installiere das Cloud Foundry CLI mit MultiApps Plugin (`cf install-plugin multiapps`) sowie das Cloud MTA Build Tool (`npm install -g mbt` oder via Binary).
+2. **Services vorbereiten:** Lege einmalig pro Subaccount die Services aus dem Abschnitt oben an (`hana`, `objectstore`, `malwarescanning`, `application-logs`, `connectivity`, `destination`).
+3. **Build ausführen:** `npm ci && npx cds build --production && npx mbt build -p cf`
+4. **Deploy:** `cf deploy mta_archives/cap-fiori-timetracking_0.0.1.mtar`
+5. **Bindings prüfen:** `cf services` sollte zeigen, dass `cap-fiori-timetracking-srv` an DB, Attachments, Malware-Scanner, Connectivity, Destination und Application Logging gebunden ist. Das Logging greift automatisch, weil `cds.requires['application-logging']=true` gesetzt ist.
+
+> Tipp: Für schnelle Iterationen kannst du `npx mbt build -p cf --dev` verwenden. Das spart einige Optimierungsschritte beim Build.
+
+Durch die Kombination aus `mta.yaml`, klar getrennten Build-/Run-Phasen und externen Service-Bindings erfüllt die Lösung zentrale [12-Factor-Prinzipien](https://12factor.net/) und lässt sich als cloud-native Applikation klassifizieren.
 
 ---
 
@@ -392,11 +448,7 @@ cf create-service malwarescanning standard attachments-malware
 
 **Lösung:**
 
-```bash
-npm run generate-entry-point
-```
-
-Die TypeScript-Typen müssen nach jedem CDS-Model-Update regeneriert werden.
+> TypeScript-Typen werden durch `@cap-js/cds-typer` beim Speichern/Build automatisch erzeugt. `npm run generate-entry-point` ist nur erforderlich, wenn Tooling (z. B. dev-cap-tools) neue Entry Points benötigt.
 
 ---
 
@@ -550,18 +602,36 @@ Wenn `"kind": "xsuaa"` oder `"jwt"` → auf `"mocked"` ändern und Server neu st
 
 Prüfe diese Punkte, bevor du mit Development startest:
 
-- [ ] Node.js ≥20.x installiert (`node --version`)
+- [ ] Node.js ≥22.x installiert (`node --version`)
 - [ ] npm ≥10.x installiert (`npm --version`)
 - [ ] Repository geklont
 - [ ] `npm install` erfolgreich durchgelaufen
-- [ ] `npm run generate-entry-point` ausgeführt
+- [ ] Optional: `npm run generate-entry-point` (falls dev-cap-tools Entry Points benötigt)
 - [ ] `npm run watch` läuft ohne Fehler
 - [ ] Browser öffnet `http://localhost:4004`
 - [ ] Login mit Test-User funktioniert
-- [ ] Fiori Apps erreichbar (`/timetable/`, `/timetracking/`)
+- [ ] Fiori Apps erreichbar (`/io.nimble.timetable/`, `/io.nimble.timetracking/`, `/io.nimble.manageactivitytypes/`)
 - [ ] VS Code Extensions installiert (CDS, ESLint, Prettier)
 
 **Alles ✅? Perfekt! Du bist bereit zu starten!** 🚀
+
+---
+
+---
+
+## 🔁 Inner Loop Checklist
+
+| Schritt                           | Ziel                                 | Empfehlung / Command                                  |
+| --------------------------------- | ------------------------------------ | ----------------------------------------------------- |
+| **1. Watch starten**              | CAP + UI5 Hot Reload, lokale Mocks   | `npm run watch` nutzt `cds watch` (Mock Auth, SQLite) |
+| **2. Coding & Docs**              | Feature bauen, ADR prüfen            | Editor + `docs/ARCHITECTURE.md`/ADRs im Blick         |
+| **3. Tests ausführen**            | Regression vermeiden                 | `npm test` oder `npm run test:watch`                  |
+| **4. Lint & Format**              | Style & Quality sichern              | `npx eslint …`, `npx prettier --check …`              |
+| **5. Manual Check / CAP Console** | UI/Service Smoke-Test, Monitoring    | REST Client (`tests/*.http`), Swagger UI, CAP Console |
+| **6. Optional Entry Points**      | Dev-Tool Generierung (dev-cap-tools) | `npm run generate-entry-point` bei Bedarf             |
+| **7. Commit & PR**                | Änderung teilen                      | Conventional Commit, PR Template nutzen               |
+
+> Tipp: Halte die inner loop Schleife klein (<15 Minuten). Erst wenn Code & Tests lokal stabil sind, geht’s in den äußeren Loop (PR, Review, CI, Deployment).
 
 ---
 

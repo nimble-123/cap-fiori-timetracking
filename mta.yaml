@@ -28,6 +28,8 @@ modules:
       - name: cap-fiori-timetracking-db
       - name: cap-fiori-timetracking-malware-scanner
       - name: cap-fiori-timetracking-logging
+      - name: cap-fiori-timetracking-connectivity
+      - name: cap-fiori-timetracking-destination
 
   - name: cap-fiori-timetracking-db-deployer
     type: hdb
@@ -58,3 +60,13 @@ resources:
     parameters:
       service: application-logs
       service-plan: standard
+  - name: cap-fiori-timetracking-connectivity
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: connectivity
+      service-plan: lite
+  - name: cap-fiori-timetracking-destination
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: destination
+      service-plan: lite

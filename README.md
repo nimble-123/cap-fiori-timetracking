@@ -15,8 +15,10 @@
 
 - 🎯 **100% TypeScript** - Typsicheres Backend ohne ein einziges JavaScript-File
 - 🏗️ **Clean Architecture** - 5-Tier-Architektur mit 10 Design Patterns (Command, Repository, Factory, Strategy, ...)
-- 🎨 **Dual UI Strategy** - Fiori Elements (annotations-driven) + Custom UI5 (TypeScript)
-- 🔧 **Production-Ready** - Validierung, Error Handling, strukturiertes Logging, Holiday-API Integration
+- 🎨 **Multi-App UI Strategy** - Fiori Elements Timetable, Custom Dashboard & Manage Activity Types Maintenance App
+- 🧭 **SAP CAP Console** - Native Desktop-App für lokales Dev, BTP Deployment & Monitoring aus einer Oberfläche
+- 🔧 **Production-Ready** - Validierung, Error Handling, strukturiertes Logging + Application Logging Service, Malware-Scanning
+- ☁️ **Cloud-native Deployment** - `mta.yaml` für SAP BTP (HANA, Attachments, Logging) + 12-Factor-konformes Packaging
 - 📚 **Vollständig dokumentiert** - arc42-Architektur, ADRs, Inline-JSDoc
 - 🧪 **Testbar** - Jest Tests + REST Client für manuelle Tests
 - 📘 **API Discovery** - Swagger UI Preview für TrackService während der Entwicklung
@@ -98,7 +100,7 @@ graph TB
 - 🧰 **Customizing Singleton** - Pflege aller globalen Defaults (Arbeitszeiten, EntryTypes, Schwellenwerte, Integrations-URLs)
 - 📎 **Dokumentenanhänge** - Upload & Download via SAP CAP Attachments Plugin (`@cap-js/attachments`) inkl. Fiori Attachment Facet
 - 🔐 **Business Rules** - Validierung, Eindeutigkeit (1 Entry/User/Tag), Change Detection
-- 🎨 **Dual UI** - Fiori Elements (annotations-driven) + Custom UI5 (TypeScript)
+- 🎨 **Multi-App UI** - Timetable & Manage Activity Types (Fiori Elements) plus Custom UI5 Dashboard
 - 🏗️ **10 Design Patterns** - Command, Repository, Factory, Strategy, Validator, Handler, Registry, Registrar, Builder, ServiceContainer (DI)
 
 📖 **Details:** [ARCHITECTURE.md](docs/ARCHITECTURE.md) - Komplette Bausteinsicht, Laufzeitsicht, Qualitätsszenarien
@@ -121,6 +123,9 @@ cap-fiori-timetracking/
 │   │   │   ├── manifest.json              # App Descriptor
 │   │   │   └── i18n/                      # Internationalization
 │   │   └── annotations.cds                # UI Annotations
+│   │
+│   ├── manage-activity-types/             # Fiori Elements Basic App für Stammdatenpflege
+│   │   └── webapp/                        # UI5 Application (TypeScript, Basic V4)
 │   │
 │   └── timetracking/                      # Custom UI5 Dashboard App
 │       ├── webapp/
@@ -220,6 +225,7 @@ cap-fiori-timetracking/
 │           ├── factories/                 # 🏭 Object Creation
 │           └── utils/                     # 🛠️ Utilities (DateUtils, Logger)
 │
+├── mta.yaml                               # ☁️ Multi-Target Application Descriptor (SAP BTP)
 ├── @cds-models/                           # 🎯 Auto-generierte TypeScript Types
 ├── docs/                                  # 📚 Dokumentation
 │   ├── ARCHITECTURE.md                    # arc42 Architektur
@@ -289,10 +295,96 @@ cap-fiori-timetracking/
 | `npm run watch`                | Dev-Server mit Auto-Reload | ⭐ **Hauptbefehl für Development** |
 | `npm run build`                | TypeScript kompilieren     | Vor Commit (prüft Syntax)          |
 | `npm run format`               | Prettier Formatierung      | **Vor jedem Commit (Pflicht!)**    |
-| `npm run generate-entry-point` | CDS-Typen generieren       | Nach CDS-Model-Änderungen          |
+| `npm run generate-entry-point` | Service Entry Points für Dev Tools (dev-cap-tools) | Nach neuen Services/Commands (optional) |
 | `npm test`                     | Jest Tests ausführen       | Nach Code-Änderungen               |
 
 📖 **Vollständiger Workflow:** Siehe [GETTING_STARTED.md](GETTING_STARTED.md#-wichtige-npm-scripts)
+
+---
+
+## 🧭 SAP CAP Console
+
+- **Installation:** Lade die native Desktop-App (Windows/macOS) über [SAP Tools](https://tools.hana.ondemand.com/#cloud-capconsole) herunter.
+- **Projekt-Erkennung:** Die Konsole scannt laufende CAP-Projekte (JavaScript & Java) und listet sie automatisch; Projekte lassen sich „merken“ oder manuell über „Add Project“ einbinden.
+- **Monitoring & Insights:** Visualisiert Module aus der `mta.yaml`, zeigt Status/CPU/RAM, Live-Logs und bietet Log-Level-Switching, sofern das Projekt das CAP-Console-Plugin (`@cap-js/console`) enthält – bei uns bereits installiert.
+- **Deployments:** Geführter Dialog für SAP BTP Cloud Foundry (Entitlements prüfen, Services anlegen, In-App- oder CLI-Deploy). Standardverbindungen können hinterlegt werden.
+- **Environments & Security:** Environment-Profile (.cds/\*.yaml, siehe `.cds/trial.yaml.example`) ermöglichen schnellen Wechsel zwischen lokal, Dev und Prod; SSH-Tunnel für Plugin-Zugriff lassen sich pro App steuern – Security-Hinweise beachten.
+- **Limitierungen:** Aktuell kein Support für µ-Services, MTX oder Kyma; fokus auf CAP auf BTP Cloud Foundry.
+
+Die Konsole ergänzt unsere lokalen Tools (REST Client, Swagger UI) und wird in Onboarding-Sessions für Troubleshooting und First Deployments empfohlen.
+
+---
+
+## 🔁 Inner Loop Development
+
+1. **Watch & Hot Reload**  
+   `npm run watch` setzt auf `cds watch`/`cds-tsx` und nutzt CAPs Entwicklungsprofil mit lokalen Mock-Services (SQLite, Mock Auth). Damit bleibt die Schleife auch offline („airplane mode“) schnell.
+2. **CAP Console & REST Client**  
+   Die CAP Console (s.o.) liefert Monitoring, Deploy-Wizard und Log-Level Switching. REST Client Files in `tests/` und Swagger UI (`/$api-docs/…`) ergänzen manuelle Checks.
+3. **Typsicherheit & Linting**  
+   `@cap-js/cds-typer` aktualisiert Typen automatisch bei `.cds`-Änderungen. `npm run build` + ESLint/Prettier (`npx eslint …`, `npx prettier --check …`) sichern Stil & Regeln. `npm run generate-entry-point` liefert bei Bedarf aktualisierte Entry Points für Tooling.
+4. **Tests & Coverage**  
+   `npm test` bzw. `npm run test:watch` decken Jest-Suites ab; Coverage liegt unter `coverage/`. Neue Businesslogik → neue Tests in `tests/`.
+5. **Optional Rapid UI Feedback**  
+   UI5 Tooling (`npm run watch -- --open`) oder Live-Logs in der CAP Console unterstützen schnelles UI-Tuning, bevor es in den äußeren Loop (PR/CI) geht.
+
+> Ziel: Schleife „Ändern → Beobachten → Validieren“ in wenigen Minuten halten, bevor Features in den äußeren Loop (PR, CI, Deployment) gehen.
+
+---
+
+## ⚙️ Automatisierung & DevOps
+
+- **CI/CD Tests & Build** (`.github/workflows/test.yaml`): Matrix-Job für Node.js 22.x inkl. `npm ci`, `@sap/cds-dk`, `cds-typer`, `npm run build`, Jest + Coverage sowie ESLint/Prettier Checks. Ergebnisse werden als Artifacts (Coverage, `@cds-models`, `gen`) 7 Tage bereitgestellt.
+- **Release Automation** (`.github/workflows/release-please.yaml`): Beobachtet `main` und lässt `release-please` Release-PRs, Tags und Changelog aktualisieren (siehe [ADR-0017](docs/ADR/0017-release-automation-mit-release-please.md)).
+- **Cloud Foundry Deploy** (`.github/workflows/cf.yaml` + Composite Action `.github/actions/cf-setup`): Wiederverwendbares Workflow-Call für Staging/Prod. Installiert `cf` CLI, `mbt`, MultiApps-Plugin, authentifiziert und kann Logs (`cf logs`) sowie vorbereitende Tasks (`npx cds up`) ausführen.
+
+```mermaid
+flowchart LR
+    A["Push/PR on main or develop"] -->|"test.yaml"| B["Test & Lint Jobs"]
+    B --> C["Build Artifacts"]
+    C --> D["(Artifacts: gen/, @cds-models/, coverage)"]
+    E["Push on main"] -->|"release-please.yaml"| F["Release PR & Tagging"]
+    E -->|"cf.yaml (dispatch/main)"| G["Cloud Foundry Deploy"]
+    G --> H["Composite cf-setup"]
+```
+
+> Lokale Voraussetzung für Deployments: `cf` CLI ≥8 mit MultiApps-Plugin (`cf install-plugin multiapps`) und `mbt` CLI (`npm install -g mbt`). Die GitHub-Action installiert diese Tools automatisch, lokal müssen sie manuell eingerichtet werden.
+
+---
+
+## 🌐 CAP Plugins & Calesi Pattern
+
+- **Calesi („CAP-level Service Integrations“)** steht für das stetig wachsende CAP-Plugin-Ökosystem (GraphQL, OData V2, WebSockets, OpenTelemetry, Attachments, Messaging, Notifications, Audit Logging, …).
+- Durch CAPs offene Architektur nutzen wir Plugins wie `@cap-js/attachments` oder `@cap-js/console` ohne Vendor-Lock-in und erweitern das System modular.
+- Eigene Erweiterungen folgen dem gleichen Muster (`cds add …`, registrieren im ServiceContainer) und können bei Bedarf als Reuse-Pakete geteilt werden.
+- Siehe [CAP Plugins](https://cap.cloud.sap/docs/plugins/) und [ADR-0018](docs/ADR/0018-mta-deployment-cloud-foundry.md) für den Umgang mit Infrastruktur-Add-ons.
+
+---
+
+## ☁️ Cloud Deployment (SAP BTP)
+
+- `mta.yaml` bündelt CAP Service (`gen/srv`), HANA-DB-Deployer (`gen/db`) und bindet Attachments-, Malware-Scanning-, Connectivity-, Destination- sowie Application-Logging-Services.
+- Vor dem Deploy die benötigten Instanzen anlegen (einmalig pro Subaccount):
+
+  ```bash
+  cf create-service hana hdi-shared cap-fiori-timetracking-db
+  cf create-service objectstore standard cap-fiori-timetracking-attachments
+  cf create-service malwarescanning standard cap-fiori-timetracking-malware-scanner
+  cf create-service application-logs standard cap-fiori-timetracking-logging
+  cf create-service connectivity lite cap-fiori-timetracking-connectivity
+  cf create-service destination lite cap-fiori-timetracking-destination
+  ```
+
+- Build & Deploy via Cloud MTA Build Tool (benötigt `mbt` CLI + CF MultiApps Plugin):
+
+  ```bash
+  npm ci
+  npx cds build --production
+  npx mbt build -p cf
+  cf deploy mta_archives/cap-fiori-timetracking_0.0.1.mtar
+  ```
+
+- Das CAP Runtime Binding auf `application-logging`, `malware-scanner`, `connectivity` und `destination` ist in `package.json → cds.requires` hinterlegt; lokale Entwicklung nutzt Mock-Auth, in BTP greifen die Service-Bindings automatisch. `connectivity` + `destination` stellen die 3rd-Party Holiday API via Destination zur Verfügung. Der Build-/Run-Split erfüllt zentrale 12-Factor-Prinzipien und qualifiziert die Lösung als cloud-native Application.
 
 ---
 
@@ -324,11 +416,11 @@ Willst du zum Projekt beitragen? **Awesome!** 🎉
 ## 📦 Release-Prozess
 
 - Automatisierte Release-PRs entstehen über [release-please](https://github.com/googleapis/release-please-action) auf Basis unserer Conventional Commits.
-- Die Konfiguration (`release-please-config.json`, `.release-please-manifest.json`) hält Root- und UI5-App-Versionen (`app/timetable`, `app/timetracking`) über `extra-files` synchron.
+- Die Konfiguration (`release-please-config.json`, `.release-please-manifest.json`) hält Root- und UI5-App-Versionen (`app/timetable`, `app/timetracking`) über `extra-files` synchron. Die generierte Basic-App `app/manage-activity-types` bleibt vom automatischen Version-Bump ausgenommen und kann bei Bedarf separat angehoben werden.
 - Ein Merge der Release-PR auf `main` erzeugt Git-Tags und aktualisiert den zentralen `CHANGELOG.md`; keine npm-Publikation vorgesehen.
 - Vor der ersten Ausführung im CI empfiehlt sich ein lokaler Dry-Run:
   ```bash
-  npx release-please manifest-pr --config-file release-please-config.json --manifest-file manifest.json --dry-run
+  npx release-please release-pr --config-file release-please-config.json --manifest-file .release-please-manifest.json --dry-run
   ```
 - Visualer Ablauf (vereinfacht):
   ```mermaid

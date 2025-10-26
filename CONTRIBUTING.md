@@ -148,10 +148,7 @@ git remote add upstream https://github.com/nimble-123/cap-fiori-timetracking.git
 # 4. Dependencies installieren
 npm install
 
-# 5. TypeScript-Typen generieren
-npm run generate-entry-point
-
-# 6. Development Server starten
+# 5. Development Server starten
 npm run watch
 ```
 
