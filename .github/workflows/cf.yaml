@@ -1,4 +1,4 @@
-name: Cloud Foundry
+name: Cloud Foundry Deployment
 
 on:
   workflow_call:
