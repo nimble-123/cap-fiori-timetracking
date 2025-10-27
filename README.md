@@ -368,7 +368,7 @@ flowchart LR
 
 ## ☁️ Cloud Deployment (SAP BTP)
 
-- `mta.yaml` bündelt CAP Service (`gen/srv`), HANA-DB-Deployer (`gen/db`) und bindet Attachments-, Malware-Scanning-, Connectivity-, Destination- sowie Application-Logging-Services.
+- `mta.yaml` bündelt CAP Service (`gen/srv`), HANA-DB-Deployer (`gen/db`), das UI Content Module (`cap-fiori-timetracking-app-deployer`) und bindet Attachments-, Malware-Scanning-, Connectivity-, Destination-, Application-Logging- sowie den Application-Frontend-Service für das Hosting der Fiori Apps.
 - Vor dem Deploy die benötigten Instanzen anlegen (einmalig pro Subaccount):
 
   ```bash
@@ -378,8 +378,10 @@ flowchart LR
   cf create-service application-logs standard cap-fiori-timetracking-logging
   cf create-service connectivity lite cap-fiori-timetracking-connectivity
   cf create-service destination lite cap-fiori-timetracking-destination
+  cf create-service app-front developer cap-fiori-timetracking-app-front
   ```
 
+- Der Application Frontend Service liefert einen Managed App Router inklusive statischem Hosting für die Fiori Apps; die Destinations aus `cap-fiori-timetracking-app-deployer` werden dort automatisch hinterlegt.
 - Build & Deploy via Cloud MTA Build Tool (benötigt `mbt` CLI + CF MultiApps Plugin):
 
   ```bash

@@ -4,6 +4,7 @@ version: 0.0.1
 description: 'SAP CAP-based time tracking solution with Fiori UI and a TypeScript backend.'
 parameters:
   enable-parallel-deployments: true
+  deploy_mode: html5-repo
 build-parameters:
   before-all:
     - builder: custom
@@ -39,6 +40,69 @@ modules:
     requires:
       - name: cap-fiori-timetracking-db
 
+  - name: cap-fiori-timetracking-app-deployer
+    type: com.sap.application.content
+    path: gen
+    build-parameters:
+      build-result: app/
+      requires:
+        - name: capfioritimetrackingmanageactivitytypes
+          artifacts:
+            - manage-activity-types.zip
+          target-path: app/
+        - name: capfioritimetrackingtimetable
+          artifacts:
+            - timetable.zip
+          target-path: app/
+        - name: capfioritimetrackingtimetracking
+          artifacts:
+            - timetracking.zip
+          target-path: app/
+    requires:
+      - name: srv-api
+      - name: cap-fiori-timetracking-app-front
+        parameters:
+          content-target: true
+    parameters:
+      config:
+        destinations:
+          - name: srv-api
+            url: ~{srv-api/srv-url}
+            forwardAuthToken: true
+          - name: ui5
+            url: https://ui5.sap.com
+
+  - name: capfioritimetrackingmanageactivitytypes
+    type: html5
+    path: app/manage-activity-types
+    build-parameters:
+      build-result: dist
+      builder: custom
+      commands:
+        - npm ci
+        - npm run build
+      supported-platforms: []
+  - name: capfioritimetrackingtimetable
+    type: html5
+    path: app/timetable
+    build-parameters:
+      build-result: dist
+      builder: custom
+      commands:
+        - npm ci
+        - npm run build
+      supported-platforms: []
+  - name: capfioritimetrackingtimetracking
+    type: html5
+    path: app/timetracking
+    build-parameters:
+      build-result: dist
+      builder: custom
+      commands:
+        - npm ci
+        - npm run build
+      supported-platforms: []
+
 resources:
   - name: cap-fiori-timetracking-attachments
     type: org.cloudfoundry.managed-service
@@ -70,3 +134,8 @@ resources:
     parameters:
       service: destination
       service-plan: lite
+  - name: cap-fiori-timetracking-app-front
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: app-front
+      service-plan: developer

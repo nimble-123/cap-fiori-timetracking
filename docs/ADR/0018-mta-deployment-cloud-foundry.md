@@ -8,6 +8,7 @@ Akzeptiert – mta.yaml liegt vor, Deployment-Pipeline folgt
 
 - Die Anwendung soll produktiv auf der SAP Business Technology Platform (BTP) im Cloud-Foundry-Umfeld betrieben werden.
 - Neben dem CAP-Service müssen weitere Service-Instanzen (HANA HDI, Object Store, Malware Scanning, Application Logging) konsistent gebunden werden.
+- Die Fiori Frontends sollen ohne eigenes App-Router-Modul über den SAP Application Frontend Service (Managed App Router + Static Hosting) bereitgestellt werden.
 - Ein einfaches `cf push` mit Manifest stößt an Grenzen (kein DB-Deployer-Build, keine geordneten Service-Abhängigkeiten, kein Mehrmodul-Support).
 - Für CI/CD ist ein reproduzierbares Packaging notwendig, das Build- und Deploy-Schritte klar trennt.
 
@@ -39,13 +40,13 @@ Akzeptiert – mta.yaml liegt vor, Deployment-Pipeline folgt
 ## Entscheidung
 
 - Wir übernehmen **Option B – Multi-Target Application (MTA)** als Standard-Deployment-Strategie.
-- `mta.yaml` beschreibt zwei Module (`cap-fiori-timetracking-srv`, `cap-fiori-timetracking-db-deployer`) sowie Ressourcen (HANA HDI, Object Store, Malware Scanning, Application Logging).
+- `mta.yaml` beschreibt drei Module (`cap-fiori-timetracking-srv`, `cap-fiori-timetracking-db-deployer`, `cap-fiori-timetracking-app-deployer`) sowie Ressourcen (HANA HDI, Object Store, Malware Scanning, Application Logging, Application Frontend Service).
 - Build Hook `before-all` führt `npm ci` und `cds build --production` aus; `mbt build` erzeugt ein transportierbares `.mtar`.
 - Deployments erfolgen via `cf deploy mta_archives/cap-fiori-timetracking_<version>.mtar`, womit Build und Deploy klar getrennt bleiben.
 
 ## Konsequenzen
 
-- **Positiv**: Cloud-native, reproduzierbare Deployments; Service-Abhängigkeiten deklarativ; HDI-Deployment automatisiert.
+- **Positiv**: Cloud-native, reproduzierbare Deployments; Service-Abhängigkeiten deklarativ; HDI-Deployment automatisiert; UI-Auslieferung über Managed App Router ohne Eigenbetrieb.
 - **Negativ/Risiken**: `mbt`-Tooling als zusätzliche Voraussetzung in CI/CD; Versionierung des MTAR muss zur App-Version passen.
 - **Follow-ups**:
   - Integration des MTA-Builds in die Release-Pipeline (Anschluss an ADR-0017).

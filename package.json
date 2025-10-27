@@ -33,7 +33,7 @@
     "test": "jest ./tests",
     "test:coverage": "jest --coverage ./tests",
     "test:watch": "jest --watch ./tests",
-    "watch": "cds-tsx w",
+    "watch": "cds-tsx w --in-memory",
     "wdi5": "wdio run ./app/timetable/webapp/test/wdi5/wdio.conf.ts"
   },
   "dependencies": {
@@ -116,7 +116,8 @@
         "db": {
           "kind": "hana"
         }
-      }
+      },
+      "app-front": true
     },
     "log": {
       "levels": {

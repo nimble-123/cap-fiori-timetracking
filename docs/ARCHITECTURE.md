@@ -278,7 +278,7 @@ C4Context
     Person(user, "Endanwender", "Mitarbeiter erfasst Zeiten")
 
     Boundary(btp, "SAP BTP Subaccount") {
-        Container(approuter, "App Router", "Node.js", "SSO, Routing, Destinations")
+        Container(appfront, "Application Frontend Service", "Managed App Router", "Static UI Hosting, SSO, Destinations")
         Container(connectivity, "SAP BTP Connectivity", "Connectivity Service", "Secure Outbound Proxy")
         Container(destination, "SAP BTP Destination", "Destination Service", "Holiday API Config")
 
@@ -294,13 +294,13 @@ C4Context
     System_Ext(idp, "SAP Identity Services", "XSUAA / AMS", "AuthN & AuthZ")
     System_Ext(holidays, "Feiertage-API", "feiertage-api.de", "Deutsche Feiertage")
 
-    Rel(user, approuter, "Browser Request", "HTTPS")
-    Rel(approuter, idp, "OAuth2 / SAML", "HTTPS")
-    Rel_Back(idp, approuter, "JWT Access Token", "HTTPS")
-    Rel(approuter, ui1, "serve static UI", "HTTPS")
-    Rel(approuter, ui2, "serve static UI", "HTTPS")
-    Rel(approuter, ui3, "serve static UI", "HTTPS")
-    Rel(approuter, srv, "OData V4 + JWT", "HTTPS")
+    Rel(user, appfront, "Browser Request", "HTTPS")
+    Rel(appfront, idp, "OAuth2 / SAML", "HTTPS")
+    Rel_Back(idp, appfront, "JWT Access Token", "HTTPS")
+    Rel(appfront, ui1, "serve static UI", "HTTPS")
+    Rel(appfront, ui2, "serve static UI", "HTTPS")
+    Rel(appfront, ui3, "serve static UI", "HTTPS")
+    Rel(appfront, srv, "OData V4 + JWT", "HTTPS")
     Rel(srv, db, "SQL Queries", "JDBC")
     Rel(srv, connectivity, "via CAP Destinations", "RFC/HTTPS (managed)")
     Rel(connectivity, destination, "Destination Lookup", "HTTPS")
@@ -309,19 +309,19 @@ C4Context
 
 **Technologie-Mapping:**
 
-| Komponente                | Technologie        | Port/URL                             | Verantwortlichkeit                             |
-| ------------------------- | ------------------ | ------------------------------------ | ---------------------------------------------- |
-| **Timetable App**         | UI5 Fiori Elements | :4004/io.nimble.timetable/           | Annotations-basiertes UI                       |
-| **Manage Activity Types** | UI5 Fiori Elements | :4004/io.nimble.manageactivitytypes/ | Stammdatenpflege Activity Types (AdminService) |
-| **Dashboard App**         | UI5 Custom         | :4004/io.nimble.timetracking/        | Freies Dashboard-Design                        |
-| **TrackService**          | CAP TypeScript     | :4004/odata/v4/track/                | Time Tracking Domain-Logik                     |
-| **AdminService**          | CAP TypeScript     | :4004/odata/v2/admin/                | Stammdaten & Customizing API                   |
-| **Database**              | SQLite             | In-Memory                            | Datenhaltung                                   |
-| **Feiertage-API**         | REST               | feiertage-api.de/api/                | Externe Datenquelle                            |
-| **App Router**            | Node.js (BTP)      | Subaccount Route                     | Authenticated Routing, Destinations            |
-| **SAP Identity Services** | XSUAA / AMS        | OAuth2 / SAML Endpoint               | Token-Ausgabe, Role Collections                |
-| **Connectivity Service**  | SAP BTP Service    | cf:<space>/connectivity              | Outbound Proxy für Holiday API                 |
-| **Destination Service**   | SAP BTP Service    | cf:<space>/destination               | Holiday API Destinations & Credentials         |
+| Komponente                       | Technologie            | Port/URL                             | Verantwortlichkeit                                  |
+| -------------------------------- | ---------------------- | ------------------------------------ | --------------------------------------------------- |
+| **Timetable App**                | UI5 Fiori Elements     | :4004/io.nimble.timetable/           | Annotations-basiertes UI                            |
+| **Manage Activity Types**        | UI5 Fiori Elements     | :4004/io.nimble.manageactivitytypes/ | Stammdatenpflege Activity Types (AdminService)      |
+| **Dashboard App**                | UI5 Custom             | :4004/io.nimble.timetracking/        | Freies Dashboard-Design                             |
+| **TrackService**                 | CAP TypeScript         | :4004/odata/v4/track/                | Time Tracking Domain-Logik                          |
+| **AdminService**                 | CAP TypeScript         | :4004/odata/v2/admin/                | Stammdaten & Customizing API                        |
+| **Database**                     | SQLite                 | In-Memory                            | Datenhaltung                                        |
+| **Feiertage-API**                | REST                   | feiertage-api.de/api/                | Externe Datenquelle                                 |
+| **Application Frontend Service** | SAP Managed App Router | Subaccount Route (Managed)           | Authenticated Routing, Static Hosting, Destinations |
+| **SAP Identity Services**        | XSUAA / AMS            | OAuth2 / SAML Endpoint               | Token-Ausgabe, Role Collections                     |
+| **Connectivity Service**         | SAP BTP Service        | cf:<space>/connectivity              | Outbound Proxy für Holiday API                      |
+| **Destination Service**          | SAP BTP Service        | cf:<space>/destination               | Holiday API Destinations & Credentials              |
 
 **Wichtige Datenformate:**
 
@@ -332,7 +332,7 @@ C4Context
 
 **Security-Kontext & Trust Boundaries:**
 
-- **AuthN-Fluss:** User → App Router → SAP Identity Service (XSUAA/AMS) → App Router → CAP. Der App Router tauscht die Session gegen ein JWT aus (`XSUAA`) bzw. erhält Policies aus AMS.
+- **AuthN-Fluss:** User → Application Frontend Service → SAP Identity Service (XSUAA/AMS) → Application Frontend Service → CAP. Der Managed App Router tauscht die Session gegen ein JWT aus (`XSUAA`) bzw. erhält Policies aus AMS.
 - **AuthZ-Fluss:** Role Collections in der BTP mappen auf CAP-Rollen (`@restrict`). UI5-Anwendungen lesen dieselben Rollen (über Launchpad Shell) für Feature Toggles.
 - **Tenant-Isolation:** Jede Subaccount-Instanz nutzt eigene Service-Bindings (HANA Schema, XSUAA/AMS Instanz), wodurch Daten und Rollen mandantenspezifisch isoliert werden.
 - **Entwicklung vs. Produktion:** Lokal mockt CAP den Identity Layer (`cds.requires.auth.kind = mocked`). In BTP kommt der reale IAM-Stack zum Einsatz; alle Endpunkte verlangen gültige JWTs.
@@ -1375,9 +1375,9 @@ sequenceDiagram
 │  SAP BTP Cloud Foundry                               │
 │                                                      │
 │  ┌────────────────────────────────────────────────┐  │
-│  │  App Router (Authentication/Routing)           │  │
+│  │  Application Frontend Service                  │  │
+│  │  - Managed App Router + Static Hosting         │  │
 │  │  - XSUAA / AMS (User Management & Policies)    │  │
-│  │  - Port 443 (HTTPS)                            │  │
 │  └────────────────────────────────────────────────┘  │
 │           │                                          │
 │           ├──────────────┬──────────────┐            │
@@ -1403,24 +1403,25 @@ sequenceDiagram
 
 **Cloud Foundry Services:**
 
-| Service                                         | Typ                              | Zweck                                    |
-| ----------------------------------------------- | -------------------------------- | ---------------------------------------- |
-| **XSUAA**                                       | Authorization & Trust Management | User Authentication                      |
-| **Authorization Management Service** (optional) | Policy Management                | Fein granularer Zugriff (Role Policies)  |
-| **HANA Cloud**                                  | Database                         | Production-Datenbank                     |
-| **Application Logging**                         | Logging                          | Centralized Logs                         |
-| **Application Autoscaler**                      | Scaling                          | Auto-Scaling bei Last                    |
-| **SAP Object Store** (optional)                 | Object Storage                   | Auslagerung von Attachment-Binärdaten    |
-| **Malware Scanning Service** (optional)         | Security Service                 | Viren-/Malware-Prüfung für Datei-Uploads |
+| Service                                         | Typ                              | Zweck                                      |
+| ----------------------------------------------- | -------------------------------- | ------------------------------------------ |
+| **Application Frontend Service**                | Managed App Router               | Hosting & Authentifizierung der Fiori Apps |
+| **XSUAA**                                       | Authorization & Trust Management | User Authentication                        |
+| **Authorization Management Service** (optional) | Policy Management                | Fein granularer Zugriff (Role Policies)    |
+| **HANA Cloud**                                  | Database                         | Production-Datenbank                       |
+| **Application Logging**                         | Logging                          | Centralized Logs                           |
+| **Application Autoscaler**                      | Scaling                          | Auto-Scaling bei Last                      |
+| **SAP Object Store** (optional)                 | Object Storage                   | Auslagerung von Attachment-Binärdaten      |
+| **Malware Scanning Service** (optional)         | Security Service                 | Viren-/Malware-Prüfung für Datei-Uploads   |
 
 > Optional: Das Attachments Plugin (`@cap-js/attachments`) kann so konfiguriert werden, dass Binärdaten im **SAP Object Store** abgelegt und Uploads über den **Malware Scanning Service** geprüft werden. Beide Services werden nur benötigt, wenn Dateiablagen nicht in der Datenbank erfolgen sollen bzw. Compliance-Richtlinien einen Malware-Scan verlangen.
 
 **Security-Hinweise (BTP Prod):**
 
-- Authentifizierung via App Router + Identity Service (XSUAA heute, AMS zukünftig). Tokens enthalten Scope/Role-Informationen, die CAP `@restrict` nutzt.
+- Authentifizierung via Application Frontend Service (Managed App Router) + Identity Service (XSUAA heute, AMS zukünftig). Tokens enthalten Scope/Role-Informationen, die CAP `@restrict` nutzt.
 - Autorisierung wird über BTP Role Collections gesteuert; Transport zwischen Subaccounts erfolgt über CI/CD bzw. Transport Management.
 - Secrets (HANA Credentials, API Keys) werden ausschließlich über Service Bindings oder das SAP Credential Store Plug-in injiziert – keine `.env` in Produktion.
-- TLS wird durch den App Router und den BTP Load Balancer bereitgestellt. Für Integrationen werden Destinations mit mTLS oder OAuth2 Client Credentials verwendet.
+- TLS wird durch den Application Frontend Service und den BTP Load Balancer bereitgestellt. Für Integrationen werden Destinations mit mTLS oder OAuth2 Client Credentials verwendet.
 - Logs enthalten keine personenbezogenen Daten (PII); für Security Audits werden Identity Logs und CAP Audit Trails zentral gesammelt.
 
 ---
@@ -1439,28 +1440,30 @@ sequenceDiagram
 
 **Szenario 2: Cloud Foundry (BTP)**
 
-| Aspekt       | Konfiguration                                                                     |
-| ------------ | --------------------------------------------------------------------------------- |
-| **Command**  | `npx mbt build -p cf && cf deploy mta_archives/cap-fiori-timetracking_0.0.1.mtar` |
-| **Database** | HANA Cloud                                                                        |
-| **Auth**     | App Router + SAP Identity Services (XSUAA/AMS)                                    |
-| **URL**      | https://app.cfapps.eu10.hana.ondemand.com                                         |
-| **Scaling**  | Auto-Scaling aktiviert                                                            |
+| Aspekt       | Konfiguration                                                                         |
+| ------------ | ------------------------------------------------------------------------------------- |
+| **Command**  | `npx mbt build -p cf && cf deploy mta_archives/cap-fiori-timetracking_0.0.1.mtar`     |
+| **Database** | HANA Cloud                                                                            |
+| **Auth**     | Application Frontend Service (Managed App Router) + SAP Identity Services (XSUAA/AMS) |
+| **URL**      | https://app.cfapps.eu10.hana.ondemand.com                                             |
+| **Scaling**  | Auto-Scaling aktiviert                                                                |
 
-`mta.yaml` beschreibt die Module (`cap-fiori-timetracking-srv`, `cap-fiori-timetracking-db-deployer`) sowie die benötigten CF-Services (HANA HDI, Object Store, Malware Scanning, Application Logging, Connectivity, Destination). Die `before-all` Build-Hook führt `npm ci` und `cds build --production` aus, sodass der Deploy über `cf deploy` ohne manuelle Zwischenschritte erfolgt. Details zur Entscheidung stehen in [ADR-0018](ADR/0018-mta-deployment-cloud-foundry.md).
+`mta.yaml` beschreibt die Module (`cap-fiori-timetracking-srv`, `cap-fiori-timetracking-db-deployer`, `cap-fiori-timetracking-app-deployer`) sowie die benötigten CF-Services (HANA HDI, Object Store, Malware Scanning, Application Logging, Connectivity, Destination, Application Frontend Service). Die `before-all` Build-Hook führt `npm ci` und `cds build --production` aus, sodass der Deploy über `cf deploy` ohne manuelle Zwischenschritte erfolgt. Das Content Module liefert die UI5-Build-Artefakte als ZIP-Dateien an den Application Frontend Service, der sie über einen Managed App Router ausliefert. Details zur Entscheidung stehen in [ADR-0018](ADR/0018-mta-deployment-cloud-foundry.md).
 
 #### MTA-Module & Ressourcen
 
-| Typ       | Name                                     | Zweck                                                              |
-| --------- | ---------------------------------------- | ------------------------------------------------------------------ |
-| Module    | `cap-fiori-timetracking-srv`             | CAP Service (Node.js) – stellt OData & Handlers bereit             |
-| Module    | `cap-fiori-timetracking-db-deployer`     | HDI-Deployer für HANA Artefakte                                    |
-| Ressource | `cap-fiori-timetracking-db`              | HANA HDI Container                                                 |
-| Ressource | `cap-fiori-timetracking-attachments`     | Object Store für Binary Attachments                                |
-| Ressource | `cap-fiori-timetracking-malware-scanner` | Malware Scanning Service für Upload-Prüfungen                      |
-| Ressource | `cap-fiori-timetracking-logging`         | Application Logging Service                                        |
-| Ressource | `cap-fiori-timetracking-connectivity`    | SAP BTP Connectivity – Outbound Proxy zur Holiday API              |
-| Ressource | `cap-fiori-timetracking-destination`     | Destination Service – verwaltet Holiday-API-Endpoint & Credentials |
+| Typ       | Name                                     | Zweck                                                                         |
+| --------- | ---------------------------------------- | ----------------------------------------------------------------------------- |
+| Module    | `cap-fiori-timetracking-srv`             | CAP Service (Node.js) – stellt OData & Handlers bereit                        |
+| Module    | `cap-fiori-timetracking-db-deployer`     | HDI-Deployer für HANA Artefakte                                               |
+| Module    | `cap-fiori-timetracking-app-deployer`    | Transportiert UI5-Apps als Content-Pakete in den Application Frontend Service |
+| Ressource | `cap-fiori-timetracking-db`              | HANA HDI Container                                                            |
+| Ressource | `cap-fiori-timetracking-attachments`     | Object Store für Binary Attachments                                           |
+| Ressource | `cap-fiori-timetracking-malware-scanner` | Malware Scanning Service für Upload-Prüfungen                                 |
+| Ressource | `cap-fiori-timetracking-logging`         | Application Logging Service                                                   |
+| Ressource | `cap-fiori-timetracking-connectivity`    | SAP BTP Connectivity – Outbound Proxy zur Holiday API                         |
+| Ressource | `cap-fiori-timetracking-destination`     | Destination Service – verwaltet Holiday-API-Endpoint & Credentials            |
+| Ressource | `cap-fiori-timetracking-app-front`       | Application Frontend Service – Managed App Router & UI Hosting                |
 
 > Lokale Deployments benötigen `cf` CLI ≥8, das MultiApps-Plugin (`cf install-plugin multiapps`) sowie das Multi-Target Build Tool (`npm install -g mbt`).
 
@@ -1834,13 +1837,13 @@ Die Sicherheitsarchitektur folgt einem mehrstufigen Ansatz aus **Vertrauensgrenz
 
 **Schutzziele & Zuordnung:**
 
-| Ebene / Boundary                 | Fokus                          | Maßnahmen & Technologien                                                                            | Referenzen         |
-| -------------------------------- | ------------------------------ | --------------------------------------------------------------------------------------------------- | ------------------ |
-| **Fiori UI & App Router**        | AuthN, SSO, Session Management | SAP Launchpad / App Router, OAuth2/SAML gegen XSUAA oder AMS, JWT Weitergabe an CAP, HTTPS enforced | Kap. 3.2, Kap. 7.2 |
-| **CAP TrackService**             | AuthZ & Business Policies      | `@restrict` in CDS, CAP Authorization Hooks, Role Templates, Logging & Audit Trail                  | Kap. 5, ADR-0010   |
-| **Database & Persistenz**        | Daten-/Mandantentrennung       | Separate HANA Schemas pro Subaccount, DB-Rollen, Restriktive Views, Encryption at Rest (HANA)       | Kap. 7.2           |
-| **Externe APIs & Integrationen** | Vertraulichkeit, mTLS/OAuth    | BTP Destinations mit Client Credentials/mTLS, Rate Limiting, Response Validation                    | Kap. 7.4           |
-| **Operations & Lifecycle**       | Secrets, Transport, Monitoring | Service Bindings, Credential Store, Transport Management, zentralisiertes Logging & Alerting        | Kap. 7.4, ADR-0016 |
+| Ebene / Boundary                            | Fokus                          | Maßnahmen & Technologien                                                                                              | Referenzen         |
+| ------------------------------------------- | ------------------------------ | --------------------------------------------------------------------------------------------------------------------- | ------------------ |
+| **Fiori UI & Application Frontend Service** | AuthN, SSO, Session Management | SAP Launchpad / Application Frontend Service, OAuth2/SAML gegen XSUAA oder AMS, JWT Weitergabe an CAP, HTTPS enforced | Kap. 3.2, Kap. 7.2 |
+| **CAP TrackService**                        | AuthZ & Business Policies      | `@restrict` in CDS, CAP Authorization Hooks, Role Templates, Logging & Audit Trail                                    | Kap. 5, ADR-0010   |
+| **Database & Persistenz**                   | Daten-/Mandantentrennung       | Separate HANA Schemas pro Subaccount, DB-Rollen, Restriktive Views, Encryption at Rest (HANA)                         | Kap. 7.2           |
+| **Externe APIs & Integrationen**            | Vertraulichkeit, mTLS/OAuth    | BTP Destinations mit Client Credentials/mTLS, Rate Limiting, Response Validation                                      | Kap. 7.4           |
+| **Operations & Lifecycle**                  | Secrets, Transport, Monitoring | Service Bindings, Credential Store, Transport Management, zentralisiertes Logging & Alerting                          | Kap. 7.4, ADR-0016 |
 
 #### Authentication & Single Sign-On
 
@@ -1849,24 +1852,24 @@ sequenceDiagram
     autonumber
     actor User
     participant Browser
-    participant AppRouter as App Router (BTP)
+    participant AppFront as Application Frontend Service (Managed App Router)
     participant Identity as SAP Identity Service (XSUAA/AMS)
     participant CAP as TrackService (CAP)
 
     User->>Browser: Aufruf https://time-tracking
-    Browser->>AppRouter: GET /timetable
-    AppRouter->>Identity: OAuth2 Authorization Code
-    Identity-->>AppRouter: JWT Access Token + Refresh Token
-    AppRouter-->>Browser: Set-Cookie (Session) + Weiterleitung
-    Browser->>AppRouter: OData Request mit Session
-    AppRouter->>CAP: Forward + Authorization Header (JWT)
+    Browser->>AppFront: GET /timetable
+    AppFront->>Identity: OAuth2 Authorization Code
+    Identity-->>AppFront: JWT Access Token + Refresh Token
+    AppFront-->>Browser: Set-Cookie (Session) + Weiterleitung
+    Browser->>AppFront: OData Request mit Session
+    AppFront->>CAP: Forward + Authorization Header (JWT)
     CAP->>CAP: Validate JWT (aud, exp, scopes)
-    CAP-->>AppRouter: Business Response
-    AppRouter-->>Browser: JSON / UI Content
+    CAP-->>AppFront: Business Response
+    AppFront-->>Browser: JSON / UI Content
 ```
 
-- **Lokale Entwicklung:** CAP Mock Auth (`cds.requires.auth.kind = mocked`) stellt zwei Test-User bereit. Der App Router ist optional.
-- **Produktiv:** App Router führt den OAuth2-Flow mit XSUAA bzw. AMS aus und signiert JWTs. Tokens enthalten `tenant-id`, `user-name`, `scope` und optional `Custom Attributes`.
+- **Lokale Entwicklung:** CAP Mock Auth (`cds.requires.auth.kind = mocked`) stellt zwei Test-User bereit. Der Application Frontend Service ist optional.
+- **Produktiv:** Der Application Frontend Service führt den OAuth2-Flow mit XSUAA bzw. AMS aus und signiert JWTs. Tokens enthalten `tenant-id`, `user-name`, `scope` und optional `Custom Attributes`.
 - **SSO:** Integration mit SAP Identity Authentication Service (IAS) oder Corporate IdP (SAML). AMS erlaubt Policy-Definition auf Business-Attributen (z. B. Projekt, Kostenstelle).
 
 #### Authorization & Role Collections
@@ -1915,7 +1918,7 @@ sequenceDiagram
       branch deploy/cf
       commit id: "ci: deploy to CF (planned)"
     ```
-- **Transport Management Service (TMS):** Optionale Freigabe von Role Collections, Destinations und App Router-Konfigurationen zwischen Subaccounts (Dev → QA → Prod).
+- **Transport Management Service (TMS):** Optionale Freigabe von Role Collections, Destinations und Application-Frontend-Service-Konfigurationen zwischen Subaccounts (Dev → QA → Prod).
 - **ADR & Reviews:** Sicherheitsrelevante Änderungen (z. B. XSUAA → AMS Migration) erhalten eigene ADRs + Security Review.
 
 > Zusammengefasst: Security ist kein Add-on, sondern ein integriertes Querschnittsthema – von der UI über CAP bis zum Betrieb in der BTP. Die beschriebenen Bausteine stellen sicher, dass Authentifizierung, Autorisierung, Mandantentrennung und Secret-Handling in jeder Umgebung konsistent und auditierbar bleiben.
