@@ -1,7 +1,7 @@
 import { Transaction } from '@sap/cds';
-import { TimeEntryRepository } from '../repositories/index.js';
-import { CustomizingService } from './CustomizingService.js';
-import { logger } from '../utils/index.js';
+import { TimeEntryRepository } from '../repositories';
+import { CustomizingService } from './CustomizingService';
+import { logger } from '../utils';
 
 export interface SickLeaveBalance {
   year: number;

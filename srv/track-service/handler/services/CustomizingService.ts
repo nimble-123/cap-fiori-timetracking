@@ -1,7 +1,7 @@
 import { Transaction } from '@sap/cds';
 import { Customizing } from '#cds-models/TrackService';
-import { CustomizingRepository } from '../repositories/index.js';
-import { logger } from '../utils/index.js';
+import { CustomizingRepository } from '../repositories';
+import { logger } from '../utils';
 
 interface TimeEntryDefaults {
   startHour: number;

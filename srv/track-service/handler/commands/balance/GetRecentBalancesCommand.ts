@@ -1,9 +1,9 @@
 import { Transaction } from '@sap/cds';
 import type { MonthlyBalance } from '#cds-models/TrackService';
-import { TimeBalanceService, UserService } from '../../services/index.js';
-import { CustomizingService } from '../../services/index.js';
-import { BalanceValidator } from '../../validators/index.js';
-import { logger } from '../../utils/index.js';
+import { TimeBalanceService, UserService } from '../../services';
+import { CustomizingService } from '../../services/CustomizingService';
+import { BalanceValidator } from '../../validators';
+import { logger } from '../../utils';
 
 // Type definitions
 interface BalanceDependencies {

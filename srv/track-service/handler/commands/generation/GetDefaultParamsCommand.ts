@@ -1,6 +1,6 @@
 import { Request } from '@sap/cds';
-import { UserService } from '../../services/index.js';
-import { DateUtils, logger } from '../../utils/index.js';
+import { UserService } from '../../services';
+import { DateUtils, logger } from '../../utils';
 
 /**
  * Command: Liefert Default-Parameter für generateYearlyTimeEntries Action

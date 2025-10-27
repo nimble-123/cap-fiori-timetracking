@@ -1,7 +1,7 @@
-export { TimeEntryValidator } from './TimeEntryValidator.js';
-export { GenerationValidator } from './GenerationValidator.js';
-export { BalanceValidator } from './BalanceValidator.js';
-export { ProjectValidator } from './ProjectValidator.js';
-export { ActivityTypeValidator } from './ActivityTypeValidator.js';
-export { WorkLocationValidator } from './WorkLocationValidator.js';
-export { TravelTypeValidator } from './TravelTypeValidator.js';
+export { TimeEntryValidator } from './TimeEntryValidator';
+export { GenerationValidator } from './GenerationValidator';
+export { BalanceValidator } from './BalanceValidator';
+export { ProjectValidator } from './ProjectValidator';
+export { ActivityTypeValidator } from './ActivityTypeValidator';
+export { WorkLocationValidator } from './WorkLocationValidator';
+export { TravelTypeValidator } from './TravelTypeValidator';

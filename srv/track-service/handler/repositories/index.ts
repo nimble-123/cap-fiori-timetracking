@@ -1,7 +1,7 @@
-export { UserRepository } from './UserRepository.js';
-export { ProjectRepository } from './ProjectRepository.js';
-export { ActivityTypeRepository } from './ActivityTypeRepository.js';
-export { TimeEntryRepository } from './TimeEntryRepository.js';
-export { WorkLocationRepository } from './WorkLocationRepository.js';
-export { TravelTypeRepository } from './TravelTypeRepository.js';
-export { CustomizingRepository } from './CustomizingRepository.js';
+export { UserRepository } from './UserRepository';
+export { ProjectRepository } from './ProjectRepository';
+export { ActivityTypeRepository } from './ActivityTypeRepository';
+export { TimeEntryRepository } from './TimeEntryRepository';
+export { WorkLocationRepository } from './WorkLocationRepository';
+export { TravelTypeRepository } from './TravelTypeRepository';
+export { CustomizingRepository } from './CustomizingRepository';

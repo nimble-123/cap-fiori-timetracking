@@ -1,4 +1,4 @@
-import { logger } from '../utils/index.js';
+import { logger } from '../utils';
 
 /**
  * Service für Zeitberechnungen

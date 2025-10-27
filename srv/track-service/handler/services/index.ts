@@ -1,7 +1,7 @@
-export { UserService } from './UserService.js';
-export { HolidayService } from './HolidayService.js';
-export { TimeBalanceService } from './TimeBalanceService.js';
-export { TimeCalculationService } from './TimeCalculationService.js';
-export { VacationBalanceService } from './VacationBalanceService.js';
-export { SickLeaveBalanceService } from './SickLeaveBalanceService.js';
-export { CustomizingService } from './CustomizingService.js';
+export { UserService } from './UserService';
+export { HolidayService } from './HolidayService';
+export { TimeBalanceService } from './TimeBalanceService';
+export { TimeCalculationService } from './TimeCalculationService';
+export { VacationBalanceService } from './VacationBalanceService';
+export { SickLeaveBalanceService } from './SickLeaveBalanceService';
+export { CustomizingService } from './CustomizingService';

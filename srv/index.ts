@@ -1,1 +1,1 @@
-export { TrackService } from './track-service/index.js';
+export { TrackService } from './track-service';

@@ -1,9 +1,9 @@
 import { ApplicationService } from '@sap/cds';
-import { ServiceContainer } from '../container/index.js';
-import { HandlerRegistry, HandlerRegistrar } from '../registry/index.js';
-import { HandlerFactory } from '../factories/index.js';
-import { TimeEntryHandlers, GenerationHandlers, BalanceHandlers } from '../handlers/index.js';
-import { logger } from '../utils/index.js';
+import { ServiceContainer } from '../container';
+import { HandlerRegistry, HandlerRegistrar } from '../registry';
+import { HandlerFactory } from '../factories';
+import { TimeEntryHandlers, GenerationHandlers, BalanceHandlers } from '../handlers';
+import { logger } from '../utils';
 
 /**
  * Builder für Handler-Setup mit Fluent API

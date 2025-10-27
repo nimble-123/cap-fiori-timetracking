@@ -1,10 +1,10 @@
 import { Transaction } from '@sap/cds';
 import { TimeEntry } from '#cds-models/TrackService';
-import { UserService, CustomizingService } from '../../services/index.js';
-import { TimeEntryValidator } from '../../validators/index.js';
-import { TimeEntryRepository } from '../../repositories/index.js';
-import { TimeEntryFactory } from '../../factories/index.js';
-import { logger } from '../../utils/index.js';
+import { UserService, CustomizingService } from '../../services';
+import { TimeEntryValidator } from '../../validators';
+import { TimeEntryRepository } from '../../repositories';
+import { TimeEntryFactory } from '../../factories';
+import { logger } from '../../utils';
 
 // Type definitions
 interface Dependencies {

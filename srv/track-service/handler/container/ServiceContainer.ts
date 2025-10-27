@@ -7,7 +7,7 @@ import {
   WorkLocationRepository,
   TravelTypeRepository,
   CustomizingRepository,
-} from '../repositories/index.js';
+} from '../repositories';
 
 // Services
 import {
@@ -17,7 +17,7 @@ import {
   VacationBalanceService,
   SickLeaveBalanceService,
   CustomizingService,
-} from '../services/index.js';
+} from '../services';
 
 // Validators
 import {
@@ -28,13 +28,13 @@ import {
   ActivityTypeValidator,
   WorkLocationValidator,
   TravelTypeValidator,
-} from '../validators/index.js';
+} from '../validators';
 
 // Strategies
-import { MonthlyGenerationStrategy, YearlyGenerationStrategy } from '../strategies/index.js';
+import { MonthlyGenerationStrategy, YearlyGenerationStrategy } from '../strategies';
 
 // Factories
-import { TimeEntryFactory } from '../factories/index.js';
+import { TimeEntryFactory } from '../factories';
 
 // Commands
 import {
@@ -51,7 +51,7 @@ import {
   GetSickLeaveBalanceCommand,
   MarkTimeEntryDoneCommand,
   ReleaseTimeEntryCommand,
-} from '../commands/index.js';
+} from '../commands';
 
 /**
  * Service Container für Dependency Injection

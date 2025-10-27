@@ -1,2 +1,2 @@
-export { DateUtils } from './DateUtils.js';
-export { logger, TrackLogger } from './Logger.js';
+export { DateUtils } from './DateUtils';
+export { logger, TrackLogger } from './Logger';

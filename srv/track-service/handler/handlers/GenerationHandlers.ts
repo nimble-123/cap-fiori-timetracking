@@ -1,6 +1,6 @@
 import { TimeEntry } from '#cds-models/TrackService';
-import { GenerateMonthlyCommand, GenerateYearlyCommand, GetDefaultParamsCommand } from '../commands/index.js';
-import { logger } from '../utils/index.js';
+import { GenerateMonthlyCommand, GenerateYearlyCommand, GetDefaultParamsCommand } from '../commands';
+import { logger } from '../utils';
 
 /**
  * Handler für TimeEntry-Generierung

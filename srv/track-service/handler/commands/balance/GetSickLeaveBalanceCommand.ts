@@ -1,7 +1,7 @@
 import { Transaction } from '@sap/cds';
 import type { SickLeaveBalance } from '#cds-models/TrackService';
-import { SickLeaveBalanceService, UserService } from '../../services/index.js';
-import { logger } from '../../utils/index.js';
+import { SickLeaveBalanceService, UserService } from '../../services';
+import { logger } from '../../utils';
 
 // Type definitions
 interface SickLeaveBalanceDependencies {

@@ -1,11 +1,11 @@
 import { Transaction } from '@sap/cds';
 import { TimeEntry } from '#cds-models/TrackService';
-import { TimeEntryRepository } from '../repositories/index.js';
-import { ProjectValidator } from './ProjectValidator.js';
-import { ActivityTypeValidator } from './ActivityTypeValidator.js';
-import { WorkLocationValidator } from './WorkLocationValidator.js';
-import { TravelTypeValidator } from './TravelTypeValidator.js';
-import { logger } from '../utils/index.js';
+import { TimeEntryRepository } from '../repositories';
+import { ProjectValidator } from './ProjectValidator';
+import { ActivityTypeValidator } from './ActivityTypeValidator';
+import { WorkLocationValidator } from './WorkLocationValidator';
+import { TravelTypeValidator } from './TravelTypeValidator';
+import { logger } from '../utils';
 
 /**
  * Validator für TimeEntry Operationen

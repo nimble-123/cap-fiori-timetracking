@@ -1,2 +1,2 @@
-export { TimeEntryFactory } from './TimeEntryFactory.js';
-export { HandlerFactory } from './HandlerFactory.js';
+export { TimeEntryFactory } from './TimeEntryFactory';
+export { HandlerFactory } from './HandlerFactory';

@@ -1,6 +1,6 @@
 import { Transaction } from '@sap/cds';
 import { WorkLocation } from '#cds-models/TrackService';
-import { logger } from '../utils/index.js';
+import { logger } from '../utils';
 
 /**
  * Repository für WorkLocation Datenzugriff

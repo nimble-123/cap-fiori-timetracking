@@ -1,7 +1,7 @@
 import { TimeEntry, User } from '#cds-models/TrackService';
-import { TimeEntryFactory } from '../factories/index.js';
-import { CustomizingService } from '../services/index.js';
-import { DateUtils, logger } from '../utils/index.js';
+import { TimeEntryFactory } from '../factories';
+import { CustomizingService } from '../services/CustomizingService';
+import { DateUtils, logger } from '../utils';
 
 /**
  * Strategy für monatliche TimeEntries Generierung

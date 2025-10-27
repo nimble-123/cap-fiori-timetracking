@@ -1,8 +1,8 @@
 import { Transaction } from '@sap/cds';
 import { TimeEntry } from '#cds-models/TrackService';
-import { TimeEntryRepository } from '../../repositories/index.js';
-import { CustomizingService } from '../../services/index.js';
-import { logger } from '../../utils/index.js';
+import { TimeEntryRepository } from '../../repositories';
+import { CustomizingService } from '../../services';
+import { logger } from '../../utils';
 
 interface Dependencies {
   repository: TimeEntryRepository;

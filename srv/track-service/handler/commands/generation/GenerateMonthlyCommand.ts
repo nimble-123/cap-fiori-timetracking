@@ -1,9 +1,9 @@
 import { TimeEntry, User } from '#cds-models/TrackService';
-import { MonthlyGenerationStrategy } from '../../strategies/index.js';
-import { TimeEntryRepository } from '../../repositories/index.js';
-import { UserService } from '../../services/index.js';
-import { GenerationValidator } from '../../validators/index.js';
-import { DateUtils, logger } from '../../utils/index.js';
+import { MonthlyGenerationStrategy } from '../../strategies';
+import { TimeEntryRepository } from '../../repositories';
+import { UserService } from '../../services';
+import { GenerationValidator } from '../../validators';
+import { DateUtils, logger } from '../../utils';
 
 // Type definitions
 interface GenerationDependencies {

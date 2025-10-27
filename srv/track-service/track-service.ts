@@ -1,13 +1,8 @@
 import { ApplicationService } from '@sap/cds';
 
-import {
-  ServiceContainer,
-  HandlerRegistry,
-  HandlerSetup,
-  CustomizingService,
-  DateUtils,
-  logger,
-} from './handler/index.js';
+import { ServiceContainer, HandlerRegistry, HandlerSetup, logger } from './handler';
+import { CustomizingService } from './handler/services/CustomizingService';
+import { DateUtils } from './handler/utils';
 
 /**
  * TrackService - Hauptorchestrierungsklasse

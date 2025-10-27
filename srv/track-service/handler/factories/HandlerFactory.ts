@@ -1,5 +1,5 @@
-import { ServiceContainer } from '../container/index.js';
-import { TimeEntryHandlers, GenerationHandlers, BalanceHandlers } from '../handlers/index.js';
+import { ServiceContainer } from '../container';
+import { TimeEntryHandlers, GenerationHandlers, BalanceHandlers } from '../handlers';
 import type {
   CreateTimeEntryCommand,
   UpdateTimeEntryCommand,
@@ -14,7 +14,7 @@ import type {
   GetSickLeaveBalanceCommand,
   MarkTimeEntryDoneCommand,
   ReleaseTimeEntryCommand,
-} from '../commands/index.js';
+} from '../commands';
 
 /**
  * Factory für Handler-Instanzen
