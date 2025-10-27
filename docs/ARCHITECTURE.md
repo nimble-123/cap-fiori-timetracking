@@ -300,10 +300,10 @@ C4Context
     Rel(appfront, ui1, "serve static UI", "HTTPS")
     Rel(appfront, ui2, "serve static UI", "HTTPS")
     Rel(appfront, ui3, "serve static UI", "HTTPS")
-    Rel(appfront, srv, "OData V4 + JWT", "HTTPS")
+    Rel(appfront, srv, "OData V4 via managed destination", "HTTPS")
     Rel(srv, db, "SQL Queries", "JDBC")
-    Rel(srv, connectivity, "via CAP Destinations", "RFC/HTTPS (managed)")
-    Rel(connectivity, destination, "Destination Lookup", "HTTPS")
+    Rel(srv, destination, "Fetch Holiday API destination", "HTTPS")
+    Rel(srv, connectivity, "Outbound Proxy (Holiday API)", "HTTPS (managed)")
     Rel(connectivity, holidays, "REST API", "HTTPS")
 ```
 
@@ -322,6 +322,8 @@ C4Context
 | **SAP Identity Services**        | XSUAA / AMS            | OAuth2 / SAML Endpoint               | Token-Ausgabe, Role Collections                     |
 | **Connectivity Service**         | SAP BTP Service        | cf:<space>/connectivity              | Outbound Proxy für Holiday API                      |
 | **Destination Service**          | SAP BTP Service        | cf:<space>/destination               | Holiday API Destinations & Credentials              |
+
+> Hinweis: Die HTML5-Apps nutzen den Application Frontend Service mit einer verwalteten Destination (`srv-api`), die über das Content Module ausgeliefert wird. Die Destination- und Connectivity-Services sind ausschließlich für den Outbound-Aufruf der Feiertags-API durch den TrackService angebunden.
 
 **Wichtige Datenformate:**
 
