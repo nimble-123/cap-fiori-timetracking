@@ -10,6 +10,8 @@
     "skipLibCheck": true,
     "sourceMap": true,
     "allowJs": true,
+    "isolatedModules": true,
+    "rootDir": ".",
     "types": ["@cap-js/cds-types", "jest", "node"],
     "paths": {
       "@sap/cds": ["./node_modules/@cap-js/cds-types"],

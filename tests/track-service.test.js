@@ -7,18 +7,19 @@
 const cds = require('@sap/cds');
 
 const projectRoot = `${__dirname}/..`;
-const testEnv = cds.test(projectRoot, '--in-memory');
+//const testEnv = cds.test(projectRoot, '--in-memory');
+const { GET, POST, PATCH, axios, expect } = cds.test(__dirname + '/..', '--in-memory');
 
-let GET;
-let POST;
+// let GET;
+// let POST;
 //let PATCH;
 //let DELETE;
-let expect;
+//let expect;
 
-beforeAll(async () => {
-  ({ GET, POST, /* PATCH, DELETE, */ expect } = testEnv);
-  await testEnv; // wartet, bis der CDS Testserver bereit ist
-});
+// beforeAll(async () => {
+  //   ({ GET, POST, /* PATCH, DELETE, */ expect } = testEnv);
+  //   await testEnv; // wartet, bis der CDS Testserver bereit ist
+  // });
 
 describe('TrackService - Basic Setup', () => {
   it('should serve $metadata document in v4', async () => {
