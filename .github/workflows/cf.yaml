@@ -1,20 +1,7 @@
 name: Cloud Foundry Deployment
 
 on:
-  workflow_call:
-    inputs:
-      environment:
-        default: Staging
-        type: string
   workflow_dispatch:
-  push:
-    branches:
-      - main
-  workflow_run:
-    workflows:
-      - release-please
-    types:
-      - completed
 
 permissions:
   contents: read
