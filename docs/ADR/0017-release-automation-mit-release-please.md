@@ -9,7 +9,7 @@ Akzeptiert – Umsetzung in der aktuellen Iteration abgeschlossen
 - Bisher erfolgte die Versionierung und Changelog-Pflege manuell, obwohl Commits bereits das Conventional-Commits-Schema nutzen.
 - Das Repository enthält mehrere `package.json`-Dateien (Root + UI5-Apps unter `app/*`), die synchron versioniert werden müssen.
 - Für spätere SAP-BTP-Deployments (Cloud Foundry) soll ein nachvollziehbarer Release-Prozess etabliert sein, der sich einfach in CI/CD integrieren lässt.
-- GitHub wird als Quellcode- und Automatisierungsplattform eingesetzt; Branch-Strategie ist aktuell „main-only“ mit optionalen Feature-Branches.
+- GitHub wird als Quellcode- und Automatisierungsplattform eingesetzt; Branch-Strategie folgt `develop` (Integration) und `main` (Release) mit kurzlebigen Feature-Branches.
 
 ## Entscheidungsfaktoren
 
@@ -43,7 +43,7 @@ Akzeptiert – Umsetzung in der aktuellen Iteration abgeschlossen
 
 - Wir entscheiden uns für **Option B – `release-please` mit Manifest-Workflow**.
 - Konfiguration über `release-please-config.json` + `.release-please-manifest.json`, inklusive `node-workspace`-Plugin für `app/timetable` und `app/timetracking`.
-- GitHub Action (`.github/workflows/release-please.yaml`) triggert auf `main` und erzeugt/aktualisiert Release-PRs mit Changelog, Version Bumps und Tags nach Merge.
+- GitHub Action (`.github/workflows/release-please.yaml`) reagiert nach erfolgreichen `main`-Builds (`workflow_run`) und erzeugt/aktualisiert Release-PRs mit Changelog, Version Bumps und Tags – der tatsächliche Tag entsteht erst nach Merge des Release-PRs.
 - Lokaler Dry-Run über `npx release-please release-pr --dry-run` bleibt vor dem ersten echten Lauf verpflichtend.
 
 ## Konsequenzen

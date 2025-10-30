@@ -1504,25 +1504,28 @@ Die Holiday-API wird produktiv über Destination + Connectivity konsumiert; loka
 
 ### 7.5 CI/CD Workflow-Übersicht
 
-- **`test.yaml` (CI/CD Tests & Build):** Startet auf Push/PR zu `main`, `develop` und `feature/**` mit separaten Lint- und Test-Jobs (fail-fast). Nur wenn beide erfolgreich sind, läuft der Build-Job (`cds-typer`, `npm run build`) und veröffentlicht Artefakte (`gen/`, `@cds-models/`, Coverage, JUnit).
-- **`release-please.yaml`:** Wird ausschließlich nach erfolgreichem Build/Test-Workflow (Push auf `main`) ausgeführt und aktualisiert Release-PRs, Tags und Changelog (vgl. [ADR-0017](ADR/0017-release-automation-mit-release-please.md)).
-- **`cf.yaml` + Composite Action `cf-setup`:** Trigger erfolgt nach erfolgreichem Release-Workflow oder manuell via Dispatch. Nutzt GitHub-Environments für manuelle Freigaben, installiert `cf` CLI, `mbt`, MultiApps-Plugin und erledigt `cf deploy` inkl. Log-Abgriff.
+- **`test.yaml` (CI/CD Tests & Build):** Läuft auf Push/PR zu `develop`, `main` und `feature/**`. Lint- und Test-Jobs brechen frühzeitig ab; nur bei Erfolg startet der Build (`cds-typer`, `npm run build`) und liefert Artefakte (`gen/`, `@cds-models/`) sowie Coverage/JUnit.
+- **`release-please.yaml`:** Wird über `workflow_run` ausgelöst, sobald der `main`-Build erfolgreich war. Die Action aktualisiert den Release-PR und erzeugt Tags erst nach dessen Merge (siehe [ADR-0017](ADR/0017-release-automation-mit-release-please.md)).
+- **`cf.yaml` + Composite Action `cf-setup`:** Automatisiertes Staging-Deployment nach erfolgreichem `develop`-Build, Production-Rollout nach erfolgreicher Release-Automation oder manueller Auslösung. Beide Jobs nutzen GitHub-Environments (`Staging`, `Production`) für Governance & Approvals und installieren cf/mbt/MultiApps-Pakete.
 
 ```mermaid
 flowchart TD
     subgraph CI
-        A["Push/PR → main|develop|feature/**"] --> B["test.yaml: Lint"]
+        A["Push/PR → develop|feature/**"] --> B["test.yaml: Lint"]
         A --> C["test.yaml: Tests"]
-        B --> D{Lint & Test ok?}
+        B --> D{Lint & Tests ok?}
         C --> D
-        D --> E["test.yaml: Build"]
-        E --> F["Artefakte & Reports"]
+        D --> E["test.yaml: Build & Artefakte"]
+        E --> F["cf.yaml: Deploy Staging"]
+        F --> G["Staging Environment"]
     end
-    E --> G["release-please.yaml"]
-    G --> H["Release PR / Tag / CHANGELOG"]
-    H --> I["cf.yaml (workflow_run)"]
-    I --> J["Environment Approval"]
-    I --> K["Composite cf-setup → cf deploy"]
+    H["Merge → main"] --> I["test.yaml: Lint & Tests (main)"]
+    I --> J{ok?}
+    J --> K["Build & Artefakte (main)"]
+    K --> L["release-please.yaml"]
+    L --> M["Release PR (manuell mergen)"]
+    M --> N["cf.yaml: Deploy Production"]
+    N --> O["Production Environment (Approval)"]
 ```
 
 > Die gleiche Toolchain (`cf`, MultiApps-Plugin, `mbt`) ist lokal erforderlich, um die in README/Getting Started beschriebenen Deployments auszuführen.
@@ -1906,26 +1909,31 @@ sequenceDiagram
 #### Transport & Lifecycle Governance
 
 - **CI/CD Pipeline:** Build (`npm run build`), Tests (`npm test`), Security Checks (`npm audit`) und Deploy (`cf deploy` über das MTA-Plugin oder `btp deploy`). Secrets werden aus der Pipeline heraus injiziert.
-- **Release-Automatisierung:** GitHub Action [`release-please`](../.github/workflows/release-please.yaml) verarbeitet Conventional Commits und pflegt `CHANGELOG.md`, Git-Tags sowie Versionsnummern. Die Manifest-Konfiguration (`release-please-config.json` + `.release-please-manifest.json`) listet die UI5-Apps unter `app/timetable`, `app/timetracking` und `app/manage-activity-types` als `extra-files`, damit deren `package.json`-Versionen mit dem Root-Package synchron bleiben.
-  - Workflow: (1) Feature-Branches werden via PR auf `main` gemergt, (2) die Action erstellt eine Manifest-PR mit Titelmuster `chore: release v${version}` inklusive automatischem Header/Footer, (3) `release-please` gruppiert Commits nach den konfigurierten Changelog-Sektionen (Features, Fixes, Docs, CI etc.) und führt den Versionsbump durch, (4) nach Freigabe entsteht das GitHub-Release samt Tag und aktualisierten Artefakten, (5) anschließend kann der geplante Cloud-Foundry-Deploy-Job anschließen.
+- **Release-Automatisierung:** GitHub Action [`release-please`](../.github/workflows/release-please.yaml) verarbeitet Conventional Commits und pflegt `CHANGELOG.md`, Git-Tags sowie Versionsnummern. Die Manifest-Konfiguration (`release-please-config.json` + `.release-please-manifest.json`) listet die UI5-Apps unter `app/timetable`, `app/timetracking`, `app/manage-activity-types` sowie `mta.yaml` als `extra-files`, damit Versionsstände konsistent bleiben.
+  - Workflow: (1) Feature-Branches werden via PR auf `develop` integriert, (2) stabile Sprints werden per Merge `develop → main` abgeschlossen, (3) nach erfolgreichem `main`-Build löst `release-please` (über `workflow_run`) den Release-PR mit Titelmuster `chore: release v${version}` aus, (4) `release-please` gruppiert Commits nach den konfigurierten Changelog-Sektionen und führt den Versionsbump durch, (5) erst nach Merge dieses Release-PRs entstehen GitHub-Release, Tag und aktualisierte Artefakte, (6) danach folgt der Production-Deploy-Job (`cf.yaml`).
   - Governance: Maintainer führen vor Konfigurationsänderungen einen lokalen Dry-Run (`npx release-please release-pr --config-file release-please-config.json --manifest-file .release-please-manifest.json --dry-run`) aus, um Auswirkungen auf Versionen, Changelog und Manifest zu verifizieren.
   - Visualisierung:
     ```mermaid
     gitGraph
       commit id: "main@1.0.0"
-      branch feature/balance-kpi
-      checkout feature/balance-kpi
+      branch develop
+      checkout develop
       commit id: "feat: expose balance KPI"
       commit id: "test: cover balance KPI"
-      checkout main
+      branch feature/balance-kpi
+      checkout feature/balance-kpi
+      commit id: "refactor: tidy handlers"
+      checkout develop
       merge feature/balance-kpi
+      commit id: "chore: docs"
+      checkout main
+      merge develop
       branch release-please/main
       checkout release-please/main
       commit id: "chore: release v1.1.0"
       checkout main
       merge release-please/main tag: "v1.1.0"
-      branch deploy/cf
-      commit id: "ci: deploy to CF (planned)"
+      commit id: "ci: deploy production"
     ```
 - **Transport Management Service (TMS):** Optionale Freigabe von Role Collections, Destinations und Application-Frontend-Service-Konfigurationen zwischen Subaccounts (Dev → QA → Prod).
 - **ADR & Reviews:** Sicherheitsrelevante Änderungen (z. B. XSUAA → AMS Migration) erhalten eigene ADRs + Security Review.

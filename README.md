@@ -336,23 +336,26 @@ Die Konsole ergänzt unsere lokalen Tools (REST Client, Swagger UI) und wird in 
 
 ## ⚙️ Automatisierung & DevOps
 
-- **CI/CD Tests & Build** (`.github/workflows/test.yaml`): Startet mit Lint- und Test-Jobs (fail-fast) auf `main`, `develop`, Feature-Branches & PRs. Nur wenn beide erfolgreich sind, läuft der Build-Job (`cds-typer`, `npm run build`) und veröffentlicht Artefakte (`gen/`, `@cds-models/`, Coverage, JUnit).
-- **Release Automation** (`.github/workflows/release-please.yaml`): Startet nur, wenn der Build/Test-Workflow erfolgreich war und ein Push auf `main` vorliegt; erstellt Release-PRs/Tags (siehe [ADR-0017](docs/ADR/0017-release-automation-mit-release-please.md)).
-- **Cloud Foundry Deploy** (`.github/workflows/cf.yaml` + `.github/actions/cf-setup`): Trigger erfolgt ausschließlich nach erfolgreichem Release-Workflow (oder manuell via Dispatch); setzt auf geschützte GitHub-Environments für manuelle Approvals und installiert `cf` CLI, `mbt`, MultiApps-Plugin.
+- **CI/CD Tests & Build** (`.github/workflows/test.yaml`): Läuft auf Push/PR für `develop`, `main` und `feature/**`; Lint & Unit Tests werden getrennt (fail-fast) ausgeführt. Erst wenn beide Jobs erfolgreich sind, erstellt der Build-Job (`cds-typer`, `npm run build`) Artefakte (`gen/`, `@cds-models/`) und Coverage/JUnit-Reports.
+- **Release Automation** (`.github/workflows/release-please.yaml`): Reagiert über `workflow_run` auf erfolgreiche `main`-Builds. Sie aktualisiert/erstellt den Release-PR, aber setzt Tags und GitHub Releases erst nach dem Merge dieses PRs (vgl. [ADR-0017](docs/ADR/0017-release-automation-mit-release-please.md)).
+- **Cloud Foundry Deploy** (`.github/workflows/cf.yaml` + Composite Action `cf-setup`): Automatischer Staging-Rollout nach erfolgreichem `develop`-Build, Production-Deployment nach erfolgreicher Release-Automation (oder via Dispatch). Beide Jobs hängen an GitHub-Environments (`Staging`, `Production`) – Production wartet auf die manuelle Freigabe der Reviewer und nutzt dieselben cf/mbt-Toolchains wie lokal.
 
 ```mermaid
 flowchart LR
-    A["Push/PR → main|develop|feature/**"] -->|test.yaml| B["Lint Job"]
-    A -->|test.yaml| C["Test Job"]
-    B --> D{Lint & Test successful?}
+    A["Push/PR → develop|feature/**"] -->|test.yaml| B["Lint"]
+    A -->|test.yaml| C["Tests"]
+    B --> D{Lint & Tests ok?}
     C --> D
-    D --> E["Build Job"]
-    E --> F["Artefakte & Coverage"]
-    E --> G["release-please.yaml"]
-    G --> H["Release PR & Tagging"]
-    H --> I["cf.yaml (workflow_run)"]
-    I --> J["Environment Approval"]
-    I --> K["Composite cf-setup"]
+    D --> E["Build & Artefakte"]
+    E --> F["cf.yaml → Deploy Staging"]
+    F --> G["Staging Environment"]
+    H["Merge → main"] -->|test.yaml| I["Lint & Tests (main)"]
+    I --> J{ok?}
+    J --> K["Build & Artefakte (main)"]
+    K --> L["release-please.yaml"]
+    L --> M["Release PR (manuell mergen)"]
+    M --> N["cf.yaml → Deploy Production"]
+    N --> O["Production Environment (Approval)"]
 ```
 
 > Lokale Voraussetzung für Deployments: `cf` CLI ≥8 mit MultiApps-Plugin (`cf install-plugin multiapps`) und `mbt` CLI (`npm install -g mbt`). Die GitHub-Action installiert diese Tools automatisch, lokal müssen sie manuell eingerichtet werden.
@@ -404,11 +407,11 @@ Willst du zum Projekt beitragen? **Awesome!** 🎉
 ### Schnell-Guide
 
 1. **Fork & Clone** das Repository
-2. **Branch erstellen**: `git checkout -b feat/my-feature`
+2. **Branch erstellen**: `git checkout develop && git checkout -b feature/my-feature`
 3. **Code schreiben** (siehe [CONTRIBUTING.md](CONTRIBUTING.md) für Style Guidelines)
 4. **Tests + Format**: `npm test && npm run format`
 5. **Commit**: `git commit -m "feat: add awesome feature"` ([Conventional Commits](https://www.conventionalcommits.org/))
-6. **Push & PR**: `git push origin feat/my-feature`
+6. **Push & PR**: `git push origin feature/my-feature` → Pull Request gegen `develop`
 
 ### Wichtige Regeln
 
@@ -425,8 +428,8 @@ Willst du zum Projekt beitragen? **Awesome!** 🎉
 ## 📦 Release-Prozess
 
 - Automatisierte Release-PRs entstehen über [release-please](https://github.com/googleapis/release-please-action) auf Basis unserer Conventional Commits.
-- Die Konfiguration (`release-please-config.json`, `.release-please-manifest.json`) hält Root- und UI5-App-Versionen (`app/timetable`, `app/timetracking`) über `extra-files` synchron. Die generierte Basic-App `app/manage-activity-types` bleibt vom automatischen Version-Bump ausgenommen und kann bei Bedarf separat angehoben werden.
-- Ein Merge der Release-PR auf `main` erzeugt Git-Tags und aktualisiert den zentralen `CHANGELOG.md`; keine npm-Publikation vorgesehen.
+- Die Konfiguration (`release-please-config.json`, `.release-please-manifest.json`) hält Root- und UI5-App-Versionen (`app/timetable`, `app/timetracking`, `app/manage-activity-types`) sowie `mta.yaml` über `extra-files` synchron.
+- Solange der Release-PR offen ist, bleibt das Release unveröffentlicht. Erst der Merge nach `main` erzeugt Tag & Changelog; eine npm-Publikation ist nicht vorgesehen.
 - Vor der ersten Ausführung im CI empfiehlt sich ein lokaler Dry-Run:
   ```bash
   npx release-please release-pr --config-file release-please-config.json --manifest-file .release-please-manifest.json --dry-run
@@ -434,19 +437,25 @@ Willst du zum Projekt beitragen? **Awesome!** 🎉
 - Visualer Ablauf (vereinfacht):
   ```mermaid
   gitGraph
-    commit id: "main@HEAD"
-    branch feature/holiday-sync
-    checkout feature/holiday-sync
+    commit id: "main"
+    branch develop
+    checkout develop
     commit id: "feat: holiday API cache"
     commit id: "test: cover holiday cache"
-    checkout main
+    branch feature/holiday-sync
+    checkout feature/holiday-sync
+    commit id: "feat: adjust UI"
+    checkout develop
     merge feature/holiday-sync
+    commit id: "refactor: cleanup"
+    checkout main
+    merge develop
     branch release-please/main
     checkout release-please/main
     commit id: "chore: release v1.1.0"
     checkout main
     merge release-please/main tag: "v1.1.0"
-    commit id: "ci: deploy to BTP (future)"
+    commit id: "ci: deploy production"
   ```
 
 ---
@@ -508,3 +517,7 @@ Willst du zum Projekt beitragen? **Awesome!** 🎉
 **Happy Coding!** 🚀
 
 _Built with ❤️ and TypeScript in 2025_
+
+```
+
+```
