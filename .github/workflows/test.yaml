@@ -74,7 +74,7 @@ jobs:
         run: npm run test:coverage
 
       - name: Publish Test Report
-        if: always()
+        if: success()
         uses: dorny/test-reporter@v2
         with:
           name: Report Test Results
@@ -84,7 +84,7 @@ jobs:
           fail-on-empty: false
 
       - name: Upload Test Results
-        if: always()
+        if: success()
         uses: actions/upload-artifact@v5
         with:
           name: test-results
