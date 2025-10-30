@@ -39,3 +39,8 @@ mta_archives/
 
 # @cap-js/cds-typer
 @cds-models
+
+# Dotenv
+.env
+.env.*.local
+.env.local
