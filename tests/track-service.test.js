@@ -5,7 +5,7 @@
  * Nutzt Mock-User aus package.json für Authentication
  */
 const cds = require('@sap/cds');
-const { GET, POST, PATCH, axios, expect } = cds.test(__dirname + '/..', '--in-memory');
+const { GET, POST, /* PATCH, PUT, DELETE, OPTIONS, axios, */ expect } = cds.test(__dirname + '/..', '--in-memory');
 
 describe('TrackService - Basic Setup', () => {
   it('should serve $metadata document in v4', async () => {
