@@ -3,11 +3,13 @@
 > **Eine Enterprise-Grade Zeiterfassungsanwendung mit SAP CAP, TypeScript und Fiori UI5**</br>
 > Showcase für Clean Architecture, Design Patterns und Best Practices – von Entwickler für Entwickler dokumentiert! 🚀
 
-[![TypeScript](https://img.shields.io/badge/TypeScript-100%25-blue?logo=typescript)](https://www.typescriptlang.org/)
-[![SAP CAP](https://img.shields.io/badge/SAP%20CAP-v9-0FAAFF?logo=sap)](https://cap.cloud.sap)
-[![UI5](https://img.shields.io/badge/SAPUI5-≥1.120-blue?logo=sap)](https://ui5.sap.com)
-[![GitHub Release](https://img.shields.io/github/v/release/nimble-123/cap-fiori-timetracking?display_name=tag)](https://github.com/nimble-123/cap-fiori-timetracking/releases)
-[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+![GitHub License](https://img.shields.io/github/license/nimble-123/cap-fiori-timetracking?logo=github&color=blue)
+[![TypeScript](https://img.shields.io/badge/TypeScript-100%25-blue?logo=typescript&color=blue)](https://www.typescriptlang.org/)
+[![SAP CAP](https://img.shields.io/badge/SAP%20CAP-v9-0FAAFF?logo=sap&color=blue)](https://cap.cloud.sap)
+[![UI5](https://img.shields.io/badge/SAPUI5-≥1.120-blue?logo=sap&color=blue)](https://ui5.sap.com)
+
+![GitHub Release](https://img.shields.io/github/v/release/nimble-123/cap-fiori-timetracking?logo=github&color=blue)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/nimble-123/cap-fiori-timetracking/test.yaml?logo=github&color=blue)
 
 ---
 
