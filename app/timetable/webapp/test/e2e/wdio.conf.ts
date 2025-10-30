@@ -107,9 +107,7 @@ export const config: wdi5Config = {
       acceptInsecureCerts: true,
       'wdi5:authentication': {
         provider: 'BasicAuth', //> mandatory
-        basicAuthUrls: [
-          'http://localhost:4004/odata/v4/track/$metadata',
-        ],
+        basicAuthUrls: ['http://localhost:4004/odata/v4/track/$metadata'],
       },
       // If outputDir is provided WebdriverIO can capture driver session logs
       // it is possible to configure which logTypes to include/exclude.
