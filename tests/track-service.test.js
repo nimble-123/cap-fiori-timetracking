@@ -5,21 +5,7 @@
  * Nutzt Mock-User aus package.json für Authentication
  */
 const cds = require('@sap/cds');
-
-const projectRoot = `${__dirname}/..`;
-//const testEnv = cds.test(projectRoot, '--in-memory');
 const { GET, POST, PATCH, axios, expect } = cds.test(__dirname + '/..', '--in-memory');
-
-// let GET;
-// let POST;
-//let PATCH;
-//let DELETE;
-//let expect;
-
-// beforeAll(async () => {
-  //   ({ GET, POST, /* PATCH, DELETE, */ expect } = testEnv);
-  //   await testEnv; // wartet, bis der CDS Testserver bereit ist
-  // });
 
 describe('TrackService - Basic Setup', () => {
   it('should serve $metadata document in v4', async () => {
