@@ -1504,7 +1504,7 @@ Die Holiday-API wird produktiv über Destination + Connectivity konsumiert; loka
 
 ### 7.5 CI/CD Workflow-Übersicht
 
-- **`test.yaml` (CI/CD Tests & Build):** Startet auf Push/PR zu `main`, `develop` und `feature/**` mit separaten Lint- und Test-Jobs (fail-fast). Nur wenn beide erfolgreich sind, läuft der Build-Job (`cds-typer`, `npm run build`) und veröffentlicht Artefakte (`gen/`, `@cds-models/`, Coverage, JUnit).
+- **`test.yaml` (Tests & Build):** Startet auf Push/PR zu `main`, `develop` und `feature/**` mit separaten Lint- und Test-Jobs (fail-fast). Nur wenn beide erfolgreich sind, läuft der Build-Job (`cds-typer`, `npm run build`) und veröffentlicht Artefakte (`gen/`, `@cds-models/`, Coverage, JUnit).
 - **`release-please.yaml`:** Wird ausschließlich nach erfolgreichem Build/Test-Workflow (Push auf `main`) ausgeführt und aktualisiert Release-PRs, Tags und Changelog (vgl. [ADR-0017](ADR/0017-release-automation-mit-release-please.md)).
 - **`cf.yaml` + Composite Action `cf-setup`:** Trigger erfolgt nach erfolgreichem Release-Workflow oder manuell via Dispatch. Nutzt GitHub-Environments für manuelle Freigaben, installiert `cf` CLI, `mbt`, MultiApps-Plugin und erledigt `cf deploy` inkl. Log-Abgriff.
 

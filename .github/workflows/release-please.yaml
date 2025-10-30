@@ -1,12 +1,9 @@
-name: release-please
+name: Release Workflow
 
 on:
-  push:
-    branches:
-      - main
   workflow_run:
     workflows:
-      - CI/CD Tests & Build
+      - Tests & Build
     types:
       - completed
 
