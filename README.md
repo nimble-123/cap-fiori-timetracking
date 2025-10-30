@@ -336,7 +336,7 @@ Die Konsole ergänzt unsere lokalen Tools (REST Client, Swagger UI) und wird in 
 
 ## ⚙️ Automatisierung & DevOps
 
-- **Tests & Build** (`.github/workflows/test.yaml`): Startet mit Lint- und Test-Jobs (fail-fast) auf `main`, `develop`, Feature-Branches & PRs. Nur wenn beide erfolgreich sind, läuft der Build-Job (`cds-typer`, `npm run build`) und veröffentlicht Artefakte (`gen/`, `@cds-models/`, Coverage, JUnit).
+- **CI/CD Tests & Build** (`.github/workflows/test.yaml`): Startet mit Lint- und Test-Jobs (fail-fast) auf `main`, `develop`, Feature-Branches & PRs. Nur wenn beide erfolgreich sind, läuft der Build-Job (`cds-typer`, `npm run build`) und veröffentlicht Artefakte (`gen/`, `@cds-models/`, Coverage, JUnit).
 - **Release Automation** (`.github/workflows/release-please.yaml`): Startet nur, wenn der Build/Test-Workflow erfolgreich war und ein Push auf `main` vorliegt; erstellt Release-PRs/Tags (siehe [ADR-0017](docs/ADR/0017-release-automation-mit-release-please.md)).
 - **Cloud Foundry Deploy** (`.github/workflows/cf.yaml` + `.github/actions/cf-setup`): Trigger erfolgt ausschließlich nach erfolgreichem Release-Workflow (oder manuell via Dispatch); setzt auf geschützte GitHub-Environments für manuelle Approvals und installiert `cf` CLI, `mbt`, MultiApps-Plugin.
 

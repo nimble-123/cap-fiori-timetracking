@@ -1,4 +1,4 @@
-name: Tests & Build
+name: CI/CD Tests & Build
 
 on:
   push:
@@ -14,6 +14,7 @@ on:
 jobs:
   lint:
     name: Linter & Format Check
+    # stellt sicher, dass Style- und Formatregeln vor dem Build eingehalten werden
     runs-on: ubuntu-latest
 
     steps:
@@ -39,6 +40,7 @@ jobs:
 
   test:
     name: Run API Tests
+    # generiert Typen, führt Unit-Tests aus und sammelt Coverage
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -95,9 +97,9 @@ jobs:
 
   build:
     name: Build Solution
+    # erstellt produktionsfähige Artefakte nur bei erfolgreichem Lint- und Testlauf
     runs-on: ubuntu-latest
     needs: [lint, test]
-    if: ${{ contains(needs.*.result, 'failure') == false }}
 
     steps:
       - name: Checkout Repository

@@ -1,9 +1,9 @@
-name: Release Workflow
+name: Release Automation
 
 on:
   workflow_run:
     workflows:
-      - Tests & Build
+      - CI/CD Tests & Build
     types:
       - completed
 
@@ -13,13 +13,15 @@ permissions:
 
 jobs:
   release:
+    name: Generate Release Pull Request
+    # create/update release PR only when the main-branch CI succeeded
     if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main' }}
     runs-on: ubuntu-latest
     outputs:
       release_created: ${{ steps.release.outputs.release_created }}
       tag_name: ${{ steps.release.outputs.tag_name }}
     steps:
-      - name: Release Please
+      - name: Run Release Please
         id: release
         uses: googleapis/release-please-action@v4
         with:

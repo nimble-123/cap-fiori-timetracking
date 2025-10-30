@@ -1,48 +1,142 @@
 name: Cloud Foundry Deployment
 
 on:
+  workflow_call:
+    inputs:
+      environment:
+        description: Target environment for deployment
+        required: false
+        default: Staging
+        type: string
   workflow_dispatch:
+    inputs:
+      environment:
+        description: Target environment for deployment
+        required: false
+        default: Staging
+        type: choice
+        options:
+          - Staging
+          - Production
+  workflow_run:
+    workflows:
+      - CI/CD Tests & Build
+      - Release Automation
+    types:
+      - completed
 
 permissions:
   contents: read
   deployments: write
 
-concurrency:
-  group: cf-${{ github.workflow }}-${{ github.head_ref || github.run_id }}
-  cancel-in-progress: true
-
 env:
   APP_NAME: cap-fiori-timetracking
+
 jobs:
-  deploy:
+  deploy-staging:
+    name: Deploy to Staging
+    # run automatically after develop CI or when explicitly requested
+    if: >
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.name == 'CI/CD Tests & Build' &&
+       github.event.workflow_run.event == 'push' &&
+       github.event.workflow_run.head_branch == 'develop') ||
+      (github.event_name == 'workflow_dispatch' &&
+       inputs.environment == 'Staging') ||
+      (github.event_name == 'workflow_call' &&
+       inputs.environment == 'Staging')
     runs-on: ubuntu-latest
-    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
+    concurrency:
+      group: cf-${{ github.workflow }}-staging
+      cancel-in-progress: true
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v5
         with:
           node-version: 22
-      - uses: ./.github/actions/cf-setup
+      - name: Configure Cloud Foundry CLI
+        uses: ./.github/actions/cf-setup
         with:
           cf-api: ${{ vars.CF_API }}
           cf-org: ${{ vars.CF_ORG }}
-          cf-space: ${{ vars.CF_SPACE }}
+          cf-space: ${{ vars.CF_SPACE_STAGING || vars.CF_SPACE }}
           cf-username: ${{ vars.CF_USERNAME }}
           cf-password: ${{ secrets.CF_PASSWORD }}
-      - run: npm install
-      - run: npx cds up
+      - name: Install Project Dependencies
+        run: npm install
+      - name: Deploy CAP Application
+        run: npx cds up
 
-      - run: cf logs "${{ env.APP_NAME }}-srv" --recent
+      - name: Show Recent Service Logs
+        run: cf logs "${{ env.APP_NAME }}-srv" --recent
         if: always()
-      - run: cf logs "${{ env.APP_NAME }}-db-deployer" --recent
+      - name: Show Recent DB Deployer Logs
+        run: cf logs "${{ env.APP_NAME }}-db-deployer" --recent
         if: always()
 
-      - name: Get application URL
+      - name: Capture Deployed URL
         id: route
         shell: bash
         run: |
           host=$(cf app "${APP_NAME}" | awk '/routes:/ {print $2}' | sed -E 's#^https?://##; s/,.*$//')
           echo "url=https://$host" >> "$GITHUB_OUTPUT"
     environment:
-      name: ${{ inputs.environment || 'Production' }}
+      name: Staging
+      url: ${{ steps.route.outputs.url }}
+
+  deploy-production:
+    name: Deploy to Production
+    # run after successful release automation or on explicit request
+    if: >
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.name == 'Release Automation' &&
+       github.event.workflow_run.event == 'push' &&
+       github.event.workflow_run.head_branch == 'main') ||
+      (github.event_name == 'workflow_dispatch' &&
+       inputs.environment == 'Production') ||
+      (github.event_name == 'workflow_call' &&
+       inputs.environment == 'Production')
+    runs-on: ubuntu-latest
+    concurrency:
+      group: cf-${{ github.workflow }}-production
+      cancel-in-progress: true
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - name: Configure Cloud Foundry CLI
+        uses: ./.github/actions/cf-setup
+        with:
+          cf-api: ${{ vars.CF_API }}
+          cf-org: ${{ vars.CF_ORG }}
+          cf-space: ${{ vars.CF_SPACE }}
+          cf-username: ${{ vars.CF_USERNAME }}
+          cf-password: ${{ secrets.CF_PASSWORD }}
+      - name: Install Project Dependencies
+        run: npm install
+      - name: Deploy CAP Application
+        run: npx cds up
+
+      - name: Show Recent Service Logs
+        run: cf logs "${{ env.APP_NAME }}-srv" --recent
+        if: always()
+      - name: Show Recent DB Deployer Logs
+        run: cf logs "${{ env.APP_NAME }}-db-deployer" --recent
+        if: always()
+
+      - name: Capture Deployed URL
+        id: route
+        shell: bash
+        run: |
+          host=$(cf app "${APP_NAME}" | awk '/routes:/ {print $2}' | sed -E 's#^https?://##; s/,.*$//')
+          echo "url=https://$host" >> "$GITHUB_OUTPUT"
+    environment:
+      name: Production
       url: ${{ steps.route.outputs.url }}
