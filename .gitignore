@@ -24,6 +24,7 @@ junit.xml
 *_mta_build_tmp
 *.mtar
 mta_archives/
+*.mta
 
 # Other
 .DS_Store

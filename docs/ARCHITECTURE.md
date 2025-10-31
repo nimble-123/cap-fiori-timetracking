@@ -334,10 +334,10 @@ C4Context
 
 **Security-Kontext & Trust Boundaries:**
 
-- **AuthN-Fluss:** User → Application Frontend Service → SAP Identity Service (XSUAA/AMS) → Application Frontend Service → CAP. Der Managed App Router tauscht die Session gegen ein JWT aus (`XSUAA`) bzw. erhält Policies aus AMS.
-- **AuthZ-Fluss:** Role Collections in der BTP mappen auf CAP-Rollen (`@restrict`). UI5-Anwendungen lesen dieselben Rollen (über Launchpad Shell) für Feature Toggles.
-- **Tenant-Isolation:** Jede Subaccount-Instanz nutzt eigene Service-Bindings (HANA Schema, XSUAA/AMS Instanz), wodurch Daten und Rollen mandantenspezifisch isoliert werden.
-- **Entwicklung vs. Produktion:** Lokal mockt CAP den Identity Layer (`cds.requires.auth.kind = mocked`). In BTP kommt der reale IAM-Stack zum Einsatz; alle Endpunkte verlangen gültige JWTs.
+- **AuthN-Fluss:** User → Application Frontend Service → SAP IAS → Application Frontend Service → CAP. Der Managed App Router initiiert den OAuth2-Code-Flow gegen IAS; via `xsuaa-cross-consumption` akzeptiert CAP weiterhin XSUAA-Tokens (Fallback).
+- **AuthZ-Fluss:** IAS-Rollen-Collections liefern Scopes aus `xs-security.json` (TimeTrackingUser/Approver/Admin). AMS Policies (`ams/dcl/basePolicies.dcl`) verteilen Attribute wie `ProjectID` und `PreferredState`, die via `db/src/ams-attributes.cds` an CAP bereitgestellt und von `@restrict`-Regeln ausgewertet werden.
+- **Tenant-Isolation:** Jede Subaccount-Instanz nutzt eigene Service-Bindings (HANA Schema, IAS, AMS), wodurch Daten und Rollen mandantenspezifisch isoliert werden.
+- **Entwicklung vs. Produktion:** Lokal mockt CAP den Identity Layer (`cds.requires.[development].auth.kind = mocked`). In BTP ist `cds.requires.auth = "ias"` aktiv; alle Endpunkte verlangen gültige JWTs, die Work Zone/AFS durchreichen.
 
 ---
 
@@ -410,7 +410,7 @@ Details zu allen Entscheidungen: siehe [Kapitel 9 - Architekturentscheidungen](#
 - **Parallelisierte Teams:** Frontend & Backend können unabhängig arbeiten; CDS-Services liefern generische REST/OData-Repositories, die später durch Custom Handler ersetzt werden.
 - **Spätes Schneiden (Modulith → Microservices):** Wir folgen dem CAP-Modulith-Ansatz; mehrere Services laufen lokal im selben Prozess und werden erst bei Bedarf als eigenständige Deployments (z. B. Microservices) geschnitten.
 
-> Ergebnis: Sehr schnelle „code → run → test“-Zyklen im Inner Loop, während der Outer Loop (PR, CI, cf deploy) nur bei stabilen Ergebnissen aktiviert wird.
+> Ergebnis: Sehr schnelle „code → run → test“-Zyklen im Inner Loop, während der Outer Loop (PR, CI, npm run deploy:cf) nur bei stabilen Ergebnissen aktiviert wird.
 
 ---
 
@@ -1364,6 +1364,7 @@ sequenceDiagram
 | UI Framework    | SAPUI5              | >= 1.120  | Frontend-Framework        |
 | Database        | SQLite              | 3.x       | Dev-Datenbank (In-Memory) |
 | Build Tool      | TypeScript Compiler | 5.x       | TypeScript → JavaScript   |
+| Build Runtime   | Java (Temurin JDK)  | >= 17     | `@sap/ams-dev` Build Step |
 | Package Manager | npm                 | >= 9.x    | Dependency Management     |
 
 ---
@@ -1412,16 +1413,16 @@ sequenceDiagram
 
 **Cloud Foundry Services:**
 
-| Service                                         | Typ                              | Zweck                                      |
-| ----------------------------------------------- | -------------------------------- | ------------------------------------------ |
-| **Application Frontend Service**                | Managed App Router               | Hosting & Authentifizierung der Fiori Apps |
-| **XSUAA**                                       | Authorization & Trust Management | User Authentication                        |
-| **Authorization Management Service** (optional) | Policy Management                | Fein granularer Zugriff (Role Policies)    |
-| **HANA Cloud**                                  | Database                         | Production-Datenbank                       |
-| **Application Logging**                         | Logging                          | Centralized Logs                           |
-| **Application Autoscaler**                      | Scaling                          | Auto-Scaling bei Last                      |
-| **SAP Object Store** (optional)                 | Object Storage                   | Auslagerung von Attachment-Binärdaten      |
-| **Malware Scanning Service** (optional)         | Security Service                 | Viren-/Malware-Prüfung für Datei-Uploads   |
+| Service                                 | Typ                              | Zweck                                      |
+| --------------------------------------- | -------------------------------- | ------------------------------------------ |
+| **Application Frontend Service**        | Managed App Router               | Hosting & Authentifizierung der Fiori Apps |
+| **XSUAA**                               | Authorization & Trust Management | User Authentication                        |
+| **Authorization Management Service**    | Policy Management                | Fein granularer Zugriff (Role Policies)    |
+| **HANA Cloud**                          | Database                         | Production-Datenbank                       |
+| **Application Logging**                 | Logging                          | Centralized Logs                           |
+| **Application Autoscaler**              | Scaling                          | Auto-Scaling bei Last                      |
+| **SAP Object Store** (optional)         | Object Storage                   | Auslagerung von Attachment-Binärdaten      |
+| **Malware Scanning Service** (optional) | Security Service                 | Viren-/Malware-Prüfung für Datei-Uploads   |
 
 > Optional: Das Attachments Plugin (`@cap-js/attachments`) kann so konfiguriert werden, dass Binärdaten im **SAP Object Store** abgelegt und Uploads über den **Malware Scanning Service** geprüft werden. Beide Services werden nur benötigt, wenn Dateiablagen nicht in der Datenbank erfolgen sollen bzw. Compliance-Richtlinien einen Malware-Scan verlangen.
 
@@ -1451,13 +1452,13 @@ sequenceDiagram
 
 | Aspekt       | Konfiguration                                                                         |
 | ------------ | ------------------------------------------------------------------------------------- |
-| **Command**  | `npx mbt build -p cf && cf deploy mta_archives/cap-fiori-timetracking_0.0.1.mtar`     |
+| **Command**  | `npm run build:mta && npm run deploy:cf`                                              |
 | **Database** | HANA Cloud                                                                            |
 | **Auth**     | Application Frontend Service (Managed App Router) + SAP Identity Services (XSUAA/AMS) |
 | **URL**      | https://app.cfapps.eu10.hana.ondemand.com                                             |
 | **Scaling**  | Auto-Scaling aktiviert                                                                |
 
-`mta.yaml` beschreibt die Module (`cap-fiori-timetracking-srv`, `cap-fiori-timetracking-db-deployer`, `cap-fiori-timetracking-app-deployer`) sowie die benötigten CF-Services (HANA HDI, Object Store, Malware Scanning, Application Logging, Connectivity, Destination, Application Frontend Service). Die `before-all` Build-Hook führt `npm ci` und `cds build --production` aus, sodass der Deploy über `cf deploy` ohne manuelle Zwischenschritte erfolgt. Das Content Module liefert die UI5-Build-Artefakte als ZIP-Dateien an den Application Frontend Service, der sie über einen Managed App Router ausliefert. Details zur Entscheidung stehen in [ADR-0018](ADR/0018-mta-deployment-cloud-foundry.md).
+`mta.yaml` beschreibt die Module (`cap-fiori-timetracking-srv`, `cap-fiori-timetracking-db-deployer`, `cap-fiori-timetracking-app-deployer`) sowie die benötigten CF-Services (HANA HDI, Object Store, Malware Scanning, Application Logging, Connectivity, Destination, Application Frontend Service). Die `before-all` Build-Hook führt `npm ci` und `cds build --production` aus; lokal wie in der Pipeline werden anschließend `npm run build:mta` und `npm run deploy:cf` genutzt. Das Content Module liefert die UI5-Build-Artefakte als ZIP-Dateien an den Application Frontend Service, der sie über einen Managed App Router ausliefert. Details zur Entscheidung stehen in [ADR-0018](ADR/0018-mta-deployment-cloud-foundry.md).
 
 #### MTA-Module & Ressourcen
 
@@ -1477,6 +1478,17 @@ sequenceDiagram
 > Lokale Deployments benötigen `cf` CLI ≥8, das MultiApps-Plugin (`cf install-plugin multiapps`) sowie das Multi-Target Build Tool (`npm install -g mbt`).
 
 Die Holiday-API wird produktiv über Destination + Connectivity konsumiert; lokal erfolgt der Zugriff direkt via HTTP. `package.json → cds.requires` spiegelt beide Varianten wider (Mock Auth lokal, echte Bindings in BTP).
+
+#### 7.4 IAS/AMS Implementierungsfahrplan
+
+1. **Vorbereitung:** Rollenmodell vereinheitlichen (`TimeTrackingUser/Approver/Admin`) und lokale Mock-User in `package.json` spiegeln; bestehende `@restrict`-Annotationen wurden entsprechend umgestellt.
+2. **IAS-Provisionierung:** Subaccount-Instanz `cap-fiori-timetracking-ias` (Service `identity`) mit `xsuaa-cross-consumption` erzeugen; `Application Frontend Service` konsumiert dieselbe Instanz.
+3. **AMS-Provisionierung:** Subaccount-Instanz `cap-fiori-timetracking-ams` (Service `identity-authorization`) für Policy-Deployment anlegen; Policy-Daten werden über das neue Deployment-Modul verteilt.
+4. **CAP-Konfiguration:** Default-Authentifizierung auf IAS umgestellt (`cds.requires.auth = "ias"`, `cds.requires.xsuaa = true`); lokale Mock-User erweitern die Produktivrollen.
+5. **AMS-Attribute & Policies:** `db/src/ams-attributes.cds` mappt fachliche Attribute (`UserID`, `ProjectID`, `PreferredState`, `StatusCode`) an AMS; `ams/dcl/basePolicies.dcl` definiert Rollen-Policies.
+6. **Deployment-Artefakte:** `mta.yaml` bindet nun IAS + AMS an das CAP-Service-Modul und fügt das technische Modul `cap-fiori-timetracking-ams-policies-deployer` hinzu; `xs-security.json` liefert die produktiven Scopes.
+7. **Work Zone Integration:** Application Frontend Service stellt Destinations mit JWT-Forwarding bereit; Role-Collections im Subaccount referenzieren die Templates aus `xs-security.json`.
+8. **Qualitätssicherung:** Mocked Tests nutzen weiterhin `npm run watch`; für CF-Deployments erzeugt `npm run build:mta` das MTAR, das anschließend mit `npm run deploy:cf` inklusive AMS-DCLs ausgerollt wird.
 
 **Szenario 3: Docker Container**
 
@@ -1908,7 +1920,7 @@ sequenceDiagram
 
 #### Transport & Lifecycle Governance
 
-- **CI/CD Pipeline:** Build (`npm run build`), Tests (`npm test`), Security Checks (`npm audit`) und Deploy (`cf deploy` über das MTA-Plugin oder `btp deploy`). Secrets werden aus der Pipeline heraus injiziert.
+- **CI/CD Pipeline:** Build (`npm run build:mta` nach erfolgreichem Lint/Test), Tests (`npm test`), Security Checks (`npm audit`) und Deploy (`npm run deploy:cf`, intern `cf deploy`). Secrets werden aus der Pipeline heraus injiziert.
 - **Release-Automatisierung:** GitHub Action [`release-please`](../.github/workflows/release-please.yaml) verarbeitet Conventional Commits und pflegt `CHANGELOG.md`, Git-Tags sowie Versionsnummern. Die Manifest-Konfiguration (`release-please-config.json` + `.release-please-manifest.json`) listet die UI5-Apps unter `app/timetable`, `app/timetracking`, `app/manage-activity-types` sowie `mta.yaml` als `extra-files`, damit Versionsstände konsistent bleiben.
   - Workflow: (1) Feature-Branches werden via PR auf `develop` integriert, (2) stabile Sprints werden per Merge `develop → main` abgeschlossen, (3) nach erfolgreichem `main`-Build löst `release-please` (über `workflow_run`) den Release-PR mit Titelmuster `chore: release v${version}` aus, (4) `release-please` gruppiert Commits nach den konfigurierten Changelog-Sektionen und führt den Versionsbump durch, (5) erst nach Merge dieses Release-PRs entstehen GitHub-Release, Tag und aktualisierte Artefakte, (6) danach folgt der Production-Deploy-Job (`cf.yaml`).
   - Governance: Maintainer führen vor Konfigurationsänderungen einen lokalen Dry-Run (`npx release-please release-pr --config-file release-please-config.json --manifest-file .release-please-manifest.json --dry-run`) aus, um Auswirkungen auf Versionen, Changelog und Manifest zu verifizieren.
@@ -2027,6 +2039,7 @@ Alle Architekturentscheidungen sind als ADRs dokumentiert unter `docs/ADR/`:
 | [ADR-0016](ADR/0016-repository-meta-dateien-und-governance.md) | Repository Meta Files & Governance    | ✅ Akzeptiert |
 | [ADR-0017](ADR/0017-release-automation-mit-release-please.md)  | Release-Automation mit release-please | ✅ Akzeptiert |
 | [ADR-0018](ADR/0018-mta-deployment-cloud-foundry.md)           | MTA-Deployment für SAP BTP CF         | ✅ Akzeptiert |
+| [ADR-0019](ADR/0019-ias-ams-integration.md)                    | IAS & AMS Integration                 | ✅ Akzeptiert |
 
 ---
 
@@ -2046,7 +2059,7 @@ System-Qualität
 │   │   └── Validator Composition
 │   └── Analysierbarkeit
 │       ├── JSDoc für alle APIs
-│       ├── 16 ADRs
+│       ├── 19 ADRs
 │       └── Strukturiertes Logging
 │
 ├── 2️⃣ Testbarkeit (Prio: Sehr Hoch)

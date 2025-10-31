@@ -1,0 +1,57 @@
+{
+  "xsappname": "cap-fiori-timetracking",
+  "tenant-mode": "dedicated",
+  "scopes": [
+    {
+      "name": "$XSAPPNAME.TimeTrackingUser",
+      "description": "Read/write personal time entries and common master data"
+    },
+    {
+      "name": "$XSAPPNAME.TimeTrackingApprover",
+      "description": "Approve and release time entries for assigned teams/projects"
+    },
+    {
+      "name": "$XSAPPNAME.TimeTrackingAdmin",
+      "description": "Full administrative access to time tracking configuration"
+    },
+    {
+      "name": "uaa.user",
+      "description": "Default scope required for UI access",
+      "grant-as-authority-to-apps": ["$XSAPPNAME(application)"]
+    }
+  ],
+  "role-templates": [
+    {
+      "name": "TimeTrackingUser",
+      "description": "End users capturing their own time entries",
+      "scope-references": ["$XSAPPNAME.TimeTrackingUser", "uaa.user"]
+    },
+    {
+      "name": "TimeTrackingApprover",
+      "description": "Supervisors reviewing and releasing time entries",
+      "scope-references": ["$XSAPPNAME.TimeTrackingUser", "$XSAPPNAME.TimeTrackingApprover", "uaa.user"]
+    },
+    {
+      "name": "TimeTrackingAdmin",
+      "description": "Administrators maintaining customizing and master data",
+      "scope-references": [
+        "$XSAPPNAME.TimeTrackingUser",
+        "$XSAPPNAME.TimeTrackingApprover",
+        "$XSAPPNAME.TimeTrackingAdmin",
+        "uaa.user"
+      ]
+    }
+  ],
+  "attributes": [
+    {
+      "name": "PreferredState",
+      "description": "State code used for holiday defaults",
+      "valueType": "string"
+    },
+    {
+      "name": "ProjectID",
+      "description": "Project identifier assigned via AMS policies",
+      "valueType": "string"
+    }
+  ]
+}

@@ -18,12 +18,16 @@ modules:
     parameters:
       instances: 1
       buildpack: nodejs_buildpack
+      routes:
+        - route: '${default-url}'
+        - route: '${default-host}.cert.${default-domain}'
     build-parameters:
       builder: npm-ci
     provides:
       - name: srv-api # required by consumers of CAP services (e.g. approuter)
         properties:
           srv-url: ${default-url}
+          srv-cert-url: '${protocol}://${default-host}.cert.${default-domain}'
     requires:
       - name: cap-fiori-timetracking-attachments
       - name: cap-fiori-timetracking-db
@@ -31,6 +35,20 @@ modules:
       - name: cap-fiori-timetracking-logging
       - name: cap-fiori-timetracking-connectivity
       - name: cap-fiori-timetracking-destination
+      - name: cap-fiori-timetracking-ias
+        parameters:
+          config:
+            credential-type: X509_GENERATED
+            app-identifier: srv
+      - name: cap-fiori-timetracking-ams
+        parameters:
+          config:
+            credential-type: X509_GENERATED
+            app-identifier: srv
+    deployed-after:
+      - cap-fiori-timetracking-ams-policies-deployer
+    properties:
+      AMS_DCL_ROOT: ams/dcl
 
   - name: cap-fiori-timetracking-db-deployer
     type: hdb
@@ -103,6 +121,25 @@ modules:
         - npm run build
       supported-platforms: []
 
+  - name: cap-fiori-timetracking-ams-policies-deployer
+    type: javascript.nodejs
+    path: gen/policies
+    parameters:
+      buildpack: nodejs_buildpack
+      no-route: true
+      no-start: true
+      tasks:
+        - name: deploy-dcl
+          command: npm start
+          memory: 512M
+    requires:
+      - name: cap-fiori-timetracking-ias
+        parameters:
+          config:
+            credential-type: X509_GENERATED
+            app-identifier: ams-policy-deployer
+      - name: cap-fiori-timetracking-ams
+
 resources:
   - name: cap-fiori-timetracking-attachments
     type: org.cloudfoundry.managed-service
@@ -139,3 +176,26 @@ resources:
     parameters:
       service: app-front
       service-plan: developer
+  - name: cap-fiori-timetracking-ias
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: identity
+      service-name: cap-fiori-timetracking-ias
+      service-plan: application
+      config:
+        display-name: cap-fiori-timetracking
+        oauth2-configuration:
+          token-policy:
+            access-token-format: 'jwt'
+        xsuaa-cross-consumption: true
+        authorization:
+          enabled: true
+  - name: cap-fiori-timetracking-ams
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: identity-authorization
+      service-name: cap-fiori-timetracking-ams
+      service-plan: application
+      config:
+        display-name: cap-fiori-timetracking
+        description: Authorization policies for CAP Time Tracking

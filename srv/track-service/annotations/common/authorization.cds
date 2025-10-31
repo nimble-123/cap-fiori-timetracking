@@ -12,16 +12,27 @@ annotate service.TimeEntries with @(restrict: [
       'markTimeEntryDone',
       'releaseTimeEntry'
     ],
-    to   : 'authenticated-user',
+    to   : 'TimeTrackingUser',
     where: 'user_ID = $user'
   },
   {
     grant: [
       'READ',
-      'WRITE',
+      'markTimeEntryDone',
+      'releaseTimeEntry',
       'recalculateTimeEntry'
     ],
-    to   : 'Admin'
+    to   : 'TimeTrackingApprover'
+  },
+  {
+    grant: [
+      'READ',
+      'WRITE',
+      'recalculateTimeEntry',
+      'markTimeEntryDone',
+      'releaseTimeEntry'
+    ],
+    to   : 'TimeTrackingAdmin'
   }
 ]);
 
@@ -31,14 +42,18 @@ annotate service.TimeEntries with @(restrict: [
 annotate service.Customizing with @(restrict: [
   {
     grant: ['READ'],
-    to   : 'authenticated-user'
+    to   : 'TimeTrackingUser'
+  },
+  {
+    grant: ['READ'],
+    to   : 'TimeTrackingApprover'
   },
   {
     grant: [
       'READ',
       'WRITE'
     ],
-    to   : 'Admin'
+    to   : 'TimeTrackingAdmin'
   }
 ]);
 
@@ -48,14 +63,14 @@ annotate service.Customizing with @(restrict: [
 annotate service.Users with @(restrict: [
   {
     grant: ['READ'],
-    to   : 'authenticated-user'
+    to   : 'TimeTrackingUser'
   },
   {
     grant: [
       'READ',
       'WRITE'
     ],
-    to   : 'Admin'
+    to   : 'TimeTrackingAdmin'
   }
 ]);
 
@@ -65,14 +80,14 @@ annotate service.Users with @(restrict: [
 annotate service.Projects with @(restrict: [
   {
     grant: ['READ'],
-    to   : 'authenticated-user'
+    to   : 'TimeTrackingUser'
   },
   {
     grant: [
       'READ',
       'WRITE'
     ],
-    to   : 'Admin'
+    to   : 'TimeTrackingAdmin'
   }
 ]);
 
@@ -83,88 +98,88 @@ annotate service.Projects with @(restrict: [
 annotate service.ActivityTypes with @(restrict: [
   {
     grant: ['READ'],
-    to   : 'authenticated-user'
+    to   : 'TimeTrackingUser'
   },
   {
     grant: [
       'READ',
       'WRITE'
     ],
-    to   : 'Admin'
+    to   : 'TimeTrackingAdmin'
   }
 ]);
 
 annotate service.EntryTypes with @(restrict: [
   {
     grant: ['READ'],
-    to   : 'authenticated-user'
+    to   : 'TimeTrackingUser'
   },
   {
     grant: [
       'READ',
       'WRITE'
     ],
-    to   : 'Admin'
+    to   : 'TimeTrackingAdmin'
   }
 ]);
 
 annotate service.WorkLocations with @(restrict: [
   {
     grant: ['READ'],
-    to   : 'authenticated-user'
+    to   : 'TimeTrackingUser'
   },
   {
     grant: [
       'READ',
       'WRITE'
     ],
-    to   : 'Admin'
+    to   : 'TimeTrackingAdmin'
   }
 ]);
 
 annotate service.TravelTypes with @(restrict: [
   {
     grant: ['READ'],
-    to   : 'authenticated-user'
+    to   : 'TimeTrackingUser'
   },
   {
     grant: [
       'READ',
       'WRITE'
     ],
-    to   : 'Admin'
+    to   : 'TimeTrackingAdmin'
   }
 ]);
 
 annotate service.TimeEntryStatuses with @(restrict: [
   {
     grant: ['READ'],
-    to   : 'authenticated-user'
+    to   : 'TimeTrackingUser'
   },
   {
     grant: [
       'READ',
       'WRITE'
     ],
-    to   : 'Admin'
+    to   : 'TimeTrackingAdmin'
   }
 ]);
 
 annotate service.Region with @(restrict: [
   {
     grant: ['READ'],
-    to   : 'authenticated-user'
+    to   : 'TimeTrackingUser'
   },
   {
     grant: [
       'READ',
       'WRITE'
     ],
-    to   : 'Admin'
+    to   : 'TimeTrackingAdmin'
   }
 ]);
 
 ////////////////////////////////////////////////////////////////////////////
 //  Service-Level Authorization (falls benötigt)
 ////////////////////////////////////////////////////////////////////////////
-// annotate service.TrackService with @(requires: 'authenticated-user');
+// annotate service.TrackService with @(requires: 'TimeTrackingUser');

@@ -67,16 +67,26 @@ Wir wählen **Option C** - CAP Mocked Authentication mit Test-Usern. Die Konfigu
 {
   "cds": {
     "requires": {
-      "auth": {
-        "kind": "mocked",
-        "users": {
-          "max.mustermann@test.de": {
-            "password": "max",
-            "roles": ["authenticated-user"]
-          },
-          "erika.musterfrau@test.de": {
-            "password": "erika",
-            "roles": ["authenticated-user"]
+      "auth": "ias",
+      "[development]": {
+        "auth": {
+          "kind": "mocked",
+          "users": {
+            "max.mustermann@test.de": {
+              "password": "max",
+              "roles": ["TimeTrackingUser", "TimeTrackingAdmin"],
+              "policies": ["cap.TimeTrackingUser","cap.TimeTrackingAdmin"]
+            },
+            "erika.musterfrau@test.de": {
+              "password": "erika",
+              "roles": ["TimeTrackingUser"],
+              "policies": ["cap.TimeTrackingUser"]
+            },
+            "frank.genehmiger@test.de": {
+              "password": "frank",
+              "roles": ["TimeTrackingUser", "TimeTrackingApprover"],
+              "policies": ["cap.TimeTrackingUser","cap.TimeTrackingApprover"]
+            }
           }
         }
       }
@@ -87,20 +97,27 @@ Wir wählen **Option C** - CAP Mocked Authentication mit Test-Usern. Die Konfigu
 
 ### Test-User Details
 
-Wir definieren 2 Test-User mit deutschen Namen und einfachen Credentials:
+Wir definieren 3 Test-User mit deutschen Namen und den produktiven Rollenbezeichnungen, damit wir lokal das spätere Autorisierungskonzept simulieren:
 
 #### User 1: Max Mustermann
 
 - **User-ID**: `max.mustermann@test.de` (entspricht E-Mail im User-Profil)
 - **Password**: `max` (einfach merkbar)
-- **Rolle**: `authenticated-user` (Standard-Rolle für alle authentifizierten User)
+- **Rollen**: `TimeTrackingUser`, `TimeTrackingAdmin` (Admin-Fall für lokale Tests)
 - **Profil**: Referenziert in `db/data/io.nimble-Users.csv` mit vollständigem Profil (Name, weeklyHoursDec, etc.)
 
 #### User 2: Erika Musterfrau
 
 - **User-ID**: `erika.musterfrau@test.de`
 - **Password**: `erika`
-- **Rolle**: `authenticated-user`
+- **Rolle**: `TimeTrackingUser`
+- **Profil**: Referenziert in `db/data/io.nimble-Users.csv`
+
+#### User 3: Frank Genehmiger
+
+- **User-ID**: `frank.genehmiger@test.de`
+- **Password**: `frank`
+- **Rollen**: `TimeTrackingUser`, `TimeTrackingApprover`
 - **Profil**: Referenziert in `db/data/io.nimble-Users.csv`
 
 ### Login-Flow
@@ -249,4 +266,4 @@ Test-User-Daten aus `db/data/io.nimble-Users.csv` müssen durch echte User-Profi
 - **User hinzufügen**: Neuen User in `package.json` unter `cds.requires.auth.users` hinzufügen, User-Profil in `db/data/io.nimble-Users.csv` anlegen.
 - **Logout**: Browser-Session löschen oder `/logout` aufrufen.
 - **Production-Deployment**: `auth.kind` auf `xsuaa` oder `jwt` ändern, keine Code-Änderungen notwendig.
-- **Rollen testen**: Neue Rollen in `package.json` definieren (z.B. `"roles": ["authenticated-user", "admin"]`) und via `req.user.is('admin')` prüfen.
+- **Rollen testen**: Neue Rollen in `package.json` definieren (z.B. `"roles": ["TimeTrackingUser", "TimeTrackingAdmin"]`) und via `req.user.is('TimeTrackingAdmin')` prüfen.

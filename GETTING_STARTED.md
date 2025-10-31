@@ -10,14 +10,15 @@ Stelle sicher, dass folgende Software installiert ist:
 
 ### Erforderlich
 
-| Tool           | Version                                 | Download                            | Zweck                 |
-| -------------- | --------------------------------------- | ----------------------------------- | --------------------- |
-| **Node.js**    | ≥18.x (empfohlen 22.20.0 laut `.nvmrc`) | [nodejs.org](https://nodejs.org/)   | Runtime für CAP & UI5 |
-| **npm**        | ≥10.x                                   | (kommt mit Node.js)                 | Package Manager       |
-| **TypeScript** | ≥5.0                                    | `npm install -g typescript`         | Compiler              |
-| **Git**        | Latest                                  | [git-scm.com](https://git-scm.com/) | Version Control       |
+| Tool           | Version                                 | Download                            | Zweck                    |
+| -------------- | --------------------------------------- | ----------------------------------- | ------------------------ |
+| **Node.js**    | ≥18.x (empfohlen 22.20.0 laut `.nvmrc`) | [nodejs.org](https://nodejs.org/)   | Runtime für CAP & UI5    |
+| **npm**        | ≥10.x                                   | (kommt mit Node.js)                 | Package Manager          |
+| **Java (JDK)** | ≥17 (Temurin empfohlen)                 | [Adoptium](https://adoptium.net/)   | Build von `@sap/ams-dev` |
+| **TypeScript** | ≥5.0                                    | `npm install -g typescript`         | Compiler                 |
+| **Git**        | Latest                                  | [git-scm.com](https://git-scm.com/) | Version Control          |
 
-> Tipp: Falls du `nvm` verwendest, kannst du mit `nvm use` automatisch die in `.nvmrc` definierte Node-Version (22.20.0) aktivieren. Bei Bedarf installiert `nvm install` die Version einmalig.
+> Tipp: Falls du `nvm` verwendest, kannst du mit `nvm use` automatisch die in `.nvmrc` definierte Node-Version (22.20.0) aktivieren. Bei Bedarf installiert `nvm install` die Version einmalig. Für das Java-Requirement empfiehlt sich Temurin 17 (Adoptium); die GitHub Actions richten dieselbe Version via `actions/setup-java` ein.
 
 #### Zusatz-Tools für SAP BTP Deployments
 
@@ -198,19 +199,25 @@ Die Oberfläche ist ausschließlich für lokale Entwicklung gedacht und wird nic
 
 ## 🧪 Test-User verwenden
 
-Die App nutzt **Mocked Authentication** für lokale Entwicklung. Zwei Test-User sind vorkonfiguriert:
+Die App nutzt **Mocked Authentication** für lokale Entwicklung. Drei Test-User mit den produktiven Rollennamen sind vorkonfiguriert:
 
 ### User 1: Max Mustermann
 
 - **E-Mail:** `max.mustermann@test.de`
 - **Passwort:** `max`
-- **Rolle:** `authenticated-user`
+- **Rollen:** `TimeTrackingUser`, `TimeTrackingAdmin`
 
 ### User 2: Erika Musterfrau
 
 - **E-Mail:** `erika.musterfrau@test.de`
 - **Passwort:** `erika`
-- **Rolle:** `authenticated-user`
+- **Rolle:** `TimeTrackingUser`
+
+### User 3: Frank Genehmiger
+
+- **E-Mail:** `frank.genehmiger@test.de`
+- **Passwort:** `frank`
+- **Rollen:** `TimeTrackingUser`, `TimeTrackingApprover`
 
 **Login-Flow:**
 
@@ -431,12 +438,15 @@ cf create-service destination lite cap-fiori-timetracking-destination
 ## ☁️ Deploy auf SAP BTP (Cloud Foundry)
 
 1. **Voraussetzungen:** Installiere das Cloud Foundry CLI mit MultiApps Plugin (`cf install-plugin multiapps`) sowie das Cloud MTA Build Tool (`npm install -g mbt` oder via Binary).
-2. **Services vorbereiten:** Lege einmalig pro Subaccount die Services aus dem Abschnitt oben an (`hana`, `objectstore`, `malwarescanning`, `application-logs`, `connectivity`, `destination`).
-3. **Build ausführen:** `npm ci && npx cds build --production && npx mbt build -p cf`
-4. **Deploy:** `cf deploy mta_archives/cap-fiori-timetracking_0.0.1.mtar`
-5. **Bindings prüfen:** `cf services` sollte zeigen, dass `cap-fiori-timetracking-srv` an DB, Attachments, Malware-Scanner, Connectivity, Destination und Application Logging gebunden ist. Das Logging greift automatisch, weil `cds.requires['application-logging']=true` gesetzt ist.
+2. **Services vorbereiten:** Lege einmalig pro Subaccount die Services aus dem Abschnitt oben an (`hana`, `objectstore`, `malwarescanning`, `application-logs`, `connectivity`, `destination`) **plus** `identity` (IAS) und `identity-authorization` (AMS). Benenne sie gemäß `mta.yaml` (`cap-fiori-timetracking-ias`, `cap-fiori-timetracking-ams`).
+3. **IAS konfigurieren:** Erzeuge ein Service-Key für `cap-fiori-timetracking-ias`, aktiviere `xsuaa-cross-consumption` und lege Role-Collections an, die die Templates aus `xs-security.json` referenzieren.
+4. **AMS vorbereiten:** Vergib die Rolle `Identity_Provisioner` für dein technisches Deployment-User und stelle sicher, dass die AMS-API erreichbar ist (Service-Key für `cap-fiori-timetracking-ams`). Policies werden später vom Deployer-Modul hochgeladen.
+5. _(Optional)_ **Aufräumen:** `npm run clean` entfernt vorhandene Build-Artefakte (`gen/`, `mta_archives/`, UI5-`dist/`) vor einem frischen Build.
+6. **Build ausführen:** `npm run build:mta` (setzt voraus, dass vorher `npm ci` aufgerufen wurde). Das erzeugte MTAR findest du anschließend unter `gen/mta.tar`.
+7. **Deploy:** `npm run deploy:cf`
+8. **Bindings prüfen:** `cf services` sollte zeigen, dass `cap-fiori-timetracking-srv` an DB, Attachments, Malware-Scanner, Connectivity, Destination, Application Logging **sowie** IAS & AMS gebunden ist. Zusätzlich erscheint das Task-Modul `cap-fiori-timetracking-ams-policies-deployer`, das die DCL-Dateien (`ams/dcl`) automatisiert ausrollt.
 
-> Tipp: Für schnelle Iterationen kannst du `npx mbt build -p cf --dev` verwenden. Das spart einige Optimierungsschritte beim Build.
+> Tipp: `npm run build:mta` erzeugt standardmäßig einen Produktions-Build. Für schnelle Iterationen kannst du bei Bedarf `npx mbt build -p cf --dev -t gen --mtar mta.tar` ausführen, um Optimierungen zu überspringen.
 
 Durch die Kombination aus `mta.yaml`, klar getrennten Build-/Run-Phasen und externen Service-Bindings erfüllt die Lösung zentrale [12-Factor-Prinzipien](https://12factor.net/) und lässt sich als cloud-native Applikation klassifizieren.
 
@@ -603,6 +613,7 @@ Wenn `"kind": "xsuaa"` oder `"jwt"` → auf `"mocked"` ändern und Server neu st
 Prüfe diese Punkte, bevor du mit Development startest:
 
 - [ ] Node.js ≥22.x installiert (`node --version`)
+- [ ] Java ≥17 installiert (`java -version`)
 - [ ] npm ≥10.x installiert (`npm --version`)
 - [ ] Repository geklont
 - [ ] `npm install` erfolgreich durchgelaufen
