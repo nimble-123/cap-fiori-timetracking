@@ -388,7 +388,7 @@ flowchart LR
   ```
 
 - Der Application Frontend Service liefert einen Managed App Router inklusive statischem Hosting für die Fiori Apps; die Destinations aus `cap-fiori-timetracking-app-deployer` werden dort automatisch hinterlegt.
-- Build & Deploy via Cloud MTA Build Tool (benötigt `cf` CLI + MultiApps Plugin sowie `mbt` CLI – lokal oder via `npm install -g mbt`):
+- Build & Deploy via Cloud MTA Build Tool (benötigt `cf` CLI + MultiApps Plugin, `mbt` CLI sowie ein JDK ≥17 für das `@sap/ams-dev` Build-Plugin – lokal z. B. Temurin 17):
 
   ```bash
   npm ci
