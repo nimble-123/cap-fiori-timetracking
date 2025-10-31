@@ -43,7 +43,7 @@
     "wdi5:timetable": "wdio run ./app/timetable/webapp/test/e2e/wdio.conf.ts"
   },
   "config": {
-    "dcn_root": "tests/dcn"
+    "dcn_root": "gen/ams/dcn"
   },
   "dependencies": {
     "@cap-js-community/odata-v2-adapter": "^1.15.5",
