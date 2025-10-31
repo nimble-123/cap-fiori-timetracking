@@ -42,7 +42,7 @@ Akzeptiert – mta.yaml liegt vor, Deployment-Pipeline folgt
 - Wir übernehmen **Option B – Multi-Target Application (MTA)** als Standard-Deployment-Strategie.
 - `mta.yaml` beschreibt drei Module (`cap-fiori-timetracking-srv`, `cap-fiori-timetracking-db-deployer`, `cap-fiori-timetracking-app-deployer`) sowie Ressourcen (HANA HDI, Object Store, Malware Scanning, Application Logging, Application Frontend Service).
 - Build Hook `before-all` führt `npm ci` und `cds build --production` aus; `mbt build` erzeugt ein transportierbares `.mtar`.
-- Deployments erfolgen via `cf deploy mta_archives/cap-fiori-timetracking_<version>.mtar`, womit Build und Deploy klar getrennt bleiben.
+- Deployments erfolgen via `cf deploy gen/mta.mtar`, womit Build und Deploy klar getrennt bleiben.
 
 ## Konsequenzen
 

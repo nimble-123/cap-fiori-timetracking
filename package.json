@@ -25,7 +25,7 @@
   ],
   "scripts": {
     "build": "cds build",
-    "build:mta": "npm run clean && mbt build -t gen",
+    "build:mta": "npm run clean && mbt build -t gen --mtar mta.mtar",
     "clean": "npx rimraf gen app/*/dist coverage junit.xml",
     "deploy:cf": "cf deploy gen/mta.mtar",
     "format": "prettier --write \"{src,app,srv,db,tests,.github,docs}/**/*.{js,ts,json,md,yaml,yml,html,css}\"",

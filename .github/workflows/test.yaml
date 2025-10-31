@@ -127,7 +127,7 @@ jobs:
         uses: actions/upload-artifact@v5
         with:
           name: mtar
-          path: gen/cap-fiori-timetracking_*.mtar
+          path: gen/mta.mtar
           retention-days: 7
 
   # Optional: Deploy to SAP BTP (auskommentiert, kann aktiviert werden)

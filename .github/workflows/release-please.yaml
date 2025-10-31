@@ -29,3 +29,29 @@ jobs:
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
           target-branch: main
+
+      - name: Download MTAR Artifact
+        if: steps.release.outputs.release_created == 'true'
+        uses: actions/download-artifact@v5
+        with:
+          name: mtar
+          run-id: ${{ github.event.workflow_run.id }}
+          path: gen
+          github-token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+
+      - name: Prepare MTAR Asset
+        if: steps.release.outputs.release_created == 'true'
+        id: prepare-mtar
+        run: |
+          TAG="${{ steps.release.outputs.tag_name }}"
+          VERSION="${TAG#v}"
+          DEST="cap-fiori-timetracking_${VERSION}.mtar"
+          cp gen/mta.mtar "$DEST"
+          echo "asset=$DEST" >> "$GITHUB_OUTPUT"
+
+      - name: Upload MTAR Asset
+        if: steps.release.outputs.release_created == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.release.outputs.tag_name }}
+          files: ${{ steps.prepare-mtar.outputs.asset }}

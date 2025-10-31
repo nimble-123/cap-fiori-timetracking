@@ -442,11 +442,11 @@ cf create-service destination lite cap-fiori-timetracking-destination
 3. **IAS konfigurieren:** Erzeuge ein Service-Key für `cap-fiori-timetracking-ias`, aktiviere `xsuaa-cross-consumption` und lege Role-Collections an, die die Templates aus `xs-security.json` referenzieren.
 4. **AMS vorbereiten:** Vergib die Rolle `Identity_Provisioner` für dein technisches Deployment-User und stelle sicher, dass die AMS-API erreichbar ist (Service-Key für `cap-fiori-timetracking-ams`). Policies werden später vom Deployer-Modul hochgeladen.
 5. _(Optional)_ **Aufräumen:** `npm run clean` entfernt vorhandene Build-Artefakte (`gen/`, `mta_archives/`, UI5-`dist/`) vor einem frischen Build.
-6. **Build ausführen:** `npm run build:mta` (setzt voraus, dass vorher `npm ci` aufgerufen wurde). Das erzeugte MTAR findest du anschließend unter `gen/mta.tar`.
+6. **Build ausführen:** `npm run build:mta` (setzt voraus, dass vorher `npm ci` aufgerufen wurde). Das erzeugte MTAR findest du anschließend als `gen/mta.mtar`.
 7. **Deploy:** `npm run deploy:cf`
 8. **Bindings prüfen:** `cf services` sollte zeigen, dass `cap-fiori-timetracking-srv` an DB, Attachments, Malware-Scanner, Connectivity, Destination, Application Logging **sowie** IAS & AMS gebunden ist. Zusätzlich erscheint das Task-Modul `cap-fiori-timetracking-ams-policies-deployer`, das die DCL-Dateien (`ams/dcl`) automatisiert ausrollt.
 
-> Tipp: `npm run build:mta` erzeugt standardmäßig einen Produktions-Build. Für schnelle Iterationen kannst du bei Bedarf `npx mbt build -p cf --dev -t gen --mtar mta.tar` ausführen, um Optimierungen zu überspringen.
+> Tipp: `npm run build:mta` erzeugt standardmäßig einen Produktions-Build. Für schnelle Iterationen kannst du bei Bedarf `npx mbt build -p cf --dev -t gen --mtar mta.mtar` ausführen, um Optimierungen zu überspringen.
 
 Durch die Kombination aus `mta.yaml`, klar getrennten Build-/Run-Phasen und externen Service-Bindings erfüllt die Lösung zentrale [12-Factor-Prinzipien](https://12factor.net/) und lässt sich als cloud-native Applikation klassifizieren.
 

@@ -400,6 +400,7 @@ flowchart LR
   npm run deploy:cf
   ```
 
+- Das Build erzeugt deterministisch `gen/mta.mtar`. Dieses Artefakt nutzt sowohl die CF-Deployment-Pipeline als auch das Release-Asset.
 - Das CAP Runtime Binding auf `application-logging`, `malware-scanner`, `connectivity` und `destination` ist in `package.json → cds.requires` hinterlegt; lokale Entwicklung nutzt Mock-Auth, in BTP greifen die Service-Bindings automatisch. `connectivity` + `destination` stellen die 3rd-Party Holiday API via Destination zur Verfügung. Der Build-/Run-Split erfüllt zentrale 12-Factor-Prinzipien und qualifiziert die Lösung als cloud-native Application.
 
 ---
@@ -434,6 +435,7 @@ Willst du zum Projekt beitragen? **Awesome!** 🎉
 - Automatisierte Release-PRs entstehen über [release-please](https://github.com/googleapis/release-please-action) auf Basis unserer Conventional Commits.
 - Die Konfiguration (`release-please-config.json`, `.release-please-manifest.json`) hält Root- und UI5-App-Versionen (`app/timetable`, `app/timetracking`, `app/manage-activity-types`) sowie `mta.yaml` über `extra-files` synchron.
 - Solange der Release-PR offen ist, bleibt das Release unveröffentlicht. Erst der Merge nach `main` erzeugt Tag & Changelog; eine npm-Publikation ist nicht vorgesehen.
+- Sobald release-please ein neues Release erstellt, hängt der Workflow das im CI erzeugte `gen/mta.mtar` als `cap-fiori-timetracking_<version>.mtar` an die GitHub-Release-Assets an.
 - Vor der ersten Ausführung im CI empfiehlt sich ein lokaler Dry-Run:
   ```bash
   npx release-please release-pr --config-file release-please-config.json --manifest-file .release-please-manifest.json --dry-run
