@@ -43,7 +43,9 @@
     "@cap-js-community/odata-v2-adapter": "^1.15.5",
     "@cap-js/attachments": "^3.1.0",
     "@cap-js/hana": "^2.3.4",
+    "@sap/ams": "^3",
     "@sap/cds": "^9.4.4",
+    "@sap/xssec": "^4",
     "eslint": "^9.38.0",
     "express": "^4.21.2"
   },
@@ -57,6 +59,7 @@
     "@cap-js/sqlite": "^2.0.4",
     "@jest/globals": "^30.2.0",
     "@openui5/types": "^1.141.2",
+    "@sap/ams-dev": "^2",
     "@sap/cds-dk": "^9.4.3",
     "@sap/dev-cap-tools": "^1.47.10",
     "@sap/eslint-plugin-cds": "^4.1.0",
