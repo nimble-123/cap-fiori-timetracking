@@ -41,8 +41,7 @@ mta_archives/
 @cds-models
 
 # SAP Authorization Management Service (AMS)
-schema.dcl
-ams/dcl/cap
+tests/dcn/
 
 # SAP Fiori Build Artefacts
 dist/

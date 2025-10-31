@@ -27,25 +27,31 @@
     "build": "cds build",
     "build:mta": "npm run clean && mbt build -t gen",
     "clean": "rimraf gen app/*/dist coverage junit.xml",
-    "deploy:cf": "cf deploy gen/mta.tar",
+    "deploy:cf": "cf deploy gen/mta.mtar",
     "format": "prettier --write \"{src,app,srv,db,tests,.github,docs}/**/*.{js,ts,json,md,yaml,yml,html,css}\"",
     "format:check": "prettier --check \"{src,app,srv,db,tests,.github,docs}/**/*.{js,ts,json,md,yaml,yml,html,css}\"",
     "generate-entry-point": "dev-cap-tools gen-entrypoint",
+    "jest": "AMS_DCN_ROOT=$npm_package_config_dcn_root jest ./tests",
     "lint": "cds lint",
     "start": "cds-serve",
-    "test": "jest ./tests",
+    "pretest": "npx --package=@sap/ams-dev compile-dcl -d ams/dcl -o $npm_package_config_dcn_root",
+    "test": "npm run jest",
+    "posttest": "rm -rf $npm_package_config_dcn_root",
     "test:coverage": "jest --coverage ./tests",
     "test:watch": "jest --watch ./tests",
     "watch": "cds-tsx w --in-memory",
     "wdi5:timetable": "wdio run ./app/timetable/webapp/test/e2e/wdio.conf.ts"
   },
+  "config": {
+    "dcn_root": "tests/dcn"
+  },
   "dependencies": {
     "@cap-js-community/odata-v2-adapter": "^1.15.5",
     "@cap-js/attachments": "^3.1.0",
     "@cap-js/hana": "^2.3.4",
-    "@sap/ams": "^3",
+    "@sap/ams": "^3.4.0",
     "@sap/cds": "^9.4.4",
-    "@sap/xssec": "^4",
+    "@sap/xssec": "^4.11.0",
     "eslint": "^9.38.0",
     "express": "^4.21.2"
   },
@@ -59,7 +65,7 @@
     "@cap-js/sqlite": "^2.0.4",
     "@jest/globals": "^30.2.0",
     "@openui5/types": "^1.141.2",
-    "@sap/ams-dev": "^2",
+    "@sap/ams-dev": "^2.2.0",
     "@sap/cds-dk": "^9.4.3",
     "@sap/dev-cap-tools": "^1.47.10",
     "@sap/eslint-plugin-cds": "^4.1.0",
@@ -104,13 +110,32 @@
             "max.mustermann@test.de": {
               "password": "max",
               "roles": [
-                "authenticated-user",
-                "admin"
+                "TimeTrackingUser",
+                "TimeTrackingAdmin"
+              ],
+              "policies": [
+                "cap.TimeTrackingUser",
+                "cap.TimeTrackingAdmin"
               ]
             },
             "erika.musterfrau@test.de": {
+              "password": "erika",
               "roles": [
-                "authenticated-user"
+                "TimeTrackingUser"
+              ],
+              "policies": [
+                "cap.TimeTrackingUser"
+              ]
+            },
+            "frank.genehmiger@test.de": {
+              "password": "frank",
+              "roles": [
+                "TimeTrackingUser",
+                "TimeTrackingApprover"
+              ],
+              "policies": [
+                "cap.TimeTrackingUser",
+                "cap.TimeTrackingApprover"
               ]
             }
           }
@@ -120,6 +145,8 @@
         }
       },
       "[production]": {
+        "auth": "ias",
+        "xsuaa": true,
         "db": {
           "kind": "hana"
         }
