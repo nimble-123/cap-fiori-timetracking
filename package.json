@@ -25,6 +25,9 @@
   ],
   "scripts": {
     "build": "cds build",
+    "build:mta": "npm run clean && mbt build -t gen",
+    "clean": "rimraf gen app/*/dist coverage junit.xml",
+    "deploy:cf": "cf deploy gen/mta.tar",
     "format": "prettier --write \"{src,app,srv,db,tests,.github,docs}/**/*.{js,ts,json,md,yaml,yml,html,css}\"",
     "format:check": "prettier --check \"{src,app,srv,db,tests,.github,docs}/**/*.{js,ts,json,md,yaml,yml,html,css}\"",
     "generate-entry-point": "dev-cap-tools gen-entrypoint",
@@ -74,6 +77,7 @@
     "jest": "^30.2.0",
     "jest-junit": "^16.0.0",
     "prettier": "3.6.2",
+    "rimraf": "^6.1.0",
     "ts-jest": "^29.4.5",
     "ts-node": "^10.9.2",
     "tsx": "^4.20.6",

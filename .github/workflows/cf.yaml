@@ -65,10 +65,13 @@ jobs:
           cf-space: ${{ vars.CF_SPACE_STAGING || vars.CF_SPACE }}
           cf-username: ${{ vars.CF_USERNAME }}
           cf-password: ${{ secrets.CF_PASSWORD }}
-      - name: Install Project Dependencies
-        run: npm install
+      - name: Download MTAR Artifact
+        uses: actions/download-artifact@v5
+        with:
+          name: mtar
+          path: gen
       - name: Deploy CAP Application
-        run: npx cds up
+        run: npm run deploy:cf
 
       - name: Show Recent Service Logs
         run: cf logs "${{ env.APP_NAME }}-srv" --recent
@@ -119,10 +122,13 @@ jobs:
           cf-space: ${{ vars.CF_SPACE }}
           cf-username: ${{ vars.CF_USERNAME }}
           cf-password: ${{ secrets.CF_PASSWORD }}
-      - name: Install Project Dependencies
-        run: npm install
+      - name: Download MTAR Artifact
+        uses: actions/download-artifact@v5
+        with:
+          name: mtar
+          path: gen
       - name: Deploy CAP Application
-        run: npx cds up
+        run: npm run deploy:cf
 
       - name: Show Recent Service Logs
         run: cf logs "${{ env.APP_NAME }}-srv" --recent

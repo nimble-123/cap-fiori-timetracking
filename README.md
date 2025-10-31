@@ -20,6 +20,7 @@
 - 🎨 **Multi-App UI Strategy** - Fiori Elements Timetable, Custom Dashboard & Manage Activity Types Maintenance App
 - 🧭 **SAP CAP Console** - Native Desktop-App für lokales Dev, BTP Deployment & Monitoring aus einer Oberfläche
 - 🔧 **Production-Ready** - Validierung, Error Handling, strukturiertes Logging + Application Logging Service, Malware-Scanning
+- 🔐 **IAS & AMS Ready** - `xs-security.json`, AMS-Policies & DCL-Deployments für Work Zone / AFS auf SAP BTP
 - ☁️ **Cloud-native Deployment** - `mta.yaml` für SAP BTP (HANA, Attachments, Logging) + 12-Factor-konformes Packaging
 - 📚 **Vollständig dokumentiert** - arc42-Architektur, ADRs, Inline-JSDoc
 - 🧪 **Testbar** - Jest Tests + REST Client für manuelle Tests
@@ -387,13 +388,13 @@ flowchart LR
   ```
 
 - Der Application Frontend Service liefert einen Managed App Router inklusive statischem Hosting für die Fiori Apps; die Destinations aus `cap-fiori-timetracking-app-deployer` werden dort automatisch hinterlegt.
-- Build & Deploy via Cloud MTA Build Tool (benötigt `mbt` CLI + CF MultiApps Plugin):
+- Build & Deploy via Cloud MTA Build Tool (benötigt `cf` CLI + MultiApps Plugin sowie `mbt` CLI – lokal oder via `npm install -g mbt`):
 
   ```bash
   npm ci
-  npx cds build --production
-  npx mbt build -p cf
-  cf deploy mta_archives/cap-fiori-timetracking_0.0.1.mtar
+  npm run clean        # optional, entfernt alte Artefakte
+  npm run build:mta
+  npm run deploy:cf
   ```
 
 - Das CAP Runtime Binding auf `application-logging`, `malware-scanner`, `connectivity` und `destination` ist in `package.json → cds.requires` hinterlegt; lokale Entwicklung nutzt Mock-Auth, in BTP greifen die Service-Bindings automatisch. `connectivity` + `destination` stellen die 3rd-Party Holiday API via Destination zur Verfügung. Der Build-/Run-Split erfüllt zentrale 12-Factor-Prinzipien und qualifiziert die Lösung als cloud-native Application.
