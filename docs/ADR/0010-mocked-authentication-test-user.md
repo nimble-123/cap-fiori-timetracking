@@ -75,7 +75,7 @@ Wir wählen **Option C** - CAP Mocked Authentication mit Test-Usern. Die Konfigu
             "max.mustermann@test.de": {
               "password": "max",
               "roles": ["TimeTrackingUser", "TimeTrackingAdmin"],
-              "policies": ["cap.TimeTrackingUser","cap.TimeTrackingAdmin"]
+              "policies": ["cap.TimeTrackingUser", "cap.TimeTrackingAdmin"]
             },
             "erika.musterfrau@test.de": {
               "password": "erika",
@@ -85,7 +85,7 @@ Wir wählen **Option C** - CAP Mocked Authentication mit Test-Usern. Die Konfigu
             "frank.genehmiger@test.de": {
               "password": "frank",
               "roles": ["TimeTrackingUser", "TimeTrackingApprover"],
-              "policies": ["cap.TimeTrackingUser","cap.TimeTrackingApprover"]
+              "policies": ["cap.TimeTrackingUser", "cap.TimeTrackingApprover"]
             }
           }
         }
