@@ -29,7 +29,7 @@ Akzeptiert – Implementierung im Repository abgeschlossen, BTP-Konfiguration fo
 ### Option B – IAS + AMS (gewählt)
 
 - IAS übernimmt AuthN, AMS Policies liefern Attribute; XSUAA bleibt Fallback via `xsuaa-cross-consumption`.
-- Vorteile: Einheitliche Identity-Provider-Landschaft, vorbereitete Attribute (`db/src/ams-attributes.cds`), automatische DCL-Deployments (`ams/dcl/basePolicies.dcl`).
+- Vorteile: Einheitliche Identity-Provider-Landschaft, vorbereitete Attribute (`db/ams-attributes.cds`), automatische DCL-Deployments (`ams/dcl/basePolicies.dcl`).
 - Nachteile: Zwei neue CF-Services, zusätzliche Deploy-Schritte, Service Keys für Policy-Deployment erforderlich.
 
 ## Entscheidung
@@ -38,7 +38,7 @@ Wir wählen **Option B**. Die Umsetzung umfasst:
 
 - `package.json`: Default `cds.requires.auth = "ias"`, Fallback `xsuaa = true`, Mock-User mit Rollen `TimeTrackingUser/Approver/Admin`.
 - `xs-security.json`: Scopes & Role Templates für die drei Produktivrollen.
-- `db/src/ams-attributes.cds`: Mapping von User-, Projekt- und Statusinformationen auf AMS-Attribute.
+- `db/ams-attributes.cds`: Mapping von User-, Projekt- und Statusinformationen (inkl. `ProjectNumber`) auf AMS-Attribute.
 - `ams/dcl/basePolicies.dcl`: Basis-Policies für AMS, deployt durch `cap-fiori-timetracking-ams-policies-deployer`.
 - `mta.yaml`: Bindings für `cap-fiori-timetracking-ias` und `cap-fiori-timetracking-ams`, inkl. Zertifikats-Credentials.
 
@@ -52,5 +52,5 @@ Wir wählen **Option B**. Die Umsetzung umfasst:
 
 - `package.json`, `xs-security.json`
 - `mta.yaml` (Module & Ressourcen für IAS/AMS)
-- `db/src/ams-attributes.cds`, `ams/dcl/basePolicies.dcl`
+- `db/ams-attributes.cds`, `ams/dcl/basePolicies.dcl`
 - `docs/ARCHITECTURE.md` Abschnitt 7.4

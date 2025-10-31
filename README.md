@@ -374,7 +374,7 @@ flowchart LR
 
 ## ☁️ Cloud Deployment (SAP BTP)
 
-- `mta.yaml` bündelt CAP Service (`gen/srv`), HANA-DB-Deployer (`gen/db`), das UI Content Module (`cap-fiori-timetracking-app-deployer`) und bindet Attachments-, Malware-Scanning-, Connectivity-, Destination-, Application-Logging- sowie den Application-Frontend-Service für das Hosting der Fiori Apps.
+- `mta.yaml` bündelt CAP Service (`gen/srv`), HANA-DB-Deployer (`gen/db`), das UI Content Module (`cap-fiori-timetracking-app-deployer`), den AMS Policy Deployer (`cap-fiori-timetracking-ams-policies-deployer`) und bindet Attachments-, Malware-Scanning-, Connectivity-, Destination-, Application-Logging-, Identity- sowie den Application-Frontend-Service für das Hosting der Fiori Apps.
 - Vor dem Deploy die benötigten Instanzen anlegen (einmalig pro Subaccount):
 
   ```bash
@@ -385,9 +385,12 @@ flowchart LR
   cf create-service connectivity lite cap-fiori-timetracking-connectivity
   cf create-service destination lite cap-fiori-timetracking-destination
   cf create-service app-front developer cap-fiori-timetracking-app-front
+  cf create-service identity application cap-fiori-timetracking-ias
+  cf create-service identity-authorization application cap-fiori-timetracking-ams
   ```
 
 - Der Application Frontend Service liefert einen Managed App Router inklusive statischem Hosting für die Fiori Apps; die Destinations aus `cap-fiori-timetracking-app-deployer` werden dort automatisch hinterlegt.
+- IAS (Identity Authentication Service) stellt die produktive Authentifizierung bereit; AMS (Authorization Management Service) hostet die Policies aus `ams/dcl`. Der Deployer lädt die DCL-Dateien per Task in das AMS.
 - Build & Deploy via Cloud MTA Build Tool (benötigt `cf` CLI + MultiApps Plugin, `mbt` CLI sowie ein JDK ≥17 für das `@sap/ams-dev` Build-Plugin – lokal z. B. Temurin 17):
 
   ```bash

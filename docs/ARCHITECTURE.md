@@ -168,17 +168,17 @@ Die Top-5-Qualitätsziele nach Priorität:
 
 ### 2.1 Technische Randbedingungen
 
-| Randbedingung                           | Beschreibung                                          | Auswirkung                                                    |
-| --------------------------------------- | ----------------------------------------------------- | ------------------------------------------------------------- |
-| **SAP CAP Framework**                   | Cloud Application Programming Model (Node.js-basiert) | Architektur muss CAP-Events verwenden                         |
-| **TypeScript >= 5.0**                   | Vollständig typisierte Codebase                       | Strikte Type-Checks aktiviert                                 |
-| **UI5 >= 1.120**                        | SAP UI5 für Frontend-Anwendungen                      | Fiori Guidelines einhalten                                    |
-| **Node.js >= 22 LTS**                   | Laufzeitumgebung                                      | Verwendung von ES2022-Features möglich                        |
-| **OData V4**                            | REST-Protokoll für UI-Backend-Kommunikation           | Komplexe Queries via $expand/$filter                          |
-| **@cap-js/attachments**                 | Offizielles CAP Attachments Plugin für Dateiablagen   | Standardisierte Upload/Download-Flows, Metadaten & Persistenz |
-| **SAP Identity Services** (XSUAA / AMS) | Autorisierung & Authentifizierung in der BTP          | JWT-basierte SSO-Tokens, Role Collections, Policy-Management  |
-| **Cloud-native Prinzipien**             | 12-Factor-konformes App-Design auf SAP BTP            | Konfigurationsentkopplung, deklarative Deployments (MTA)      |
-| **SQLite (Dev) / HANA (Prod)**          | Datenbank-Technologien                                | SQL muss kompatibel sein                                      |
+| Randbedingung                                         | Beschreibung                                          | Auswirkung                                                    |
+| ----------------------------------------------------- | ----------------------------------------------------- | ------------------------------------------------------------- |
+| **SAP CAP Framework**                                 | Cloud Application Programming Model (Node.js-basiert) | Architektur muss CAP-Events verwenden                         |
+| **TypeScript >= 5.0**                                 | Vollständig typisierte Codebase                       | Strikte Type-Checks aktiviert                                 |
+| **UI5 >= 1.120**                                      | SAP UI5 für Frontend-Anwendungen                      | Fiori Guidelines einhalten                                    |
+| **Node.js >= 22 LTS**                                 | Laufzeitumgebung                                      | Verwendung von ES2022-Features möglich                        |
+| **OData V4**                                          | REST-Protokoll für UI-Backend-Kommunikation           | Komplexe Queries via $expand/$filter                          |
+| **@cap-js/attachments**                               | Offizielles CAP Attachments Plugin für Dateiablagen   | Standardisierte Upload/Download-Flows, Metadaten & Persistenz |
+| **SAP Identity Services** (IAS / AMS, XSUAA Fallback) | Autorisierung & Authentifizierung in der BTP          | JWT-basierte SSO-Tokens, Role Collections, Policy-Management  |
+| **Cloud-native Prinzipien**                           | 12-Factor-konformes App-Design auf SAP BTP            | Konfigurationsentkopplung, deklarative Deployments (MTA)      |
+| **SQLite (Dev) / HANA (Prod)**                        | Datenbank-Technologien                                | SQL muss kompatibel sein                                      |
 
 **Entwicklungswerkzeuge:**
 
@@ -291,7 +291,7 @@ C4Context
         }
     }
 
-    System_Ext(idp, "SAP Identity Services", "XSUAA / AMS", "AuthN & AuthZ")
+    System_Ext(idp, "SAP Identity Services", "IAS / AMS (XSUAA Fallback)", "AuthN & AuthZ")
     System_Ext(holidays, "Feiertage-API", "feiertage-api.de", "Deutsche Feiertage")
 
     Rel(user, appfront, "Browser Request", "HTTPS")
@@ -319,7 +319,7 @@ C4Context
 | **Database**                     | SQLite                 | In-Memory                            | Datenhaltung                                        |
 | **Feiertage-API**                | REST                   | feiertage-api.de/api/                | Externe Datenquelle                                 |
 | **Application Frontend Service** | SAP Managed App Router | Subaccount Route (Managed)           | Authenticated Routing, Static Hosting, Destinations |
-| **SAP Identity Services**        | XSUAA / AMS            | OAuth2 / SAML Endpoint               | Token-Ausgabe, Role Collections                     |
+| **SAP Identity Services**        | IAS / AMS              | OAuth2 / SAML Endpoint               | Token-Ausgabe, Role Collections                     |
 | **Connectivity Service**         | SAP BTP Service        | cf:<space>/connectivity              | Outbound Proxy für Holiday API                      |
 | **Destination Service**          | SAP BTP Service        | cf:<space>/destination               | Holiday API Destinations & Credentials              |
 
@@ -335,7 +335,7 @@ C4Context
 **Security-Kontext & Trust Boundaries:**
 
 - **AuthN-Fluss:** User → Application Frontend Service → SAP IAS → Application Frontend Service → CAP. Der Managed App Router initiiert den OAuth2-Code-Flow gegen IAS; via `xsuaa-cross-consumption` akzeptiert CAP weiterhin XSUAA-Tokens (Fallback).
-- **AuthZ-Fluss:** IAS-Rollen-Collections liefern Scopes aus `xs-security.json` (TimeTrackingUser/Approver/Admin). AMS Policies (`ams/dcl/basePolicies.dcl`) verteilen Attribute wie `ProjectID` und `PreferredState`, die via `db/src/ams-attributes.cds` an CAP bereitgestellt und von `@restrict`-Regeln ausgewertet werden.
+- **AuthZ-Fluss:** IAS-Rollen-Collections liefern Scopes aus `xs-security.json` (TimeTrackingUser/Approver/Admin). AMS Policies (`ams/dcl/basePolicies.dcl`) verteilen Attribute wie `PreferredState`, `ProjectID`, `ProjectNumber` und `StatusCode`, die via `db/ams-attributes.cds` an CAP bereitgestellt und von `@restrict`-Regeln ausgewertet werden.
 - **Tenant-Isolation:** Jede Subaccount-Instanz nutzt eigene Service-Bindings (HANA Schema, IAS, AMS), wodurch Daten und Rollen mandantenspezifisch isoliert werden.
 - **Entwicklung vs. Produktion:** Lokal mockt CAP den Identity Layer (`cds.requires.[development].auth.kind = mocked`). In BTP ist `cds.requires.auth = "ias"` aktiv; alle Endpunkte verlangen gültige JWTs, die Work Zone/AFS durchreichen.
 
@@ -406,7 +406,7 @@ Details zu allen Entscheidungen: siehe [Kapitel 9 - Architekturentscheidungen](#
 
 - **Lokale Mocks:** CAPs Entwicklungspreset (`profile: development`) verwendet SQLite, Mock Auth & generische Provider → schnelle Schleifen ohne Cloud-Anbindung („airplane mode“).
 - **`cds watch` & Hot Reload:** `npm run watch` startet CAP, UI5 Workspaces (sapux) und TypeScript Watcher parallel. Änderungen werden in Sekunden sichtbar.
-- **Hybrid & Cloud Loops:** Bei Bedarf schaltet `cds` automatisch auf echte Services (HANA, XSUAA, Connectivity/Destination) um, sobald `profile: production` oder BTP-Bindings greifen.
+- **Hybrid & Cloud Loops:** Bei Bedarf schaltet `cds` automatisch auf echte Services (HANA, IAS/XSUAA, AMS, Connectivity/Destination) um, sobald `profile: production` oder BTP-Bindings greifen.
 - **Parallelisierte Teams:** Frontend & Backend können unabhängig arbeiten; CDS-Services liefern generische REST/OData-Repositories, die später durch Custom Handler ersetzt werden.
 - **Spätes Schneiden (Modulith → Microservices):** Wir folgen dem CAP-Modulith-Ansatz; mehrere Services laufen lokal im selben Prozess und werden erst bei Bedarf als eigenständige Deployments (z. B. Microservices) geschnitten.
 
@@ -1334,7 +1334,7 @@ sequenceDiagram
 │  └────────────────────────────────────────────┘     │
 │                                                     │
 │  ┌────────────────────────────────────────────┐     │
-│  │  Node.js Runtime (v18 LTS)                 │     │
+│  │  Node.js Runtime (v22 LTS)                 │     │
 │  │  - Port 4004: CAP Service                  │     │
 │  │  - Port 4004: UI5 Apps (dev)               │     │
 │  └────────────────────────────────────────────┘     │
@@ -1358,7 +1358,7 @@ sequenceDiagram
 
 | Komponente      | Technologie         | Version   | Zweck                     |
 | --------------- | ------------------- | --------- | ------------------------- |
-| Runtime         | Node.js             | >= 18 LTS | JavaScript-Ausführung     |
+| Runtime         | Node.js             | >= 22 LTS | JavaScript-Ausführung     |
 | Framework       | SAP CAP             | Latest    | Backend-Framework         |
 | Language        | TypeScript          | >= 5.0    | Programmiersprache        |
 | UI Framework    | SAPUI5              | >= 1.120  | Frontend-Framework        |
@@ -1380,7 +1380,7 @@ sequenceDiagram
 │  ┌────────────────────────────────────────────────┐                    │
 │  │  Application Frontend Service                  │                    │
 │  │  - Managed App Router + Static Hosting         │                    │
-│  │  - XSUAA / AMS (User Management & Policies)    │                    │
+│  │  - IAS / AMS (User Management & Policies)      │                    │
 │  └────────────────────────────────────────────────┘                    │
 │           │                                                            │
 │           ├────────────────────┬────────────────────┐                  │
@@ -1413,22 +1413,23 @@ sequenceDiagram
 
 **Cloud Foundry Services:**
 
-| Service                                 | Typ                              | Zweck                                      |
-| --------------------------------------- | -------------------------------- | ------------------------------------------ |
-| **Application Frontend Service**        | Managed App Router               | Hosting & Authentifizierung der Fiori Apps |
-| **XSUAA**                               | Authorization & Trust Management | User Authentication                        |
-| **Authorization Management Service**    | Policy Management                | Fein granularer Zugriff (Role Policies)    |
-| **HANA Cloud**                          | Database                         | Production-Datenbank                       |
-| **Application Logging**                 | Logging                          | Centralized Logs                           |
-| **Application Autoscaler**              | Scaling                          | Auto-Scaling bei Last                      |
-| **SAP Object Store** (optional)         | Object Storage                   | Auslagerung von Attachment-Binärdaten      |
-| **Malware Scanning Service** (optional) | Security Service                 | Viren-/Malware-Prüfung für Datei-Uploads   |
+| Service                                   | Typ                              | Zweck                                            |
+| ----------------------------------------- | -------------------------------- | ------------------------------------------------ |
+| **Application Frontend Service**          | Managed App Router               | Hosting & Authentifizierung der Fiori Apps       |
+| **Identity Authentication Service (IAS)** | Identity & Trust Management      | User Authentication & OAuth2/SAML                |
+| **Authorization Management Service**      | Policy Management                | Fein granularer Zugriff (Role Policies)          |
+| **XSUAA** (Fallback)                      | Authorization & Trust Management | Legacy Token-Infrastruktur via Cross Consumption |
+| **HANA Cloud**                            | Database                         | Production-Datenbank                             |
+| **Application Logging**                   | Logging                          | Centralized Logs                                 |
+| **Application Autoscaler**                | Scaling                          | Auto-Scaling bei Last                            |
+| **SAP Object Store** (optional)           | Object Storage                   | Auslagerung von Attachment-Binärdaten            |
+| **Malware Scanning Service** (optional)   | Security Service                 | Viren-/Malware-Prüfung für Datei-Uploads         |
 
 > Optional: Das Attachments Plugin (`@cap-js/attachments`) kann so konfiguriert werden, dass Binärdaten im **SAP Object Store** abgelegt und Uploads über den **Malware Scanning Service** geprüft werden. Beide Services werden nur benötigt, wenn Dateiablagen nicht in der Datenbank erfolgen sollen bzw. Compliance-Richtlinien einen Malware-Scan verlangen.
 
 **Security-Hinweise (BTP Prod):**
 
-- Authentifizierung via Application Frontend Service (Managed App Router) + Identity Service (XSUAA heute, AMS zukünftig). Tokens enthalten Scope/Role-Informationen, die CAP `@restrict` nutzt.
+- Authentifizierung via Application Frontend Service (Managed App Router) + SAP Identity Services (IAS/AMS, XSUAA-Fallback). Tokens enthalten Scope/Role-Informationen, die CAP `@restrict` nutzt.
 - Autorisierung wird über BTP Role Collections gesteuert; Transport zwischen Subaccounts erfolgt über CI/CD bzw. Transport Management.
 - Secrets (HANA Credentials, API Keys) werden ausschließlich über Service Bindings oder das SAP Credential Store Plug-in injiziert – keine `.env` in Produktion.
 - TLS wird durch den Application Frontend Service und den BTP Load Balancer bereitgestellt. Für Integrationen werden Destinations mit mTLS oder OAuth2 Client Credentials verwendet.
@@ -1450,30 +1451,33 @@ sequenceDiagram
 
 **Szenario 2: Cloud Foundry (BTP)**
 
-| Aspekt       | Konfiguration                                                                         |
-| ------------ | ------------------------------------------------------------------------------------- |
-| **Command**  | `npm run build:mta && npm run deploy:cf`                                              |
-| **Database** | HANA Cloud                                                                            |
-| **Auth**     | Application Frontend Service (Managed App Router) + SAP Identity Services (XSUAA/AMS) |
-| **URL**      | https://app.cfapps.eu10.hana.ondemand.com                                             |
-| **Scaling**  | Auto-Scaling aktiviert                                                                |
+| Aspekt       | Konfiguration                                                                                       |
+| ------------ | --------------------------------------------------------------------------------------------------- |
+| **Command**  | `npm run build:mta && npm run deploy:cf`                                                            |
+| **Database** | HANA Cloud                                                                                          |
+| **Auth**     | Application Frontend Service (Managed App Router) + SAP Identity Services (IAS/AMS, XSUAA Fallback) |
+| **URL**      | https://app.cfapps.eu10.hana.ondemand.com                                                           |
+| **Scaling**  | Auto-Scaling aktiviert                                                                              |
 
-`mta.yaml` beschreibt die Module (`cap-fiori-timetracking-srv`, `cap-fiori-timetracking-db-deployer`, `cap-fiori-timetracking-app-deployer`) sowie die benötigten CF-Services (HANA HDI, Object Store, Malware Scanning, Application Logging, Connectivity, Destination, Application Frontend Service). Die `before-all` Build-Hook führt `npm ci` und `cds build --production` aus; lokal wie in der Pipeline werden anschließend `npm run build:mta` und `npm run deploy:cf` genutzt. Das Content Module liefert die UI5-Build-Artefakte als ZIP-Dateien an den Application Frontend Service, der sie über einen Managed App Router ausliefert. Details zur Entscheidung stehen in [ADR-0018](ADR/0018-mta-deployment-cloud-foundry.md).
+`mta.yaml` beschreibt die Module (`cap-fiori-timetracking-srv`, `cap-fiori-timetracking-db-deployer`, `cap-fiori-timetracking-app-deployer`, `cap-fiori-timetracking-ams-policies-deployer`) sowie die benötigten CF-Services (HANA HDI, Object Store, Malware Scanning, Application Logging, Connectivity, Destination, Application Frontend Service, IAS, AMS). Die `before-all` Build-Hook führt `npm ci` und `cds build --production` aus; lokal wie in der Pipeline werden anschließend `npm run build:mta` und `npm run deploy:cf` genutzt. Das Content Module liefert die UI5-Build-Artefakte als ZIP-Dateien an den Application Frontend Service, der sie über einen Managed App Router ausliefert. Details zur Entscheidung stehen in [ADR-0018](ADR/0018-mta-deployment-cloud-foundry.md).
 
 #### MTA-Module & Ressourcen
 
-| Typ       | Name                                     | Zweck                                                                         |
-| --------- | ---------------------------------------- | ----------------------------------------------------------------------------- |
-| Module    | `cap-fiori-timetracking-srv`             | CAP Service (Node.js) – stellt OData & Handlers bereit                        |
-| Module    | `cap-fiori-timetracking-db-deployer`     | HDI-Deployer für HANA Artefakte                                               |
-| Module    | `cap-fiori-timetracking-app-deployer`    | Transportiert UI5-Apps als Content-Pakete in den Application Frontend Service |
-| Ressource | `cap-fiori-timetracking-db`              | HANA HDI Container                                                            |
-| Ressource | `cap-fiori-timetracking-attachments`     | Object Store für Binary Attachments                                           |
-| Ressource | `cap-fiori-timetracking-malware-scanner` | Malware Scanning Service für Upload-Prüfungen                                 |
-| Ressource | `cap-fiori-timetracking-logging`         | Application Logging Service                                                   |
-| Ressource | `cap-fiori-timetracking-connectivity`    | SAP BTP Connectivity – Outbound Proxy zur Holiday API                         |
-| Ressource | `cap-fiori-timetracking-destination`     | Destination Service – verwaltet Holiday-API-Endpoint & Credentials            |
-| Ressource | `cap-fiori-timetracking-app-front`       | Application Frontend Service – Managed App Router & UI Hosting                |
+| Typ       | Name                                           | Zweck                                                                         |
+| --------- | ---------------------------------------------- | ----------------------------------------------------------------------------- |
+| Module    | `cap-fiori-timetracking-srv`                   | CAP Service (Node.js) – stellt OData & Handlers bereit                        |
+| Module    | `cap-fiori-timetracking-db-deployer`           | HDI-Deployer für HANA Artefakte                                               |
+| Module    | `cap-fiori-timetracking-app-deployer`          | Transportiert UI5-Apps als Content-Pakete in den Application Frontend Service |
+| Module    | `cap-fiori-timetracking-ams-policies-deployer` | Task-Modul, das AMS DCL Policies automatisiert deployt                        |
+| Ressource | `cap-fiori-timetracking-db`                    | HANA HDI Container                                                            |
+| Ressource | `cap-fiori-timetracking-attachments`           | Object Store für Binary Attachments                                           |
+| Ressource | `cap-fiori-timetracking-malware-scanner`       | Malware Scanning Service für Upload-Prüfungen                                 |
+| Ressource | `cap-fiori-timetracking-logging`               | Application Logging Service                                                   |
+| Ressource | `cap-fiori-timetracking-connectivity`          | SAP BTP Connectivity – Outbound Proxy zur Holiday API                         |
+| Ressource | `cap-fiori-timetracking-destination`           | Destination Service – verwaltet Holiday-API-Endpoint & Credentials            |
+| Ressource | `cap-fiori-timetracking-app-front`             | Application Frontend Service – Managed App Router & UI Hosting                |
+| Ressource | `cap-fiori-timetracking-ias`                   | Identity Authentication Service (IAS) – OAuth2/SAML Authentifizierung         |
+| Ressource | `cap-fiori-timetracking-ams`                   | Authorization Management Service (AMS) – Policy Engine & Attribute Delivery   |
 
 > Lokale Deployments benötigen `cf` CLI ≥8, das MultiApps-Plugin (`cf install-plugin multiapps`) sowie das Multi-Target Build Tool (`npm install -g mbt`).
 
@@ -1485,7 +1489,7 @@ Die Holiday-API wird produktiv über Destination + Connectivity konsumiert; loka
 2. **IAS-Provisionierung:** Subaccount-Instanz `cap-fiori-timetracking-ias` (Service `identity`) mit `xsuaa-cross-consumption` erzeugen; `Application Frontend Service` konsumiert dieselbe Instanz.
 3. **AMS-Provisionierung:** Subaccount-Instanz `cap-fiori-timetracking-ams` (Service `identity-authorization`) für Policy-Deployment anlegen; Policy-Daten werden über das neue Deployment-Modul verteilt.
 4. **CAP-Konfiguration:** Default-Authentifizierung auf IAS umgestellt (`cds.requires.auth = "ias"`, `cds.requires.xsuaa = true`); lokale Mock-User erweitern die Produktivrollen.
-5. **AMS-Attribute & Policies:** `db/src/ams-attributes.cds` mappt fachliche Attribute (`UserID`, `ProjectID`, `PreferredState`, `StatusCode`) an AMS; `ams/dcl/basePolicies.dcl` definiert Rollen-Policies.
+5. **AMS-Attribute & Policies:** `db/ams-attributes.cds` mappt fachliche Attribute (`UserID`, `ProjectID`, `ProjectNumber`, `PreferredState`, `StatusCode`) an AMS; `ams/dcl/basePolicies.dcl` definiert Rollen-Policies.
 6. **Deployment-Artefakte:** `mta.yaml` bindet nun IAS + AMS an das CAP-Service-Modul und fügt das technische Modul `cap-fiori-timetracking-ams-policies-deployer` hinzu; `xs-security.json` liefert die produktiven Scopes.
 7. **Work Zone Integration:** Application Frontend Service stellt Destinations mit JWT-Forwarding bereit; Role-Collections im Subaccount referenzieren die Templates aus `xs-security.json`.
 8. **Qualitätssicherung:** Mocked Tests nutzen weiterhin `npm run watch`; für CF-Deployments erzeugt `npm run build:mta` das MTAR, das anschließend mit `npm run deploy:cf` inklusive AMS-DCLs ausgerollt wird.
@@ -1494,7 +1498,7 @@ Die Holiday-API wird produktiv über Destination + Connectivity konsumiert; loka
 
 | Aspekt         | Konfiguration                     |
 | -------------- | --------------------------------- |
-| **Base Image** | node:18-alpine                    |
+| **Base Image** | node:22-alpine                    |
 | **Database**   | PostgreSQL (extern)               |
 | **Auth**       | OAuth2 (Keycloak)                 |
 | **Port**       | 8080                              |
@@ -1877,7 +1881,7 @@ sequenceDiagram
     actor User
     participant Browser
     participant AppFront as Application Frontend Service (Managed App Router)
-    participant Identity as SAP Identity Service (XSUAA/AMS)
+    participant Identity as SAP Identity Service (IAS/AMS, XSUAA Fallback)
     participant CAP as TrackService (CAP)
 
     User->>Browser: Aufruf https://time-tracking
@@ -1906,7 +1910,7 @@ sequenceDiagram
 
 #### Tenant Isolation & Datenzugriff
 
-- **Subaccount-Isolation:** Jeder Mandant läuft in einem eigenen SAP BTP Subaccount mit separaten Service-Instanzen (HANA Schema, XSUAA/AMS, Object Store).
+- **Subaccount-Isolation:** Jeder Mandant läuft in einem eigenen SAP BTP Subaccount mit separaten Service-Instanzen (HANA Schema, IAS/AMS, Object Store).
 - **Database Security:** HANA nutzt rollenbasierte Zugriffe; CAP nutzt Service-Bindings mit technischen Benutzern, keine End-User Credentials.
 - **Attachments:** Optionaler SAP Object Store oder Malware Scanning Service trennt Binärdaten pro Tenant und unterstützt Lifecycle Policies.
 - **Audit & Logging:** CAP Audit Log (optional), Application Logging Service und Identity Logs werden für Compliance (z. B. GoBD) zentral gespeichert.
@@ -2303,44 +2307,47 @@ Auswirkung
 
 ### A-C
 
-| Begriff                    | Definition                                                                     |
-| -------------------------- | ------------------------------------------------------------------------------ |
-| **@cap-js/attachments**    | Offizielles CAP-Plugin für Datei-Uploads inkl. Metadaten- und Storage-Handling |
-| **@cap-js/openapi**        | CAP-Compiler, der CDS-Modelle zur OpenAPI-Spezifikation rendert                |
-| **ActivityType**           | Tätigkeitsart (z.B. "Development", "Testing", "Meeting")                       |
-| **ADR**                    | Architecture Decision Record - Dokumentiertes Entscheidungsprotokoll           |
-| **Barrel Export**          | `index.ts` mit Re-Exports für saubere Imports                                  |
-| **BTP**                    | SAP Business Technology Platform (Cloud)                                       |
-| **CAP**                    | Cloud Application Programming Model (SAP Framework)                            |
-| **Command Pattern**        | Kapselt Business-Operationen in Objekt-Instanzen (z.B. CreateTimeEntryCommand) |
-| **cds-swagger-ui-express** | CAP-Plugin, das Swagger UI pro Service bereitstellt                            |
-| **CDS**                    | Core Data Services (SAP's Modellierungssprache)                                |
-| **CQRS**                   | Command Query Responsibility Segregation                                       |
-| **Criticality**            | UI5 Status-Indikator (1=Error/Rot, 2=Warning/Gelb, 3=Success/Grün, 0=None)     |
-| **Customizing**            | Singleton-Entität mit globalen System-Defaults                                 |
-| **CustomizingService**     | Service, der Customizing liest, cached und Werte an die Business-Layer liefert |
+| Begriff                                    | Definition                                                                                                 |
+| ------------------------------------------ | ---------------------------------------------------------------------------------------------------------- |
+| **@cap-js/attachments**                    | Offizielles CAP-Plugin für Datei-Uploads inkl. Metadaten- und Storage-Handling                             |
+| **@cap-js/openapi**                        | CAP-Compiler, der CDS-Modelle zur OpenAPI-Spezifikation rendert                                            |
+| **ActivityType**                           | Tätigkeitsart (z.B. "Development", "Testing", "Meeting")                                                   |
+| **ADR**                                    | Architecture Decision Record - Dokumentiertes Entscheidungsprotokoll                                       |
+| **Authorization Management Service (AMS)** | SAP BTP-Service zur Verwaltung von Rollen-Policies und Attributfiltern, liefert zusätzliche Claims für CAP |
+| **Barrel Export**                          | `index.ts` mit Re-Exports für saubere Imports                                                              |
+| **BTP**                                    | SAP Business Technology Platform (Cloud)                                                                   |
+| **CAP**                                    | Cloud Application Programming Model (SAP Framework)                                                        |
+| **Command Pattern**                        | Kapselt Business-Operationen in Objekt-Instanzen (z.B. CreateTimeEntryCommand)                             |
+| **cds-swagger-ui-express**                 | CAP-Plugin, das Swagger UI pro Service bereitstellt                                                        |
+| **CDS**                                    | Core Data Services (SAP's Modellierungssprache)                                                            |
+| **CQRS**                                   | Command Query Responsibility Segregation                                                                   |
+| **Criticality**                            | UI5 Status-Indikator (1=Error/Rot, 2=Warning/Gelb, 3=Success/Grün, 0=None)                                 |
+| **Customizing**                            | Singleton-Entität mit globalen System-Defaults                                                             |
+| **CustomizingService**                     | Service, der Customizing liest, cached und Werte an die Business-Layer liefert                             |
 
 ### D-F
 
-| Begriff            | Definition                                                          |
-| ------------------ | ------------------------------------------------------------------- |
-| **DI**             | Dependency Injection (Entkopplung via Container)                    |
-| **Draft**          | Entwurfsmodus in Fiori (Speichern/Verwerfen vor Commit)             |
-| **EntryType**      | Art des Zeiteintrags (W=Work, V=Vacation, S=Sick, H=Holiday, O=Off) |
-| **Fiori Elements** | No-Code UI5 Framework (aus CDS-Annotations generiert)               |
-| **Fluent API**     | Methoden-Verkettung mit `return this`                               |
+| Begriff                             | Definition                                                                          |
+| ----------------------------------- | ----------------------------------------------------------------------------------- |
+| **AMS DCL (Data Control Language)** | Policy-Definitionen (`.dcl`), die Rollen und Attributfilter für das AMS beschreiben |
+| **DI**                              | Dependency Injection (Entkopplung via Container)                                    |
+| **Draft**                           | Entwurfsmodus in Fiori (Speichern/Verwerfen vor Commit)                             |
+| **EntryType**                       | Art des Zeiteintrags (W=Work, V=Vacation, S=Sick, H=Holiday, O=Off)                 |
+| **Fiori Elements**                  | No-Code UI5 Framework (aus CDS-Annotations generiert)                               |
+| **Fluent API**                      | Methoden-Verkettung mit `return this`                                               |
 
 ### G-M
 
-| Begriff             | Definition                                                                 |
-| ------------------- | -------------------------------------------------------------------------- |
-| **HANA**            | SAP's In-Memory-Datenbank                                                  |
-| **Handler**         | Event-Handler (before/on/after) im CAP-Service                             |
-| **HandlerRegistry** | Infrastrukturkomponente, die alle CAP-Handler registriert und orchestriert |
-| **HolidayService**  | Service für Feiertags-API-Aufrufe mit Cache pro Jahr und Bundesland        |
-| **Mock User**       | Test-User für lokale Entwicklung (max.mustermann@test.de)                  |
-| **OpenAPI**         | Standard zur Beschreibung von HTTP-APIs (ehemals Swagger)                  |
-| **OData**           | Open Data Protocol (REST-basiertes Protokoll)                              |
+| Begriff                                   | Definition                                                                                              |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| **HANA**                                  | SAP's In-Memory-Datenbank                                                                               |
+| **Handler**                               | Event-Handler (before/on/after) im CAP-Service                                                          |
+| **HandlerRegistry**                       | Infrastrukturkomponente, die alle CAP-Handler registriert und orchestriert                              |
+| **HolidayService**                        | Service für Feiertags-API-Aufrufe mit Cache pro Jahr und Bundesland                                     |
+| **IAS (Identity Authentication Service)** | SAP BTP-Service für OAuth2/SAML-Authentifizierung; liefert JWTs an Application Frontend Service und CAP |
+| **Mock User**                             | Lokale Testnutzer (z.B. max.mustermann@test.de, erika.musterfrau@test.de, frank.genehmiger@test.de)     |
+| **OpenAPI**                               | Standard zur Beschreibung von HTTP-APIs (ehemals Swagger)                                               |
+| **OData**                                 | Open Data Protocol (REST-basiertes Protokoll)                                                           |
 
 ### N-S
 

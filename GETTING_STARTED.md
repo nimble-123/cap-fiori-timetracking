@@ -12,7 +12,7 @@ Stelle sicher, dass folgende Software installiert ist:
 
 | Tool           | Version                                 | Download                            | Zweck                    |
 | -------------- | --------------------------------------- | ----------------------------------- | ------------------------ |
-| **Node.js**    | ≥18.x (empfohlen 22.20.0 laut `.nvmrc`) | [nodejs.org](https://nodejs.org/)   | Runtime für CAP & UI5    |
+| **Node.js**    | ≥22.x (laut `.nvmrc` 22.20.0)           | [nodejs.org](https://nodejs.org/)   | Runtime für CAP & UI5    |
 | **npm**        | ≥10.x                                   | (kommt mit Node.js)                 | Package Manager          |
 | **Java (JDK)** | ≥17 (Temurin empfohlen)                 | [Adoptium](https://adoptium.net/)   | Build von `@sap/ams-dev` |
 | **TypeScript** | ≥5.0                                    | `npm install -g typescript`         | Compiler                 |
@@ -40,7 +40,7 @@ Stelle sicher, dass folgende Software installiert ist:
 ### Prüfen der Installation
 
 ```bash
-node --version    # sollte v22.x.x (oder >=18 LTS) sein
+node --version    # sollte v22.x.x sein
 npm --version     # sollte 10.x.x oder höher sein
 tsc --version     # sollte Version 5.x.x oder höher sein
 git --version     # sollte installiert sein
