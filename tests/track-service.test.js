@@ -5,7 +5,7 @@
  * Nutzt Mock-User aus package.json für Authentication
  */
 const cds = require('@sap/cds');
-const { GET, POST, /* PATCH, PUT, DELETE, OPTIONS, axios, */ expect } = cds.test(__dirname + '/..', '--in-memory');
+const { GET, POST, PATCH, /* PUT, DELETE, OPTIONS, axios, */ expect } = cds.test(__dirname + '/..', '--in-memory');
 
 describe('TrackService - Basic Setup', () => {
   it('should serve $metadata document in v4', async () => {
@@ -173,112 +173,214 @@ describe('TrackService - TimeEntries CRUD', () => {
     });
   });
 
-  // describe('UPDATE TimeEntry', () => {
-  //   let entryId;
+  describe('UPDATE TimeEntry', () => {
+    let entryId;
+    let uniqueDateOffset = 0;
 
-  //   beforeAll(async () => {
-  //     // Setup: Erstelle Entry zum Updaten
-  //     const { data } = await POST(
-  //       '/odata/v4/track/TimeEntries',
-  //       {
-  //         user_ID: 'max.mustermann@test.de',
-  //         workDate: '2025-10-19',
-  //         entryType_code: 'W',
-  //         startTime: '08:00:00',
-  //         endTime: '16:00:00',
-  //         breakMin: 30,
-  //       },
-  //       maxUser,
-  //     );
-  //     entryId = data.ID;
-  //   });
+    beforeEach(async () => {
+      // Setup: Erstelle Entry mit eindeutigem Datum für jeden Test
+      uniqueDateOffset++;
+      const testDate = new Date();
+      testDate.setDate(testDate.getDate() + uniqueDateOffset);
+      const workDate = testDate.toISOString().split('T')[0];
 
-  //   it('should update endTime and recalculate hours', async () => {
-  //     const { data, status } = await PATCH(`/odata/v4/track/TimeEntries(${entryId})`, { endTime: '18:00:00' }, maxUser);
+      const { data: draft } = await POST(
+        '/odata/v4/track/TimeEntries',
+        {
+          user_ID: 'max.mustermann@test.de',
+          workDate,
+          entryType_code: 'W',
+          startTime: '08:00:00',
+          endTime: '16:00:00',
+          breakMin: 30,
+        },
+        maxUser,
+      );
 
-  //     expect(status).to.equal(200);
-  //     expect(data.endTime).to.equal('18:00:00');
-  //     expect(data.durationHoursNet).to.equal(9.5); // 10h - 0.5h break
-  //     expect(data.overtimeHours).to.be.greaterThan(0);
-  //     expect(data.status_code).to.equal('P');
-  //   });
+      // Draft aktivieren
+      const { data: activated } = await POST(
+        `/odata/v4/track/TimeEntries(ID=${draft.ID},IsActiveEntity=false)/draftActivate`,
+        {},
+        maxUser,
+      );
+      entryId = activated.ID;
+    });
 
-  //   it('should update breakMin', async () => {
-  //     const { data, status } = await PATCH(`/odata/v4/track/TimeEntries(${entryId})`, { breakMin: 60 }, maxUser);
+    it('should update endTime and recalculate hours', async () => {
+      // Edit-Draft erstellen
+      const { data: editDraft } = await POST(
+        `/odata/v4/track/TimeEntries(ID=${entryId},IsActiveEntity=true)/draftEdit`,
+        {},
+        maxUser,
+      );
 
-  //     expect(status).to.equal(200);
-  //     expect(data.breakMin).to.equal(60);
-  //     expect(data.status_code).to.equal('P');
-  //   });
+      // Draft ändern
+      await PATCH(
+        `/odata/v4/track/TimeEntries(ID=${editDraft.ID},IsActiveEntity=false)`,
+        { endTime: '18:00:00' },
+        maxUser,
+      );
 
-  //   it('should update note', async () => {
-  //     const { data, status } = await PATCH(
-  //       `/odata/v4/track/TimeEntries(${entryId})`,
-  //       { note: 'Updated note for testing' },
-  //       maxUser,
-  //     );
+      // Draft aktivieren
+      const { data, status } = await POST(
+        `/odata/v4/track/TimeEntries(ID=${editDraft.ID},IsActiveEntity=false)/draftActivate`,
+        {},
+        maxUser,
+      );
 
-  //     expect(status).to.equal(200);
-  //     expect(data.note).to.equal('Updated note for testing');
-  //     expect(data.status_code).to.equal('P');
-  //   });
+      expect(status).to.equal(200);
+      expect(data.endTime).to.equal('18:00:00');
+      expect(data.durationHoursNet).to.equal(9.5); // 10h - 0.5h break
+      expect(data.overtimeHours).to.be.greaterThan(0);
+    });
 
-  //   it('should allow switching status between open, processed and done', async () => {
-  //     const { data: created } = await POST(
-  //       '/odata/v4/track/TimeEntries',
-  //       {
-  //         user_ID: 'max.mustermann@test.de',
-  //         workDate: '2025-10-25',
-  //         entryType_code: 'W',
-  //         startTime: '08:00:00',
-  //         endTime: '16:00:00',
-  //         breakMin: 30,
-  //       },
-  //       maxUser,
-  //     );
+    it('should update breakMin', async () => {
+      const { data: editDraft } = await POST(
+        `/odata/v4/track/TimeEntries(ID=${entryId},IsActiveEntity=true)/draftEdit`,
+        {},
+        maxUser,
+      );
 
-  //     expect(created.status_code).to.equal('O');
+      await PATCH(`/odata/v4/track/TimeEntries(ID=${editDraft.ID},IsActiveEntity=false)`, { breakMin: 60 }, maxUser);
 
-  //     const { data: doneUpdate, status: doneStatus } = await PATCH(
-  //       `/odata/v4/track/TimeEntries(${created.ID})`,
-  //       { status_code: 'D' },
-  //       maxUser,
-  //     );
-  //     expect(doneStatus).to.equal(200);
-  //     expect(doneUpdate.status_code).to.equal('D');
+      const { data, status } = await POST(
+        `/odata/v4/track/TimeEntries(ID=${editDraft.ID},IsActiveEntity=false)/draftActivate`,
+        {},
+        maxUser,
+      );
 
-  //     const { data: reopenUpdate, status: reopenStatus } = await PATCH(
-  //       `/odata/v4/track/TimeEntries(${created.ID})`,
-  //       { status_code: 'O' },
-  //       maxUser,
-  //     );
-  //     expect(reopenStatus).to.equal(200);
-  //     expect(reopenUpdate.status_code).to.equal('O');
-  //   });
+      expect(status).to.equal(200);
+      expect(data.breakMin).to.equal(60);
+      expect(data.durationHoursNet).to.equal(7.0); // 8h - 1h break
+    });
 
-  //   it('should reject direct status change to released', async () => {
-  //     const { data: created } = await POST(
-  //       '/odata/v4/track/TimeEntries',
-  //       {
-  //         user_ID: 'max.mustermann@test.de',
-  //         workDate: '2025-10-26',
-  //         entryType_code: 'W',
-  //         startTime: '08:00:00',
-  //         endTime: '16:00:00',
-  //         breakMin: 30,
-  //       },
-  //       maxUser,
-  //     );
+    it('should update note', async () => {
+      const { data: editDraft } = await POST(
+        `/odata/v4/track/TimeEntries(ID=${entryId},IsActiveEntity=true)/draftEdit`,
+        {},
+        maxUser,
+      );
 
-  //     const { status: releaseStatus } = await PATCH(
-  //       `/odata/v4/track/TimeEntries(${created.ID})`,
-  //       { status_code: 'R' },
-  //       maxUser,
-  //     );
+      await PATCH(
+        `/odata/v4/track/TimeEntries(ID=${editDraft.ID},IsActiveEntity=false)`,
+        { note: 'Updated note for testing' },
+        maxUser,
+      );
 
-  //     expect(releaseStatus).to.equal(409);
-  //   });
-  // });
+      const { data, status } = await POST(
+        `/odata/v4/track/TimeEntries(ID=${editDraft.ID},IsActiveEntity=false)/draftActivate`,
+        {},
+        maxUser,
+      );
+
+      expect(status).to.equal(200);
+      expect(data.note).to.equal('Updated note for testing');
+    });
+
+    it('should automatically set status to processed on update from open', async () => {
+      // Erstelle neuen Entry mit aktiviertem Draft und eindeutigem Datum
+      uniqueDateOffset += 100; // Großer Offset für diesen speziellen Test
+      const testDate = new Date();
+      testDate.setDate(testDate.getDate() + uniqueDateOffset);
+      const workDate = testDate.toISOString().split('T')[0];
+
+      const { data: draft } = await POST(
+        '/odata/v4/track/TimeEntries',
+        {
+          user_ID: 'max.mustermann@test.de',
+          workDate,
+          entryType_code: 'W',
+          startTime: '08:00:00',
+          endTime: '16:00:00',
+          breakMin: 30,
+        },
+        maxUser,
+      );
+
+      const { data: created } = await POST(
+        `/odata/v4/track/TimeEntries(ID=${draft.ID},IsActiveEntity=false)/draftActivate`,
+        {},
+        maxUser,
+      );
+
+      // Status wird von Business Logic gesetzt (initial 'O' = Open)
+      expect(created.status_code).to.be.oneOf(['O', 'P']);
+
+      // Update ohne expliziten Status-Wechsel -> automatisch 'P' (Processed)
+      const { data: editDraft1 } = await POST(
+        `/odata/v4/track/TimeEntries(ID=${created.ID},IsActiveEntity=true)/draftEdit`,
+        {},
+        maxUser,
+      );
+
+      await PATCH(
+        `/odata/v4/track/TimeEntries(ID=${editDraft1.ID},IsActiveEntity=false)`,
+        { note: 'Update triggers auto status change to Processed' },
+        maxUser,
+      );
+
+      const { data: processedUpdate, status: processedStatus } = await POST(
+        `/odata/v4/track/TimeEntries(ID=${editDraft1.ID},IsActiveEntity=false)/draftActivate`,
+        {},
+        maxUser,
+      );
+
+      expect(processedStatus).to.equal(200);
+      // Business-Logik setzt Status automatisch auf 'P' bei Update von 'O'
+      expect(processedUpdate.status_code).to.equal('P');
+    });
+
+    it('should reject direct status change to released', async () => {
+      // Erstelle Entry mit eindeutigem Datum
+      uniqueDateOffset += 100; // Großer Offset für diesen speziellen Test
+      const testDate = new Date();
+      testDate.setDate(testDate.getDate() + uniqueDateOffset);
+      const workDate = testDate.toISOString().split('T')[0];
+
+      const { data: draft } = await POST(
+        '/odata/v4/track/TimeEntries',
+        {
+          user_ID: 'max.mustermann@test.de',
+          workDate,
+          entryType_code: 'W',
+          startTime: '08:00:00',
+          endTime: '16:00:00',
+          breakMin: 30,
+        },
+        maxUser,
+      );
+
+      const { data: created } = await POST(
+        `/odata/v4/track/TimeEntries(ID=${draft.ID},IsActiveEntity=false)/draftActivate`,
+        {},
+        maxUser,
+      );
+
+      const { data: editDraft } = await POST(
+        `/odata/v4/track/TimeEntries(ID=${created.ID},IsActiveEntity=true)/draftEdit`,
+        {},
+        maxUser,
+      );
+
+      // Versuch, Status auf Released zu setzen - PATCH erlaubt es, aber draftActivate sollte fehlschlagen
+      await PATCH(
+        `/odata/v4/track/TimeEntries(ID=${editDraft.ID},IsActiveEntity=false)`,
+        { status_code: 'R' },
+        maxUser,
+      );
+
+      // draftActivate sollte mit 409 fehlschlagen
+      try {
+        await POST(`/odata/v4/track/TimeEntries(ID=${editDraft.ID},IsActiveEntity=false)/draftActivate`, {}, maxUser);
+        // Wenn kein Fehler geworfen wurde, ist der Test fehlgeschlagen
+        expect.fail('Expected validation error was not thrown');
+      } catch (error) {
+        // Validation wirft 409 beim Aktivieren
+        expect(error.response.status).to.equal(409);
+        expect(error.response.data.error.message).to.include('Released');
+      }
+    });
+  });
 
   // describe('DELETE TimeEntry', () => {
   //   it('should delete TimeEntry', async () => {
