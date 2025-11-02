@@ -146,7 +146,7 @@ Die Top-5-Qualitätsziele nach Priorität:
 **Qualitätsszenarien (Beispiele):**
 
 - **QS-1 (Wartbarkeit):** Ein Entwickler kann eine neue Balance-Berechnung (z.B. für Gleitzeit) in 2 Tagen hinzufügen, indem er einen neuen Command und Service erstellt.
-- **QS-2 (Testbarkeit):** Alle 10 Commands können mit Mock-Dependencies isoliert getestet werden ohne CAP-Server.
+- **QS-2 (Testbarkeit):** Alle 13 Commands können mit Mock-Dependencies isoliert getestet werden ohne CAP-Server.
 - **QS-3 (Performance):** Generierung von 365 Tagen inkl. Feiertags-API-Aufruf dauert max. 2 Sekunden.
 
 ---
@@ -374,7 +374,7 @@ Die Anwendung folgt einer **strikten 3-Tier-Architektur** mit klarer Trennung:
 **Top-10-Entscheidungen:**
 
 1. **TypeScript statt JavaScript** → Compile-Time-Validierung, besseres Tooling
-2. **10 Design Patterns** → Strukturierte, wiederverwendbare Architektur
+2. **Design Patterns** → Strukturierte, wiederverwendbare Architektur (13 Commands, 7 Validators, 2 Strategies)
 3. **ServiceContainer (DI)** → Zentrale Dependency-Auflösung
 4. **Command Pattern** → Kapselt Business-Operations
 5. **Repository Pattern** → Abstrahiert Datenzugriff
@@ -443,7 +443,7 @@ graph TB
     end
 
     subgraph "💼 Business Logic Layer - Domain Services"
-        CMD["🎯 Commands<br/>10 Commands für CRUD, Gen, Balance"]
+        CMD["🎯 Commands<br/>13 Commands für CRUD, Gen, Balance, Status"]
         VAL["✅ Validators<br/>7 Validators"]
         SRV["💼 Domain Services<br/>TimeCalc | User | Holiday | Balance"]
         STRAT["📋 Strategies<br/>Monthly | Yearly Generation"]
@@ -889,6 +889,49 @@ Die "No-Code"-Variante! Fiori Elements generiert automatisch eine komplette App 
 - **Filterbar & Search** automatisch aus Annotations
 
 Die meiste Arbeit passiert in den `annotations.cds` Files. Wenig Code, viel Power! 💪
+
+**Zwei Workflows für Zeiterfassung:**
+
+Anwender können je nach Präferenz zwischen zwei Erfassungsstrategien wählen:
+
+**Workflow A: Generierung + Überschreiben (empfohlen für regelmäßige Arbeitszeiten)**
+
+1. Nutzer navigiert zur Timetable-App und klickt auf die Action „Monat generieren" oder „Jahr generieren"
+2. System erstellt automatisch Einträge für alle Arbeitstage:
+   - **Arbeitstage (Mo-Fr)**: Vorausgefüllte Einträge mit Default-Zeiten (z.B. 08:00-16:30, EntryType=W)
+   - **Wochenenden**: Markiert als „Frei" (EntryType=O)
+   - **Feiertage**: Automatisch erkannt via Feiertags-API (EntryType=H, abhängig vom Bundesland des Users)
+3. Nutzer durchläuft die generierten Einträge (List Report mit Filter auf aktuellen Monat) und **überschreibt** nur die Abweichungen:
+   - Tatsächliche Start-/Endzeiten anpassen
+   - Pausen korrigieren
+   - Projekt/Aktivität zuordnen
+   - Notizen hinzufügen
+   - Urlaubstage von „W" auf „V" ändern
+   - Kranktage von „W" auf „S" ändern
+4. System berechnet bei jeder Änderung automatisch Über-/Unterstunden neu
+5. **Vorteil**: Schnelle Erfassung mit minimalem Aufwand; besonders effizient bei regelmäßigen Arbeitszeiten
+
+**Workflow B: Händische Einzelerfassung (für variable Arbeitszeiten)**
+
+1. Nutzer navigiert zur Timetable-App und klickt auf „Create" (Plus-Button)
+2. Füllt das Draft-Formular manuell aus:
+   - Datum auswählen
+   - Start-/Endzeit eingeben
+   - Pause eintragen
+   - EntryType wählen (W/V/S/B/F/G)
+   - Projekt/Aktivität selektieren (optional)
+   - Arbeitsort und Reiseart auswählen (optional)
+   - Notiz hinzufügen (optional)
+3. System validiert beim Speichern (Eindeutigkeit pro User+Tag, aktive Referenzen)
+4. System berechnet automatisch alle Zeitwerte (gross, net, overtime, undertime)
+5. **Vorteil**: Volle Kontrolle, kein „Überschreiben" nötig; ideal für Projektarbeit mit wechselnden Zeiten
+
+**Technische Umsetzung:**
+
+- Beide Actions (`generateMonthlyTimeEntries`, `generateYearlyTimeEntries`) sind als **unbound Actions** im `TrackService` verfügbar und werden in der Fiori-App als Buttons im Header der List Report Page angeboten
+- Generierte Einträge haben `source='GENERATED'` (konfigurierbar via `Customizing.generatedSourceCode`), manuell erstellte `source='UI'`
+- Die Fiori Elements Draft-Funktionalität ermöglicht komfortables Bearbeiten mit „Save"/„Discard"
+- Side Effects sorgen dafür, dass berechnete Felder (gross/net/overtime) sofort im UI aktualisiert werden
 
 **Technische Details:**
 
