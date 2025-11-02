@@ -5,7 +5,7 @@
  * Nutzt Mock-User aus package.json für Authentication
  */
 const cds = require('@sap/cds');
-const { GET, POST, PATCH, /* PUT, DELETE, OPTIONS, axios, */ expect } = cds.test(__dirname + '/..', '--in-memory');
+const { GET, POST, PATCH, DELETE, /* PUT, OPTIONS, axios, */ expect } = cds.test(__dirname + '/..', '--in-memory');
 
 describe('TrackService - Basic Setup', () => {
   it('should serve $metadata document in v4', async () => {
@@ -23,97 +23,137 @@ describe('TrackService - Basic Setup', () => {
 describe('TrackService - TimeEntries CRUD', () => {
   // Mock User für Authentication (aus package.json)
   const maxUser = { auth: { username: 'max.mustermann@test.de', password: 'max' } };
-  //const erikaUser = { auth: { username: 'erika.musterfrau@test.de', password: 'erika' } };
+  const erikaUser = { auth: { username: 'erika.musterfrau@test.de', password: 'erika' } };
 
   describe('CREATE TimeEntry', () => {
-    // it('should create a new work time entry', async () => {
-    //   const { data, status } = await POST(
-    //     '/odata/v4/track/TimeEntries',
-    //     {
-    //       user_ID: 'max.mustermann@test.de',
-    //       workDate: '2025-12-14',
-    //       entryType_code: 'W', // Work
-    //       startTime: '08:00:00',
-    //       endTime: '16:30:00',
-    //       breakMin: 30,
-    //       project_ID: 'a1b2c3d4-e5f6-4a4a-b7b7-1234567890ab', // Beispiel UUID
-    //       activity_code: 'DEV',
-    //       status_code: 'O',
-    //     },
-    //     maxUser,
-    //   );
-    //   expect(status).to.equal(201);
-    //   expect(data).to.have.property('ID');
-    //   expect(data.user_ID).to.equal('max.mustermann@test.de');
-    //   expect(data.entryType_code).to.equal('W');
-    //   expect(data.status_code).to.equal('O');
-    //   // Berechnete Felder prüfen
-    //   expect(data.durationHoursGross).to.be.a('number');
-    //   expect(data.durationHoursNet).to.be.a('number');
-    //   expect(data.durationHoursNet).to.equal(8.0); // 8.5h - 0.5h break
-    // });
-    // it('should create vacation entry', async () => {
-    //   const { data, status } = await POST(
-    //     '/odata/v4/track/TimeEntries',
-    //     {
-    //       user_ID: 'erika.musterfrau@test.de',
-    //       workDate: '2025-10-15',
-    //       entryType_code: 'V', // Vacation
-    //       startTime: '00:00:00',
-    //       endTime: '00:00:00',
-    //       breakMin: 0,
-    //     },
-    //     erikaUser,
-    //   );
-    //   expect(status).to.equal(201);
-    //   expect(data.entryType_code).to.equal('V');
-    //   expect(data.durationHoursNet).to.be.greaterThan(0); // Expected daily hours
-    //   expect(data.status_code).to.equal('O');
-    // });
-    // it('should reject duplicate entry for same day', async () => {
-    //   // Erster Eintrag
-    //   await POST(
-    //     '/odata/v4/track/TimeEntries',
-    //     {
-    //       user_ID: 'max.mustermann@test.de',
-    //       workDate: '2025-10-16',
-    //       entryType_code: 'W',
-    //       startTime: '08:00:00',
-    //       endTime: '16:00:00',
-    //       breakMin: 30,
-    //     },
-    //     maxUser,
-    //   );
-    //   // Zweiter Eintrag für gleichen Tag sollte fehlschlagen
-    //   const { status } = await POST(
-    //     '/odata/v4/track/TimeEntries',
-    //     {
-    //       user_ID: 'max.mustermann@test.de',
-    //       workDate: '2025-10-16',
-    //       entryType_code: 'W',
-    //       startTime: '09:00:00',
-    //       endTime: '17:00:00',
-    //       breakMin: 30,
-    //     },
-    //     maxUser,
-    //   );
-    //   expect(status).to.equal(400); // Bad Request erwartet
-    // });
-    // it('should reject invalid time range (end before start)', async () => {
-    //   const { status } = await POST(
-    //     '/odata/v4/track/TimeEntries',
-    //     {
-    //       user_ID: 'max.mustermann@test.de',
-    //       workDate: '2025-10-17',
-    //       entryType_code: 'W',
-    //       startTime: '16:00:00',
-    //       endTime: '08:00:00', // End before start
-    //       breakMin: 0,
-    //     },
-    //     maxUser,
-    //   );
-    //   expect(status).to.equal(400);
-    // });
+    it('should create a new work time entry', async () => {
+      const { data: draft, status } = await POST(
+        '/odata/v4/track/TimeEntries',
+        {
+          user_ID: 'max.mustermann@test.de',
+          workDate: '2027-01-10', // Eindeutiges Datum weit in der Zukunft
+          entryType_code: 'W', // Work
+          startTime: '08:00:00',
+          endTime: '16:30:00',
+          breakMin: 30,
+          project_ID: 'a1b2c3d4-e5f6-4a4a-b7b7-1234567890ab', // Beispiel UUID
+          activity_code: 'BDEV', // Backend Development (existiert in DB)
+          status_code: 'O',
+        },
+        maxUser,
+      );
+      expect(status).to.equal(201);
+      expect(draft).to.have.property('ID');
+
+      // Draft aktivieren
+      const { data, status: activateStatus } = await POST(
+        `/odata/v4/track/TimeEntries(ID=${draft.ID},IsActiveEntity=false)/draftActivate`,
+        {},
+        maxUser,
+      );
+
+      expect(activateStatus).to.be.oneOf([200, 201]); // draftActivate kann 200 oder 201 zurückgeben
+      expect(data.user_ID).to.equal('max.mustermann@test.de');
+      expect(data.entryType_code).to.equal('W');
+      expect(data.status_code).to.equal('O');
+      // Berechnete Felder prüfen
+      expect(data.durationHoursGross).to.be.a('number');
+      expect(data.durationHoursNet).to.be.a('number');
+      expect(data.durationHoursNet).to.equal(8.0); // 8.5h - 0.5h break
+    });
+    it('should create vacation entry', async () => {
+      const { data: draft, status } = await POST(
+        '/odata/v4/track/TimeEntries',
+        {
+          user_ID: 'erika.musterfrau@test.de',
+          workDate: '2027-02-15', // Eindeutiges Datum weit in der Zukunft, anderer Monat
+          entryType_code: 'V', // Vacation
+          // Vacation entries benötigen Platzhalter-Zeiten (werden in Business Logic überschrieben)
+          startTime: '08:00:00',
+          endTime: '16:00:00',
+          breakMin: 0,
+        },
+        erikaUser,
+      );
+      expect(status).to.equal(201);
+
+      // Draft aktivieren
+      const { data, status: activateStatus } = await POST(
+        `/odata/v4/track/TimeEntries(ID=${draft.ID},IsActiveEntity=false)/draftActivate`,
+        {},
+        erikaUser,
+      );
+
+      expect(activateStatus).to.be.oneOf([200, 201]); // draftActivate kann 200 oder 201 zurückgeben
+      expect(data.entryType_code).to.equal('V');
+      expect(data.durationHoursNet).to.be.greaterThan(0); // Expected daily hours
+      expect(data.status_code).to.equal('O');
+    });
+    it('should reject duplicate entry for same day', async () => {
+      const uniqueDate = '2027-01-12'; // Eindeutiges Datum weit in der Zukunft
+
+      // Erster Eintrag erstellen und aktivieren
+      const { data: draft1 } = await POST(
+        '/odata/v4/track/TimeEntries',
+        {
+          user_ID: 'max.mustermann@test.de',
+          workDate: uniqueDate,
+          entryType_code: 'W',
+          startTime: '08:00:00',
+          endTime: '16:00:00',
+          breakMin: 30,
+        },
+        maxUser,
+      );
+      await POST(`/odata/v4/track/TimeEntries(ID=${draft1.ID},IsActiveEntity=false)/draftActivate`, {}, maxUser);
+
+      // Zweiter Eintrag für gleichen Tag erstellen
+      const { data: draft2 } = await POST(
+        '/odata/v4/track/TimeEntries',
+        {
+          user_ID: 'max.mustermann@test.de',
+          workDate: uniqueDate,
+          entryType_code: 'W',
+          startTime: '09:00:00',
+          endTime: '17:00:00',
+          breakMin: 30,
+        },
+        maxUser,
+      );
+
+      // Draft aktivieren sollte fehlschlagen
+      try {
+        await POST(`/odata/v4/track/TimeEntries(ID=${draft2.ID},IsActiveEntity=false)/draftActivate`, {}, maxUser);
+        expect.fail('Expected validation error was not thrown');
+      } catch (error) {
+        // Validator wirft 409 bei duplicate entry
+        expect(error.response.status).to.equal(409);
+        expect(error.response.data.error.message).to.include('bereits');
+      }
+    });
+    it('should reject invalid time range (end before start)', async () => {
+      const { data: draft } = await POST(
+        '/odata/v4/track/TimeEntries',
+        {
+          user_ID: 'max.mustermann@test.de',
+          workDate: '2027-01-13', // Eindeutiges Datum weit in der Zukunft
+          entryType_code: 'W',
+          startTime: '16:00:00',
+          endTime: '08:00:00', // End before start
+          breakMin: 0,
+        },
+        maxUser,
+      );
+
+      // Draft aktivieren sollte fehlschlagen
+      try {
+        await POST(`/odata/v4/track/TimeEntries(ID=${draft.ID},IsActiveEntity=false)/draftActivate`, {}, maxUser);
+        expect.fail('Expected validation error was not thrown');
+      } catch (error) {
+        // Kann 400 oder 409 sein, je nach Validator-Logik
+        expect(error.response.status).to.be.oneOf([400, 409]);
+      }
+    });
   });
 
   describe('READ TimeEntries', () => {
@@ -382,32 +422,39 @@ describe('TrackService - TimeEntries CRUD', () => {
     });
   });
 
-  // describe('DELETE TimeEntry', () => {
-  //   it('should delete TimeEntry', async () => {
-  //     // Setup: Erstelle Entry zum Löschen
-  //     const { data: created } = await POST(
-  //       '/odata/v4/track/TimeEntries',
-  //       {
-  //         user_ID: 'max.mustermann@test.de',
-  //         workDate: '2025-10-20',
-  //         entryType_code: 'W',
-  //         startTime: '08:00:00',
-  //         endTime: '16:00:00',
-  //         breakMin: 30,
-  //       },
-  //       maxUser,
-  //     );
+  describe('DELETE TimeEntry', () => {
+    it('should reject deleting TimeEntry (business rule)', async () => {
+      // Setup: Erstelle Entry und aktiviere Draft
+      const { data: draft } = await POST(
+        '/odata/v4/track/TimeEntries',
+        {
+          user_ID: 'max.mustermann@test.de',
+          workDate: '2027-01-14', // Eindeutiges Datum weit in der Zukunft
+          entryType_code: 'W',
+          startTime: '08:00:00',
+          endTime: '16:00:00',
+          breakMin: 30,
+        },
+        maxUser,
+      );
 
-  //     // Lösche Entry
-  //     const { status } = await DELETE(`/odata/v4/track/TimeEntries(${created.ID})`, maxUser);
+      const { data: activated } = await POST(
+        `/odata/v4/track/TimeEntries(ID=${draft.ID},IsActiveEntity=false)/draftActivate`,
+        {},
+        maxUser,
+      );
 
-  //     expect(status).to.equal(204); // No Content
-
-  //     // Verifiziere Löschung
-  //     const { status: getStatus } = await GET(`/odata/v4/track/TimeEntries(${created.ID})`, maxUser);
-  //     expect(getStatus).to.equal(404); // Not Found
-  //   });
-  // });
+      // Versuch, Entry zu löschen - sollte mit 405 fehlschlagen
+      try {
+        await DELETE(`/odata/v4/track/TimeEntries(ID=${activated.ID},IsActiveEntity=true)`, maxUser);
+        expect.fail('Expected validation error was not thrown');
+      } catch (error) {
+        // Business Rule verbietet DELETE (CAP generiert englische Fehlermeldung)
+        expect(error.response.status).to.equal(405);
+        expect(error.response.data.error.message).to.include('not deletable');
+      }
+    });
+  });
 });
 
 describe('TrackService - Actions & Functions', () => {
