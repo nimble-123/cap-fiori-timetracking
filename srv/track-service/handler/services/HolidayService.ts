@@ -1,9 +1,14 @@
+import { executeHttpRequest } from '@sap-cloud-sdk/http-client';
+import type { DestinationOrFetchOptions } from '@sap-cloud-sdk/connectivity';
 import { logger } from '../utils';
 import { CustomizingService } from './CustomizingService';
 
 /**
  * Service zur Ermittlung von deutschen Feiertagen
  * Nutzt die kostenlose Feiertage-API (feiertage-api.de)
+ *
+ * Lokal: Direkter HTTP-Call via fetch()
+ * BTP: Destination-basiert via @sap-cloud-sdk/connectivity
  */
 
 interface Holiday {
@@ -43,21 +48,14 @@ export class HolidayService {
 
     try {
       logger.serviceCall('Holiday', `Fetching holidays from API for ${year}/${stateCode}`, { year, stateCode });
-      const url = this.buildHolidayUrl(year, stateCode);
 
-      const response = await fetch(url);
+      let holidays: Map<string, Holiday>;
 
-      if (!response.ok) {
-        logger.error('Holiday API error', new Error(`${response.status} ${response.statusText}`), {
-          year,
-          stateCode,
-          status: response.status,
-        });
-        return new Map();
+      if (this.isProduction()) {
+        holidays = await this.fetchViaDestination(year, stateCode);
+      } else {
+        holidays = await this.fetchDirectly(year, stateCode);
       }
-
-      const data = (await response.json()) as HolidayApiResponse;
-      const holidays = this.parseHolidays(data);
 
       // In Cache speichern
       this.cache.set(cacheKey, holidays);
@@ -72,6 +70,60 @@ export class HolidayService {
       logger.error('Error loading holidays', error, { year, stateCode });
       return new Map();
     }
+  }
+
+  /**
+   * Fetches holidays via BTP Destination + Connectivity Service (Production)
+   * @param year - Jahr
+   * @param stateCode - Bundesland-Code
+   * @returns Map von Datum zu Holiday
+   */
+  private async fetchViaDestination(year: number, stateCode: string): Promise<Map<string, Holiday>> {
+    logger.serviceCall('Holiday', `Using BTP Destination for ${year}/${stateCode}`);
+
+    const destination: DestinationOrFetchOptions = {
+      destinationName: 'holiday-api',
+    };
+
+    const config = this.customizingService.getHolidayApiConfig();
+    const countryParam = config.countryParameter || 'nur_land';
+
+    const response = await executeHttpRequest(destination, {
+      method: 'GET',
+      url: `/api/?jahr=${year}&${countryParam}=${stateCode}`,
+      timeout: 5000,
+    });
+
+    const data = (await response.json()) as HolidayApiResponse;
+    return this.parseHolidays(data);
+  }
+
+  /**
+   * Fetches holidays via direct HTTP call (Development)
+   * @param year - Jahr
+   * @param stateCode - Bundesland-Code
+   * @returns Map von Datum zu Holiday
+   */
+  private async fetchDirectly(year: number, stateCode: string): Promise<Map<string, Holiday>> {
+    const url = this.buildHolidayUrl(year, stateCode);
+    logger.serviceCall('Holiday', `Direct fetch from ${url}`);
+
+    const response = await fetch(url, { signal: AbortSignal.timeout(5000) });
+
+    if (!response.ok) {
+      throw new Error(`Holiday API returned ${response.status}: ${response.statusText}`);
+    }
+
+    const data = (await response.json()) as HolidayApiResponse;
+    return this.parseHolidays(data);
+  }
+
+  /**
+   * Determines if running in production environment
+   * @returns true if production, false otherwise
+   */
+  private isProduction(): boolean {
+    return process.env.NODE_ENV === 'production' || !!process.env.VCAP_SERVICES;
   }
 
   private buildHolidayUrl(year: number, stateCode: string): string {

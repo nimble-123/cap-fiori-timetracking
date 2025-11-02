@@ -269,6 +269,79 @@ graph LR
 
 ---
 
+#### 🔗 External Integrations: Feiertags-API
+
+Die Anwendung integriert die kostenlose **[Feiertage-API (feiertage-api.de)](https://feiertage-api.de)** zur automatischen Erkennung deutscher Feiertage für die Jahresgenerierung von Zeiteinträgen.
+
+**Lokale Entwicklung:**
+
+- **Direct HTTP-Call** via `fetch()` ohne zusätzliche Setup-Schritte
+- Konfiguration über `.env`:
+  ```bash
+  HOLIDAY_API_BASE_URL=https://feiertage-api.de
+  ```
+
+**Production (SAP BTP):**
+
+- **Destination**: `holiday-api` (automatisch angelegt via `mta.yaml`)
+- **Connectivity Service**: Managed Proxy für Outbound-Calls
+- **Integration**: Via `@sap-cloud-sdk/connectivity` + `@sap-cloud-sdk/http-client`
+- **Security**: Keine Credentials im Code – URL wird in BTP Destination verwaltet
+
+**Hybrid-Architektur:**
+
+Der `HolidayService` wählt automatisch den richtigen Code-Pfad basierend auf der Umgebung:
+
+```typescript
+// Environment-Detection
+private isProduction(): boolean {
+  return process.env.NODE_ENV === 'production' || !!process.env.VCAP_SERVICES;
+}
+
+// Lokal: Direct Fetch
+private async fetchDirectly(year: number, stateCode: string) {
+  const url = this.buildHolidayUrl(year, stateCode);
+  const response = await fetch(url, { signal: AbortSignal.timeout(5000) });
+  // ...
+}
+
+// BTP: Destination-basiert
+private async fetchViaDestination(year: number, stateCode: string) {
+  const destination = { destinationName: 'holiday-api' };
+  const response = await executeHttpRequest(destination, {
+    method: 'GET',
+    url: `/api/?jahr=${year}&nur_land=${stateCode}`,
+    timeout: 5000,
+  });
+  // ...
+}
+```
+
+**Technische Features:**
+
+- ✅ **Cache-Strategie:** Pro Jahr + Bundesland (Key: `${year}-${stateCode}`)
+- ✅ **Graceful Degradation:** Bei API-Fehlern wird leere Map zurückgegeben
+- ✅ **Unterstützung:** Alle 16 deutschen Bundesländer
+- ✅ **Logging:** Strukturiertes Logging für beide Code-Pfade
+- ✅ **Timeout:** 5 Sekunden für alle API-Calls
+- ✅ **Performance:** ~200ms pro API-Call, dann gecacht
+
+**Architektur-Referenzen:**
+
+- **Implementierung:** `srv/track-service/handler/services/HolidayService.ts`
+- **MTA-Konfiguration:** `mta.yaml` → `resources.cap-fiori-timetracking-destination`
+- **Tests:** `tests/track-service.test.js` → Describe-Block `TrackService - HolidayService Integration`
+- **ADR:** [ADR-0020: Holiday API Integration via BTP Destination](ADR/0020-holiday-api-btp-destination.md)
+
+**Business Impact:**
+
+- Automatische Feiertags-Erkennung bei Jahresgenerierung
+- Korrekte Buchung von nicht-arbeitenden Tagen (EntryType `H` = Holiday)
+- Berücksichtigung bundeslandspezifischer Feiertage (z.B. Heilige Drei Könige nur in BY, BW, ST)
+- Reduziert manuellen Pflegeaufwand für Feiertage erheblich
+
+---
+
 ### 3.2 Technischer Kontext
 
 **Deployment-Übersicht:**

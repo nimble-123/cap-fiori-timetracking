@@ -171,6 +171,19 @@ resources:
     parameters:
       service: destination
       service-plan: lite
+      config:
+        init_data:
+          instance:
+            existing_destinations_policy: update
+            destinations:
+              - Name: holiday-api
+                Type: HTTP
+                URL: https://feiertage-api.de
+                ProxyType: Internet
+                Authentication: NoAuthentication
+                Description: German public holidays API (feiertage-api.de)
+                forwardAuthToken: false
+                HTML5.DynamicDestination: false
   - name: cap-fiori-timetracking-app-front
     type: org.cloudfoundry.managed-service
     parameters:
@@ -190,6 +203,9 @@ resources:
         xsuaa-cross-consumption: true
         authorization:
           enabled: true
+        provided-apis:
+          - name: cap-fiori-timetracking-api
+            description: 'API for CAP Fiori Time Tracking'
   - name: cap-fiori-timetracking-ams
     type: org.cloudfoundry.managed-service
     parameters:
