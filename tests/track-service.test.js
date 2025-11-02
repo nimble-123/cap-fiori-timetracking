@@ -89,6 +89,111 @@ describe('TrackService - TimeEntries CRUD', () => {
       expect(data.durationHoursNet).to.be.greaterThan(0); // Expected daily hours
       expect(data.status_code).to.equal('O');
     });
+
+    it('should create TimeEntry with workLocation', async () => {
+      const { data: draft } = await POST(
+        '/odata/v4/track/TimeEntries',
+        {
+          user_ID: 'max.mustermann@test.de',
+          workDate: '2027-03-01', // Eindeutiges Datum
+          entryType_code: 'W',
+          startTime: '08:00:00',
+          endTime: '16:00:00',
+          breakMin: 30,
+          project_ID: 'a1b2c3d4-e5f6-4a4a-b7b7-1234567890ab',
+          activity_code: 'BDEV',
+          workLocation_code: 'HO', // Home Office - existiert in CSV
+        },
+        maxUser,
+      );
+
+      const { data, status: activateStatus } = await POST(
+        `/odata/v4/track/TimeEntries(ID=${draft.ID},IsActiveEntity=false)/draftActivate`,
+        {},
+        maxUser,
+      );
+
+      expect(activateStatus).to.be.oneOf([200, 201]);
+      expect(data.workLocation_code).to.equal('HO');
+    });
+
+    it('should create business trip with travelType', async () => {
+      const { data: draft } = await POST(
+        '/odata/v4/track/TimeEntries',
+        {
+          user_ID: 'max.mustermann@test.de',
+          workDate: '2027-03-02', // Eindeutiges Datum
+          entryType_code: 'B', // Business Trip
+          startTime: '08:00:00',
+          endTime: '18:00:00',
+          breakMin: 60,
+          project_ID: 'a1b2c3d4-e5f6-4a4a-b7b7-1234567890ab',
+          activity_code: 'BDEV',
+          travelType_code: 'BA', // Aus CSV-Daten
+        },
+        maxUser,
+      );
+
+      const { data, status: activateStatus } = await POST(
+        `/odata/v4/track/TimeEntries(ID=${draft.ID},IsActiveEntity=false)/draftActivate`,
+        {},
+        maxUser,
+      );
+
+      expect(activateStatus).to.be.oneOf([200, 201]);
+      expect(data.entryType_code).to.equal('B');
+      expect(data.travelType_code).to.equal('BA');
+    });
+
+    it('should reject invalid workLocation_code', async () => {
+      const { data: draft } = await POST(
+        '/odata/v4/track/TimeEntries',
+        {
+          user_ID: 'max.mustermann@test.de',
+          workDate: '2027-03-03', // Eindeutiges Datum
+          entryType_code: 'W',
+          startTime: '08:00:00',
+          endTime: '16:00:00',
+          breakMin: 30,
+          workLocation_code: 'INVALID',
+        },
+        maxUser,
+      );
+
+      try {
+        await POST(`/odata/v4/track/TimeEntries(ID=${draft.ID},IsActiveEntity=false)/draftActivate`, {}, maxUser);
+        expect.fail('Expected validation error was not thrown');
+      } catch (error) {
+        expect(error.response.status).to.equal(400);
+      }
+    });
+
+    it('should reject invalid travelType_code', async () => {
+      try {
+        const { data: draft } = await POST(
+          '/odata/v4/track/TimeEntries',
+          {
+            user_ID: 'max.mustermann@test.de',
+            workDate: '2027-03-04', // Eindeutiges Datum
+            entryType_code: 'B',
+            startTime: '08:00:00',
+            endTime: '16:00:00',
+            breakMin: 30,
+            project_ID: 'a1b2c3d4-e5f6-4a4a-b7b7-1234567890ab', // Project ist bei Business Trip erforderlich
+            activity_code: 'BDEV',
+            travelType_code: 'INVALID',
+          },
+          maxUser,
+        );
+
+        await POST(`/odata/v4/track/TimeEntries(ID=${draft.ID},IsActiveEntity=false)/draftActivate`, {}, maxUser);
+        expect.fail('Expected validation error was not thrown');
+      } catch (error) {
+        // Validation kann 400 oder 500 werfen (abhängig davon ob POST oder draftActivate fehlschlägt)
+        expect(error.response.status).to.be.oneOf([400, 500]);
+      }
+    });
+
     it('should reject duplicate entry for same day', async () => {
       const uniqueDate = '2027-01-12'; // Eindeutiges Datum weit in der Zukunft
 
@@ -803,6 +908,42 @@ describe('TrackService - Other Entities', () => {
       expect(status).to.equal(200);
       expect(data.value).to.be.an('array');
       expect(data.value.length).to.be.greaterThan(0);
+    });
+  });
+
+  describe('WorkLocations', () => {
+    it('should read all work locations', async () => {
+      const { data, status } = await GET('/odata/v4/track/WorkLocations', maxUser);
+
+      expect(status).to.equal(200);
+      expect(data.value).to.be.an('array');
+      expect(data.value.length).to.be.greaterThan(0);
+    });
+  });
+
+  describe('TravelTypes', () => {
+    it('should read all travel types', async () => {
+      const { data, status } = await GET('/odata/v4/track/TravelTypes', maxUser);
+
+      expect(status).to.equal(200);
+      expect(data.value).to.be.an('array');
+      expect(data.value.length).to.be.greaterThan(0);
+    });
+  });
+
+  describe('TimeEntryStatuses', () => {
+    it('should read all time entry statuses', async () => {
+      const { data, status } = await GET('/odata/v4/track/TimeEntryStatuses', maxUser);
+
+      expect(status).to.equal(200);
+      expect(data.value).to.be.an('array');
+      expect(data.value.length).to.be.greaterThan(0);
+      // Prüfe dass alle erwarteten Status vorhanden sind
+      const codes = data.value.map((s) => s.code);
+      expect(codes).to.include('O'); // Open
+      expect(codes).to.include('P'); // Processed
+      expect(codes).to.include('D'); // Done
+      expect(codes).to.include('R'); // Released
     });
   });
 });
