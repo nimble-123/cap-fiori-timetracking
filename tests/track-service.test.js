@@ -1504,7 +1504,6 @@ describe('TrackService - Repository Tests', () => {
 
 describe('TrackService - Command Edge Cases', () => {
   const maxUser = { auth: { username: 'max.mustermann@test.de', password: 'max' } };
-  let testEntryId;
 
   describe('CreateTimeEntry Command Edge Cases', () => {
     it('should handle vacation entry without project/activity', async () => {
@@ -1582,15 +1581,13 @@ describe('TrackService - Command Edge Cases', () => {
   });
 
   describe('UpdateTimeEntry Command Edge Cases', () => {
-    beforeEach(async () => {
-      // Erstelle Test-Entry mit eindeutigem Datum
-      const uniqueDate = `2027-06-${10 + Math.floor(Math.random() * 15)}`;
-
+    it('should recalculate hours when changing break time', async () => {
+      // Erstelle Test-Entry mit festem Datum für CI-Stabilität
       const { data: draft } = await POST(
         '/odata/v4/track/TimeEntries',
         {
           user_ID: 'max.mustermann@test.de',
-          workDate: uniqueDate,
+          workDate: '2027-06-28',
           entryType_code: 'W',
           startTime: '08:00:00',
           endTime: '16:00:00',
@@ -1599,16 +1596,14 @@ describe('TrackService - Command Edge Cases', () => {
         maxUser,
       );
 
-      const { data } = await POST(
+      const { data: created } = await POST(
         `/odata/v4/track/TimeEntries(ID=${draft.ID},IsActiveEntity=false)/draftActivate`,
         {},
         maxUser,
       );
 
-      testEntryId = data.ID;
-    });
+      const testEntryId = created.ID;
 
-    it('should recalculate hours when changing break time', async () => {
       // Hole Original-Daten
       const { data: original } = await GET(
         `/odata/v4/track/TimeEntries(ID=${testEntryId},IsActiveEntity=true)`,
@@ -1633,6 +1628,28 @@ describe('TrackService - Command Edge Cases', () => {
     });
 
     it('should update note without affecting hours', async () => {
+      // Erstelle Test-Entry mit festem Datum für CI-Stabilität
+      const { data: draft } = await POST(
+        '/odata/v4/track/TimeEntries',
+        {
+          user_ID: 'max.mustermann@test.de',
+          workDate: '2027-06-29',
+          entryType_code: 'W',
+          startTime: '08:00:00',
+          endTime: '16:00:00',
+          breakMin: 30,
+        },
+        maxUser,
+      );
+
+      const { data: created } = await POST(
+        `/odata/v4/track/TimeEntries(ID=${draft.ID},IsActiveEntity=false)/draftActivate`,
+        {},
+        maxUser,
+      );
+
+      const testEntryId = created.ID;
+
       // Edit Mode
       await POST(`/odata/v4/track/TimeEntries(ID=${testEntryId},IsActiveEntity=true)/draftEdit`, {}, maxUser);
 
@@ -1654,6 +1671,28 @@ describe('TrackService - Command Edge Cases', () => {
     });
 
     it('should allow changing note field', async () => {
+      // Erstelle Test-Entry mit festem Datum für CI-Stabilität
+      const { data: draft } = await POST(
+        '/odata/v4/track/TimeEntries',
+        {
+          user_ID: 'max.mustermann@test.de',
+          workDate: '2027-06-30',
+          entryType_code: 'W',
+          startTime: '08:00:00',
+          endTime: '16:00:00',
+          breakMin: 30,
+        },
+        maxUser,
+      );
+
+      const { data: created } = await POST(
+        `/odata/v4/track/TimeEntries(ID=${draft.ID},IsActiveEntity=false)/draftActivate`,
+        {},
+        maxUser,
+      );
+
+      const testEntryId = created.ID;
+
       // Edit Mode
       await POST(`/odata/v4/track/TimeEntries(ID=${testEntryId},IsActiveEntity=true)/draftEdit`, {}, maxUser);
 
