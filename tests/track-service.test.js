@@ -535,116 +535,187 @@ describe('TrackService - Actions & Functions', () => {
     });
   });
 
-  // describe('Status Actions', () => {
-  //   let actionEntryId;
-  //   let secondaryEntryId;
-  //   let untouchedEntryId;
+  describe('Status Actions', () => {
+    let actionEntryId;
+    let secondaryEntryId;
+    let untouchedEntryId;
 
-  //   beforeAll(async () => {
-  //     const createEntry = async (workDate) => {
-  //       const { data } = await POST(
-  //         '/odata/v4/track/TimeEntries',
-  //         {
-  //           user_ID: 'max.mustermann@test.de',
-  //           workDate,
-  //           entryType_code: 'W',
-  //           startTime: '08:00:00',
-  //           endTime: '16:00:00',
-  //           breakMin: 30,
-  //         },
-  //         maxUser,
-  //       );
-  //       return data.ID;
-  //     };
+    beforeAll(async () => {
+      const createAndActivateEntry = async (workDate) => {
+        const { data: draft } = await POST(
+          '/odata/v4/track/TimeEntries',
+          {
+            user_ID: 'max.mustermann@test.de',
+            workDate,
+            entryType_code: 'W',
+            startTime: '08:00:00',
+            endTime: '16:00:00',
+            breakMin: 30,
+          },
+          maxUser,
+        );
 
-  //     actionEntryId = await createEntry('2025-11-01');
-  //     secondaryEntryId = await createEntry('2025-11-02');
-  //     untouchedEntryId = await createEntry('2025-11-03');
-  //   });
+        // Draft aktivieren
+        const { data: activated } = await POST(
+          `/odata/v4/track/TimeEntries(ID=${draft.ID},IsActiveEntity=false)/draftActivate`,
+          {},
+          maxUser,
+        );
+        return activated.ID;
+      };
 
-  //   const basePath = (entryId) => `/odata/v4/track/TimeEntries(ID=${encodeURIComponent(entryId)},IsActiveEntity=true)`;
-  //   const entryPath = basePath;
-  //   const actionPath = (entryId, actionName) => `${basePath(entryId)}/TrackService.${actionName}`;
+      // Verwende weit in der Zukunft liegende Datumswerte zur Vermeidung von Konflikten
+      actionEntryId = await createAndActivateEntry('2026-06-01');
+      secondaryEntryId = await createAndActivateEntry('2026-06-02');
+      untouchedEntryId = await createAndActivateEntry('2026-06-03');
+    });
 
-  //   it('should mark entries as done', async () => {
-  //     const postMarkDone = (entryId) => POST(actionPath(entryId, 'markTimeEntryDone'), {}, maxUser);
+    const basePath = (entryId) => `/odata/v4/track/TimeEntries(ID=${encodeURIComponent(entryId)},IsActiveEntity=true)`;
+    const entryPath = basePath;
+    const actionPath = (entryId, actionName) => `${basePath(entryId)}/TrackService.${actionName}`;
 
-  //     const { data: firstResult, status: firstStatus } = await postMarkDone(actionEntryId);
-  //     expect(firstStatus).to.equal(200);
-  //     expect(firstResult.status_code).to.equal('D');
+    it('should mark entries as done', async () => {
+      // Erst muss der Entry in Status 'P' (Processed) gebracht werden
+      // Das geschieht automatisch durch ein Update
+      const updateToProcessed = async (entryId) => {
+        const { data: editDraft } = await POST(
+          `/odata/v4/track/TimeEntries(ID=${entryId},IsActiveEntity=true)/draftEdit`,
+          {},
+          maxUser,
+        );
+        await PATCH(
+          `/odata/v4/track/TimeEntries(ID=${editDraft.ID},IsActiveEntity=false)`,
+          { note: 'Update' },
+          maxUser,
+        );
+        await POST(`/odata/v4/track/TimeEntries(ID=${editDraft.ID},IsActiveEntity=false)/draftActivate`, {}, maxUser);
+      };
 
-  //     const { data: secondResult, status: secondStatus } = await postMarkDone(secondaryEntryId);
-  //     expect(secondStatus).to.equal(200);
-  //     expect(secondResult.status_code).to.equal('D');
+      await updateToProcessed(actionEntryId);
+      await updateToProcessed(secondaryEntryId);
 
-  //     const { data: refreshedFirst } = await GET(entryPath(actionEntryId), maxUser);
-  //     const { data: refreshedSecond } = await GET(entryPath(secondaryEntryId), maxUser);
-  //     expect(refreshedFirst.status_code).to.equal('D');
-  //     expect(refreshedSecond.status_code).to.equal('D');
-  //   });
+      const postMarkDone = (entryId) => POST(actionPath(entryId, 'markTimeEntryDone'), {}, maxUser);
 
-  //   it('should reject releasing entries that are not done', async () => {
-  //     const { status } = await POST(actionPath(untouchedEntryId, 'releaseTimeEntry'), {}, maxUser);
+      const { data: firstResult, status: firstStatus } = await postMarkDone(actionEntryId);
+      expect(firstStatus).to.equal(200);
+      expect(firstResult.status_code).to.equal('D');
 
-  //     expect(status).to.equal(409);
-  //   });
+      const { data: secondResult, status: secondStatus } = await postMarkDone(secondaryEntryId);
+      expect(secondStatus).to.equal(200);
+      expect(secondResult.status_code).to.equal('D');
 
-  //   it('should release entries that are done', async () => {
-  //     const { data, status } = await POST(actionPath(actionEntryId, 'releaseTimeEntry'), {}, maxUser);
+      const { data: refreshedFirst } = await GET(entryPath(actionEntryId), maxUser);
+      const { data: refreshedSecond } = await GET(entryPath(secondaryEntryId), maxUser);
+      expect(refreshedFirst.status_code).to.equal('D');
+      expect(refreshedSecond.status_code).to.equal('D');
+    });
 
-  //     expect(status).to.equal(200);
-  //     expect(data.status_code).to.equal('R');
+    it('should reject releasing entries that are not done', async () => {
+      try {
+        await POST(actionPath(untouchedEntryId, 'releaseTimeEntry'), {}, maxUser);
+        expect.fail('Expected validation error was not thrown');
+      } catch (error) {
+        expect(error.response.status).to.equal(409);
+      }
+    });
 
-  //     const { data: refreshed } = await GET(entryPath(actionEntryId), maxUser);
-  //     expect(refreshed.status_code).to.equal('R');
-  //   });
+    it('should release entries that are done', async () => {
+      // actionEntryId ist jetzt im Status 'D' (Done) durch vorherigen Test
+      const { data, status } = await POST(actionPath(actionEntryId, 'releaseTimeEntry'), {}, maxUser);
 
-  //   it('should reject editing released entries', async () => {
-  //     const { status } = await PATCH(entryPath(actionEntryId), { note: 'attempt to modify released entry' }, maxUser);
+      expect(status).to.equal(200);
+      expect(data.status_code).to.equal('R');
 
-  //     expect(status).to.equal(409);
-  //   });
+      const { data: refreshed } = await GET(entryPath(actionEntryId), maxUser);
+      expect(refreshed.status_code).to.equal('R');
+    });
 
-  //   it('should reject marking released entries as done again', async () => {
-  //     const { status } = await POST(actionPath(actionEntryId, 'markTimeEntryDone'), {}, maxUser);
+    it('should reject editing released entries', async () => {
+      // actionEntryId ist jetzt im Status 'R' (Released) durch vorherigen Test
+      // Versuch, einen Released Entry zu bearbeiten - sollte fehlschlagen
+      const { data: editDraft } = await POST(
+        `/odata/v4/track/TimeEntries(ID=${actionEntryId},IsActiveEntity=true)/draftEdit`,
+        {},
+        maxUser,
+      );
 
-  //     expect(status).to.equal(409);
-  //   });
-  // });
+      await PATCH(
+        `/odata/v4/track/TimeEntries(ID=${editDraft.ID},IsActiveEntity=false)`,
+        { note: 'attempt to modify released entry' },
+        maxUser,
+      );
 
-  // describe('Bound Actions', () => {
-  //   let entryId;
+      try {
+        await POST(`/odata/v4/track/TimeEntries(ID=${editDraft.ID},IsActiveEntity=false)/draftActivate`, {}, maxUser);
+        expect.fail('Expected validation error was not thrown');
+      } catch (error) {
+        // CAP wirft AxiosError mit response property
+        if (error.response) {
+          expect(error.response.status).to.equal(409);
+        } else {
+          // Falls direkter ServiceError
+          expect(error.code || error.statusCode).to.equal(409);
+        }
+      }
+    });
 
-  //   beforeAll(async () => {
-  //     // Setup: Erstelle Entry für Bound Action
-  //     const { data } = await POST(
-  //       '/odata/v4/track/TimeEntries',
-  //       {
-  //         user_ID: 'max.mustermann@test.de',
-  //         workDate: '2025-10-22',
-  //         entryType_code: 'W',
-  //         startTime: '08:00:00',
-  //         endTime: '16:00:00',
-  //         breakMin: 30,
-  //       },
-  //       maxUser,
-  //     );
-  //     entryId = data.ID;
-  //   });
+    it('should reject marking released entries as done again', async () => {
+      // actionEntryId ist im Status 'R' (Released)
+      try {
+        await POST(actionPath(actionEntryId, 'markTimeEntryDone'), {}, maxUser);
+        expect.fail('Expected validation error was not thrown');
+      } catch (error) {
+        // CAP wirft AxiosError mit response property
+        if (error.response) {
+          expect(error.response.status).to.equal(409);
+        } else {
+          // Falls direkter ServiceError
+          expect(error.code || error.statusCode).to.equal(409);
+        }
+      }
+    });
+  });
 
-  //   it('should recalculate TimeEntry', async () => {
-  //     const { data, status } = await POST(
-  //       `/odata/v4/track/TimeEntries(${entryId})/TrackService.recalculate`,
-  //       {},
-  //       maxUser,
-  //     );
+  describe('Bound Actions', () => {
+    let entryId;
 
-  //     expect(status).to.equal(200);
-  //     expect(data).to.have.property('durationHoursNet');
-  //     expect(data).to.have.property('overtimeHours');
-  //     expect(data).to.have.property('undertimeHours');
-  //   });
-  // });
+    beforeAll(async () => {
+      // Setup: Erstelle Entry und aktiviere Draft für Bound Action
+      const { data: draft } = await POST(
+        '/odata/v4/track/TimeEntries',
+        {
+          user_ID: 'max.mustermann@test.de',
+          workDate: '2026-07-15', // Weit in der Zukunft zur Vermeidung von Konflikten
+          entryType_code: 'W',
+          startTime: '08:00:00',
+          endTime: '16:00:00',
+          breakMin: 30,
+        },
+        maxUser,
+      );
+
+      // Draft aktivieren
+      const { data: activated } = await POST(
+        `/odata/v4/track/TimeEntries(ID=${draft.ID},IsActiveEntity=false)/draftActivate`,
+        {},
+        maxUser,
+      );
+      entryId = activated.ID;
+    });
+
+    it('should recalculate TimeEntry', async () => {
+      const { data, status } = await POST(
+        `/odata/v4/track/TimeEntries(ID=${entryId},IsActiveEntity=true)/TrackService.recalculateTimeEntry`,
+        {},
+        maxUser,
+      );
+
+      expect(status).to.equal(200);
+      expect(data).to.have.property('durationHoursNet');
+      expect(data).to.have.property('overtimeHours');
+      expect(data).to.have.property('undertimeHours');
+    });
+  });
 });
 
 describe('TrackService - Other Entities', () => {
