@@ -1971,12 +1971,13 @@ describe('TrackService - HolidayService Integration', () => {
   });
 
   describe('Holiday API Configuration', () => {
-    it('should respect HOLIDAY_API_BASE_URL from environment', async () => {
-      // Bestehende ENV Variable sollte genutzt werden
-      const baseUrl = process.env.HOLIDAY_API_BASE_URL;
-      expect(baseUrl).to.exist;
+    it('should use configured base URL from Customizing', async () => {
+      // Prüfe dass Customizing-Tabelle geladen ist
+      const { data: customizing } = await GET('/odata/v4/track/Customizing(1)', maxUser);
+      expect(customizing).to.exist;
+      expect(customizing.holidayApiBaseUrl).to.equal('https://feiertage-api.de/api/');
 
-      // Test dass Generierung funktioniert
+      // Test dass Generierung mit dieser Konfiguration funktioniert
       const { status } = await POST(
         '/odata/v4/track/generateYearlyTimeEntries',
         { year: 2025, stateCode: 'BY' },
