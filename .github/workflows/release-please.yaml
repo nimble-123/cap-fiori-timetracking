@@ -32,7 +32,7 @@ jobs:
 
       - name: Download MTAR Artifact
         if: steps.release.outputs.release_created == 'true'
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           name: mtar
           run-id: ${{ github.event.workflow_run.id }}
