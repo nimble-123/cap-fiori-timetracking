@@ -82,7 +82,7 @@
     "@wdio/mocha-framework": "^9.20.0",
     "@wdio/spec-reporter": "^9.20.0",
     "babel-jest": "^30.2.0",
-    "cds-plugin-ui5": "^0.13.6",
+    "cds-plugin-ui5": "^0.14.0",
     "cds-swagger-ui-express": "^0.10.0",
     "eslint": "^9.38.0",
     "jest": "^30.2.0",
