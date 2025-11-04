@@ -1439,7 +1439,100 @@ sequenceDiagram
 
 ### 7.1 Infrastruktur Level 1: Entwicklungsumgebung
 
-**Development Setup:**
+Das Projekt unterstützt **drei Entwicklungsszenarien** mit unterschiedlichen Trade-offs zwischen Setup-Zeit, Flexibilität und Konsistenz:
+
+#### Variante A: GitHub Codespaces (Empfohlen für Onboarding)
+
+**Zero-Config Cloud Development Environment:**
+
+```
+┌────────────────────────────────────────────────────────────────┐
+│  GitHub Codespaces (Cloud Container)                           │
+│                                                                │
+│  ┌──────────────────────────────────────────────────────┐     │
+│  │  VS Code (Browser/Desktop)                           │     │
+│  │  + Pre-installed Extensions:                         │     │
+│  │    - SAP CDS Language Support                        │     │
+│  │    - ESLint, Prettier, REST Client                   │     │
+│  └──────────────────────────────────────────────────────┘     │
+│                                                                │
+│  ┌──────────────────────────────────────────────────────┐     │
+│  │  Devcontainer (Debian Bookworm)                      │     │
+│  │  - Node.js 22.20.0 (matches .nvmrc)                  │     │
+│  │  - Java 17 (Temurin) for @sap/ams-dev                │     │
+│  │  - SAP Tools: cds-dk, mbt, cf CLI, cds-mcp           │     │
+│  │  - Port Forwarding: 4004 (HTTPS), 8080               │     │
+│  └──────────────────────────────────────────────────────┘     │
+│                                                                │
+│  ┌──────────────────────────────────────────────────────┐     │
+│  │  SQLite (In-Memory)                                  │     │
+│  │  - Auto-deployed from db/data/*.csv                  │     │
+│  └──────────────────────────────────────────────────────┘     │
+│                                                                │
+└────────────────────────────────────────────────────────────────┘
+           │
+           ▼ (HTTPS Port Forward)
+    https://[codespace-name]-4004.app.github.dev
+```
+
+**Vorteile:**
+- ✅ **Setup in < 5 Minuten**: Automatisches Tool-Installation via `.devcontainer/setup.sh`
+- ✅ **Zero "Works on my machine" Problems**: Identische Umgebung für alle Entwickler
+- ✅ **Remote-First**: Keine lokale Hardware-Anforderungen (läuft in GitHub Cloud)
+- ✅ **Pre-configured**: Alle VS Code Extensions, Settings und Tools vorinstalliert
+- ✅ **Port-Forwarding**: Automatische HTTPS-URLs für Testing (inkl. Mobile)
+
+**Nachteile:**
+- ⚠️ Codespaces Limit: 60 Std/Monat gratis (2-core), danach kostenpflichtig
+- ⚠️ Internetabhängigkeit für Zugriff
+
+**Mehr Details:** [ADR-0021: Devcontainer & Codespaces](../docs/ADR/0021-devcontainer-github-codespaces.md), [.devcontainer/README.md](../.devcontainer/README.md)
+
+---
+
+#### Variante B: VS Code Dev Containers (Lokal mit Docker)
+
+**Container-basierte Entwicklung auf lokalem Rechner:**
+
+```
+┌─────────────────────────────────────────────────────┐
+│  Developer Machine (Windows/Mac/Linux)              │
+│                                                     │
+│  ┌────────────────────────────────────────────┐     │
+│  │  VS Code (Desktop)                         │     │
+│  │  + Dev Containers Extension                │     │
+│  └────────────────────────────────────────────┘     │
+│                                                     │
+│  ┌────────────────────────────────────────────┐     │
+│  │  Docker Desktop                            │     │
+│  │  ┌──────────────────────────────────────┐  │     │
+│  │  │  Devcontainer                        │  │     │
+│  │  │  - Node 22, Java 17, SAP Tools       │  │     │
+│  │  │  - Port Mapping: 4004 → localhost    │  │     │
+│  │  └──────────────────────────────────────┘  │     │
+│  └────────────────────────────────────────────┘     │
+│                                                     │
+└─────────────────────────────────────────────────────┘
+           │
+           ▼
+    http://localhost:4004
+```
+
+**Vorteile:**
+- ✅ **Keine Cloud-Limits**: Unbegrenzte Entwicklungszeit (lokal)
+- ✅ **Offline-fähig**: Funktioniert ohne Internetverbindung
+- ✅ **Konsistenz**: Gleiche Umgebung wie Codespaces (`.devcontainer/*`)
+- ✅ **Performance**: Volle lokale Hardware-Ressourcen
+
+**Nachteile:**
+- ⚠️ Benötigt Docker Desktop (+ Lizenz für Unternehmen ≥250 MA)
+- ⚠️ Höherer Speicherverbrauch (~4-8 GB für Container)
+
+---
+
+#### Variante C: Manuelle Lokale Installation (Klassisch)
+
+**Traditionelle Entwicklung direkt auf Host-System:**
 
 ```
 ┌─────────────────────────────────────────────────────┐
@@ -1465,25 +1558,41 @@ sequenceDiagram
 └─────────────────────────────────────────────────────┘
 ```
 
+**Vorteile:**
+- ✅ **Maximale Flexibilität**: Volle Kontrolle über Tools & Versionen
+- ✅ **Kein Docker**: Funktioniert ohne Container-Runtime
+- ✅ **Bestehende Setup nutzen**: Wenn Tools bereits installiert
+
+**Nachteile:**
+- ⚠️ Setup-Zeit: 30-60 Minuten (Node, Java, SAP Tools, etc.)
+- ⚠️ Plattform-Unterschiede: Potenzielle "Works on my machine" Probleme
+- ⚠️ Manuelle Updates: Tools müssen manuell synchron gehalten werden
+
+**Mehr Details:** [GETTING_STARTED.md](../GETTING_STARTED.md)
+
+---
+
 **Security-Hinweise (Dev):**
 
 - Authentifizierung erfolgt über CAP Mock-User (`cds.requires.auth.kind = mocked`) mit klar definierten Test-Rollen.
 - Secrets (API Keys, Feature Toggles) werden lokal in `.env` gepflegt; `.env.example` liefert Defaults.
+- **Codespaces Secrets**: CF-Credentials können als Codespaces Secrets gespeichert werden (GitHub Settings → Codespaces → Secrets)
 - HTTPS ist optional – für lokale Penetration Tests kann `cds watch --ssl` genutzt werden.
 - Tests gegen externe APIs nutzen dedizierte Sandbox-Keys (keine Produktiv-Credentials im Repo).
 
-**Technologie-Stack:**
+**Technologie-Stack (Alle Varianten):**
 
 | Komponente      | Technologie         | Version   | Zweck                     |
 | --------------- | ------------------- | --------- | ------------------------- |
-| Runtime         | Node.js             | >= 22 LTS | JavaScript-Ausführung     |
-| Framework       | SAP CAP             | Latest    | Backend-Framework         |
+| Runtime         | Node.js             | 22.20.0   | JavaScript-Ausführung     |
+| Framework       | SAP CAP             | >= 9.4    | Backend-Framework         |
 | Language        | TypeScript          | >= 5.0    | Programmiersprache        |
 | UI Framework    | SAPUI5              | >= 1.120  | Frontend-Framework        |
 | Database        | SQLite              | 3.x       | Dev-Datenbank (In-Memory) |
 | Build Tool      | TypeScript Compiler | 5.x       | TypeScript → JavaScript   |
-| Build Runtime   | Java (Temurin JDK)  | >= 17     | `@sap/ams-dev` Build Step |
-| Package Manager | npm                 | >= 9.x    | Dependency Management     |
+| Build Runtime   | Java (Temurin JDK)  | 17        | `@sap/ams-dev` Build Step |
+| Package Manager | npm                 | >= 10.x   | Dependency Management     |
+| Container       | Docker (optional)   | Latest    | Dev Containers/Codespaces |
 
 ---
 

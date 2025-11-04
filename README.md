@@ -10,6 +10,7 @@
 
 ![GitHub Release](https://img.shields.io/github/v/release/nimble-123/cap-fiori-timetracking?logo=github&color=blue)
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/nimble-123/cap-fiori-timetracking/test.yaml?logo=github&color=blue)
+[![Open in GitHub Codespaces](https://img.shields.io/badge/Open%20in-Codespaces-blue?logo=github&color=blue)](https://github.com/codespaces/new?hide_repo_select=true&ref=main&repo=nimble-123/cap-fiori-timetracking)
 
 ---
 
@@ -35,6 +36,19 @@ _Kurzes GIF zeigt List Report und Object Page, während ein TimeEntry live aktua
 ---
 
 ## 🚀 Quick Start
+
+### Option 1: GitHub Codespaces (Schnellster Start - 1 Click!)
+
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://github.com/codespaces/new?hide_repo_select=true&ref=main&repo=nimble-123/cap-fiori-timetracking)
+
+1. Klicke auf den Badge oben
+2. Warte ~3-5 Minuten für Setup
+3. Run: `npm run watch`
+4. Fertig! 🎉
+
+Mehr Details: [.devcontainer/README.md](.devcontainer/README.md) | [ADR-0021](docs/ADR/0021-devcontainer-github-codespaces.md)
+
+### Option 2: Lokale Installation
 
 ```bash
 # 1. Clone & Install
