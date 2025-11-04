@@ -1,0 +1,55 @@
+# Dependencies
+node_modules/
+npm-debug.log
+package-lock.json
+
+# Build artifacts
+gen/
+@cds-models/
+dist/
+*.mtar
+mta_archives/
+
+# Test and coverage
+coverage/
+junit.xml
+*.test.ts
+*.spec.ts
+tests/
+
+# Development files
+.env
+.env.local
+.env.*.local
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Documentation (not needed in container)
+docs/
+*.md
+!README.md
+
+# CI/CD
+.github/
+.circleci/
+.gitlab-ci.yml
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+tmp/
+temp/
+*.tmp
