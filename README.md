@@ -284,6 +284,7 @@ cap-fiori-timetracking/
   - Architektur & Wissensaufbau: `architecture-deep-dive`, `adr-drafting-assistant`
   - Betrieb & Support: `bug-triage-investigator`, `release-notes-curator`
 - **MCP-Server:** In `.vscode/mcp.json` vorkonfiguriert – `cds-mcp` (CAP Docs), `@sap-ux/fiori-mcp-server` (Fiori UX Guidance), `@ui5/mcp-server` (UI5 SDK). Installiere `cds-mcp` global (`npm install -g @cap-js/mcp-server`), die anderen starten via `npx`.
+- **CAP MCP Plugin:** Das Projekt nutzt `@gavdi/cap-mcp` (von [gavdilabs](https://github.com/gavdilabs/cap-mcp-plugin)), um die CAP-Services als MCP-Server bereitzustellen. Damit können AI-Agents direkt mit den OData-Services interagieren. Der MCP-Endpunkt ist unter `http://localhost:4004/mcp` verfügbar, sobald der Development-Server läuft (`npm run watch`).
 - **Workflow-Tipps:** Siehe [GETTING_STARTED.md](GETTING_STARTED.md#-ai-prompts--llm-workflows) für Beispiele, wie die Prompts in Discovery, Delivery und Review eingesetzt werden.
 
 ### 🎯 arc42-Kapitel Schnellzugriff
@@ -383,6 +384,88 @@ flowchart LR
 - Durch CAPs offene Architektur nutzen wir Plugins wie `@cap-js/attachments` oder `@cap-js/console` ohne Vendor-Lock-in und erweitern das System modular.
 - Eigene Erweiterungen folgen dem gleichen Muster (`cds add …`, registrieren im ServiceContainer) und können bei Bedarf als Reuse-Pakete geteilt werden.
 - Siehe [CAP Plugins](https://cap.cloud.sap/docs/plugins/) und [ADR-0018](docs/ADR/0018-mta-deployment-cloud-foundry.md) für den Umgang mit Infrastruktur-Add-ons.
+
+---
+
+## 🤖 CAP MCP Plugin - AI-Integration via Model Context Protocol
+
+Dieses Projekt nutzt das **CAP MCP Plugin** ([`@gavdi/cap-mcp`](https://github.com/gavdilabs/cap-mcp-plugin)) von [gavdilabs](https://github.com/gavdilabs), um unsere CAP-Services als **Model Context Protocol (MCP) Server** bereitzustellen. Dies ermöglicht AI-Agents (wie Claude, GitHub Copilot, oder andere MCP-kompatible Tools) den direkten Zugriff auf unsere OData-Services, Entities und Business Functions.
+
+### 🎯 Was ist das Model Context Protocol (MCP)?
+
+Das **Model Context Protocol** ist ein von Anthropic entwickelter Standard, der die Lücke zwischen Enterprise-Daten und AI-Agents schließt:
+
+- **AI-Native Datenabfrage**: CAP-Services werden für AI-Agents direkt zugänglich – ermöglicht natürlichsprachliche Abfragen auf Geschäftsdaten
+- **Enterprise-Integration**: Nahtlose Verbindung zwischen AI-Tools, SAP-Systemen, Datenbanken und Business Logic
+- **Intelligente Automatisierung**: AI-Agents können komplexe Business-Operationen durch Kombination mehrerer CAP Service Calls ausführen
+- **Developer Productivity**: AI-Assistenten können Entwickler beim Verstehen, Abfragen und Arbeiten mit CAP-Datenmodellen unterstützen
+
+### 🚀 Wie funktioniert es?
+
+Das Plugin transformiert unsere annotierten CAP-Services automatisch in einen voll funktionsfähigen MCP-Server:
+
+- **📊 Resources**: CAP Entities werden als MCP Resources mit OData v4 Query-Capabilities exponiert
+- **🔧 Tools**: CAP Functions und Actions werden zu ausführbaren MCP Tools
+- **💡 Prompts**: Wiederverwendbare Prompt-Templates für AI-Interaktionen
+- **⚙️ Auto-Generation**: Automatische Erstellung von MCP-Endpunkten basierend auf CDS-Annotationen
+
+### 📍 MCP-Endpunkte
+
+Sobald der Development-Server läuft (`npm run watch`), sind folgende Endpunkte verfügbar:
+
+- **MCP Server**: `http://localhost:4004/mcp`
+- **Health Check**: `http://localhost:4004/mcp/health`
+
+### 🧪 Testen mit MCP Inspector
+
+Der MCP Inspector ermöglicht interaktives Testen der MCP-Integration:
+
+```bash
+npx @modelcontextprotocol/inspector
+```
+
+Im Inspector dann zu `http://localhost:4004/mcp` verbinden, um die generierten MCP Resources, Tools und Prompts zu erkunden.
+
+### ⚙️ Konfiguration
+
+Die MCP-Plugin-Konfiguration befindet sich in `package.json` unter `cds.mcp`:
+
+```json
+{
+  "cds": {
+    "mcp": {
+      "name": "cap-fiori-timetracking-mcp",
+      "auth": "inherit",
+      "instructions": "MCP server for CAP Fiori Time Tracking application..."
+    }
+  }
+}
+```
+
+- **`auth: "inherit"`**: MCP Server nutzt die bestehende CAP-Authentifizierung
+- Für Production-Deployments sollte die Authentifizierung beibehalten werden
+- In Development nutzen wir die Mock-User aus `package.json → cds.requires.auth.users`
+
+### 🔗 Integration mit AI-Clients
+
+Der MCP-Server ist in `.vscode/mcp.json` vorkonfiguriert und kann von MCP-kompatiblen IDEs und Tools direkt genutzt werden:
+
+```json
+{
+  "servers": {
+    "cap-fiori-timetracking-mcp": {
+      "type": "http",
+      "url": "http://localhost:4004/mcp"
+    }
+  }
+}
+```
+
+### �� Weitere Informationen
+
+- **Plugin-Repository**: [github.com/gavdilabs/cap-mcp-plugin](https://github.com/gavdilabs/cap-mcp-plugin)
+- **MCP Spezifikation**: [modelcontextprotocol.io](https://modelcontextprotocol.io)
+- **CAP Plugins**: [cap.cloud.sap/docs/plugins](https://cap.cloud.sap/docs/plugins)
 
 ---
 
