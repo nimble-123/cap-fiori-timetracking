@@ -68,11 +68,13 @@ Die CAP Fiori Time Tracking Anwendung hat komplexe Entwicklungsanforderungen:
 **Beschreibung**: Manuelle Installation aller Tools gemäß `GETTING_STARTED.md`
 
 **Vorteile**:
+
 - ✅ Keine zusätzliche Infrastruktur
 - ✅ Volle Kontrolle über lokale Umgebung
 - ✅ Bereits dokumentiert
 
 **Nachteile**:
+
 - ❌ 30-60 Minuten Setup-Zeit
 - ❌ Plattform-spezifische Probleme (Windows/macOS/Linux)
 - ❌ Versionskonflikte (Node 20 vs. 22, Java 11 vs. 17)
@@ -84,11 +86,13 @@ Die CAP Fiori Time Tracking Anwendung hat komplexe Entwicklungsanforderungen:
 **Beschreibung**: `docker-compose.yml` für vollständigen Stack (CAP + DB + Tools)
 
 **Vorteile**:
+
 - ✅ Reproduzierbare Umgebung
 - ✅ Production-ähnliches Setup
 - ✅ Multi-Container für Services
 
 **Nachteile**:
+
 - ❌ Komplexere Orchestrierung
 - ❌ Keine IDE-Integration (VS Code Extensions fehlen)
 - ❌ Kein Hot-Reload für Code-Änderungen
@@ -98,6 +102,7 @@ Die CAP Fiori Time Tracking Anwendung hat komplexe Entwicklungsanforderungen:
 ### Option C – GitHub Codespaces + VS Code Dev Containers (Gewählt)
 
 **Beschreibung**: `.devcontainer/devcontainer.json` mit:
+
 - Base Image: `mcr.microsoft.com/devcontainers/typescript-node:22-bookworm`
 - Features: Node 22.20.0, Java 17 (Temurin)
 - Tools: `cds-dk`, `mbt`, `cf` CLI, TypeScript, Prettier
@@ -105,6 +110,7 @@ Die CAP Fiori Time Tracking Anwendung hat komplexe Entwicklungsanforderungen:
 - Automatisches Setup via `setup.sh` (postCreateCommand)
 
 **Vorteile**:
+
 - ✅ **Zero-Config**: 1-Click-Start in Codespaces
 - ✅ **Consistency**: Identische Umgebung für alle Entwickler
 - ✅ **IDE-Integration**: Native VS Code Extensions
@@ -115,6 +121,7 @@ Die CAP Fiori Time Tracking Anwendung hat komplexe Entwicklungsanforderungen:
 - ✅ **Secrets**: GitHub Codespaces Secrets für CF-Credentials
 
 **Nachteile**:
+
 - ⚠️ Codespaces: 60 Std/Monat gratis, danach kostenpflichtig
 - ⚠️ Erfordert Docker Desktop für lokale Dev Containers
 - ⚠️ Container-Build: ~3-5 Minuten beim ersten Start
@@ -124,10 +131,12 @@ Die CAP Fiori Time Tracking Anwendung hat komplexe Entwicklungsanforderungen:
 **Beschreibung**: Alternative Cloud-IDE mit `.gitpod.yml`
 
 **Vorteile**:
+
 - ✅ Ähnliche Features wie Codespaces
 - ✅ 50 Stunden/Monat gratis
 
 **Nachteile**:
+
 - ❌ Weniger GitHub-Integration
 - ❌ Separate Plattform-Vendor-Lock-in
 - ❌ Keine native VS Code Dev Containers Unterstützung
@@ -148,6 +157,7 @@ Die CAP Fiori Time Tracking Anwendung hat komplexe Entwicklungsanforderungen:
 ### Implementierung
 
 **Verzeichnisstruktur**:
+
 ```
 .devcontainer/
 ├── devcontainer.json    # Hauptkonfiguration
@@ -165,6 +175,7 @@ Die CAP Fiori Time Tracking Anwendung hat komplexe Entwicklungsanforderungen:
    - `github-cli:1` (Latest)
 
 3. **Post-Create Setup** (`setup.sh`):
+
    ```bash
    - npm install -g @sap/cds-dk typescript tsx mbt prettier @cap-js/mcp-server
    - cf CLI v8 Installation + MultiApps Plugin
@@ -246,6 +257,7 @@ Die CAP Fiori Time Tracking Anwendung hat komplexe Entwicklungsanforderungen:
 ## Verweise
 
 ### Projektdateien
+
 - `.devcontainer/devcontainer.json` - Hauptkonfiguration
 - `.devcontainer/setup.sh` - Setup-Skript
 - `.devcontainer/README.md` - Devcontainer-Dokumentation
@@ -253,16 +265,19 @@ Die CAP Fiori Time Tracking Anwendung hat komplexe Entwicklungsanforderungen:
 - `package.json` → `engines` - Tool-Versions-Requirements
 
 ### Externe Dokumentation
+
 - [VS Code Dev Containers](https://code.visualstudio.com/docs/devcontainers/containers)
 - [GitHub Codespaces Docs](https://docs.github.com/en/codespaces)
 - [Dev Container Specification](https://containers.dev/)
 - [Dev Container Features](https://containers.dev/features)
 
 ### Verwandte ADRs
+
 - [ADR-0004: TypeScript Tooling und Workflow](0004-typescript-tooling-und-workflow.md)
 - [ADR-0016: Repository Meta-Dateien und Governance](0016-repository-meta-dateien-und-governance.md)
 - [ADR-0018: MTA Deployment Cloud Foundry](0018-mta-deployment-cloud-foundry.md)
 
 ### GitHub Issues/PRs
+
 - Initial Implementation: PR #[TBD]
 - Pre-builds Activation: Issue #[TBD]

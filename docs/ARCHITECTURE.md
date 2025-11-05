@@ -1476,6 +1476,7 @@ Das Projekt unterstützt **drei Entwicklungsszenarien** mit unterschiedlichen Tr
 ```
 
 **Vorteile:**
+
 - ✅ **Setup in < 5 Minuten**: Automatisches Tool-Installation via `.devcontainer/setup.sh`
 - ✅ **Zero "Works on my machine" Problems**: Identische Umgebung für alle Entwickler
 - ✅ **Remote-First**: Keine lokale Hardware-Anforderungen (läuft in GitHub Cloud)
@@ -1483,6 +1484,7 @@ Das Projekt unterstützt **drei Entwicklungsszenarien** mit unterschiedlichen Tr
 - ✅ **Port-Forwarding**: Automatische HTTPS-URLs für Testing (inkl. Mobile)
 
 **Nachteile:**
+
 - ⚠️ Codespaces Limit: 60 Std/Monat gratis (2-core), danach kostenpflichtig
 - ⚠️ Internetabhängigkeit für Zugriff
 
@@ -1519,12 +1521,14 @@ Das Projekt unterstützt **drei Entwicklungsszenarien** mit unterschiedlichen Tr
 ```
 
 **Vorteile:**
+
 - ✅ **Keine Cloud-Limits**: Unbegrenzte Entwicklungszeit (lokal)
 - ✅ **Offline-fähig**: Funktioniert ohne Internetverbindung
 - ✅ **Konsistenz**: Gleiche Umgebung wie Codespaces (`.devcontainer/*`)
 - ✅ **Performance**: Volle lokale Hardware-Ressourcen
 
 **Nachteile:**
+
 - ⚠️ Benötigt Docker Desktop (+ Lizenz für Unternehmen ≥250 MA)
 - ⚠️ Höherer Speicherverbrauch (~4-8 GB für Container)
 
@@ -1559,11 +1563,13 @@ Das Projekt unterstützt **drei Entwicklungsszenarien** mit unterschiedlichen Tr
 ```
 
 **Vorteile:**
+
 - ✅ **Maximale Flexibilität**: Volle Kontrolle über Tools & Versionen
 - ✅ **Kein Docker**: Funktioniert ohne Container-Runtime
 - ✅ **Bestehende Setup nutzen**: Wenn Tools bereits installiert
 
 **Nachteile:**
+
 - ⚠️ Setup-Zeit: 30-60 Minuten (Node, Java, SAP Tools, etc.)
 - ⚠️ Plattform-Unterschiede: Potenzielle "Works on my machine" Probleme
 - ⚠️ Manuelle Updates: Tools müssen manuell synchron gehalten werden
@@ -1582,17 +1588,17 @@ Das Projekt unterstützt **drei Entwicklungsszenarien** mit unterschiedlichen Tr
 
 **Technologie-Stack (Alle Varianten):**
 
-| Komponente      | Technologie         | Version   | Zweck                     |
-| --------------- | ------------------- | --------- | ------------------------- |
-| Runtime         | Node.js             | 22.20.0   | JavaScript-Ausführung     |
-| Framework       | SAP CAP             | >= 9.4    | Backend-Framework         |
-| Language        | TypeScript          | >= 5.0    | Programmiersprache        |
-| UI Framework    | SAPUI5              | >= 1.120  | Frontend-Framework        |
-| Database        | SQLite              | 3.x       | Dev-Datenbank (In-Memory) |
-| Build Tool      | TypeScript Compiler | 5.x       | TypeScript → JavaScript   |
-| Build Runtime   | Java (Temurin JDK)  | 17        | `@sap/ams-dev` Build Step |
-| Package Manager | npm                 | >= 10.x   | Dependency Management     |
-| Container       | Docker (optional)   | Latest    | Dev Containers/Codespaces |
+| Komponente      | Technologie         | Version  | Zweck                     |
+| --------------- | ------------------- | -------- | ------------------------- |
+| Runtime         | Node.js             | 22.20.0  | JavaScript-Ausführung     |
+| Framework       | SAP CAP             | >= 9.4   | Backend-Framework         |
+| Language        | TypeScript          | >= 5.0   | Programmiersprache        |
+| UI Framework    | SAPUI5              | >= 1.120 | Frontend-Framework        |
+| Database        | SQLite              | 3.x      | Dev-Datenbank (In-Memory) |
+| Build Tool      | TypeScript Compiler | 5.x      | TypeScript → JavaScript   |
+| Build Runtime   | Java (Temurin JDK)  | 17       | `@sap/ams-dev` Build Step |
+| Package Manager | npm                 | >= 10.x  | Dependency Management     |
+| Container       | Docker (optional)   | Latest   | Dev Containers/Codespaces |
 
 ---
 
