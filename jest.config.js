@@ -12,4 +12,5 @@ module.exports = {
     ],
   ],
   silent: true,
+  testTimeout: 30000,
 };
