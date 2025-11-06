@@ -331,8 +331,8 @@ private async fetchViaDestination(year: number, stateCode: string) {
 - **Implementierung:** `srv/track-service/handler/services/HolidayService.ts`
 - **MTA-Konfiguration:** `mta.yaml` → `resources.cap-fiori-timetracking-destination`
 - **Tests:**
-  - `tests/integration/holiday-service.test.js` - Integration Tests mit API-Mocks
-  - `tests/unit/holiday-service.test.js` - Unit Tests für Caching & Error Handling
+  - `tests/integration/holiday-service.test.ts` - Integration Tests mit API-Mocks
+  - `tests/unit/holiday-service.test.ts` - Unit Tests für Caching & Error Handling
 - **ADR:** [ADR-0020: Holiday API Integration via BTP Destination](ADR/0020-holiday-api-btp-destination.md)
 
 **Business Impact:**
@@ -2175,32 +2175,32 @@ Das Projekt folgt einer **modularen Test-Pyramide** mit drei Ebenen, die alle Qu
 
 ```
 tests/
-├── unit/                          # 🧪 Unit Tests (5 Dateien)
-│   ├── generation-strategies.test.js
-│   ├── holiday-service.test.js
-│   ├── time-calculation-service.test.js
-│   ├── time-entry-factory.test.js
-│   └── time-entry-validator.test.js
+├── unit/                          # 🧪 Unit Tests (5 Dateien, TypeScript)
+│   ├── generation-strategies.test.ts
+│   ├── holiday-service.test.ts
+│   ├── time-calculation-service.test.ts
+│   ├── time-entry-factory.test.ts
+│   └── time-entry-validator.test.ts
 │
-├── integration/                   # 🔗 Integration Tests (9 Dateien)
-│   ├── basic-setup.test.js
-│   ├── timeentries-crud.test.js
-│   ├── timeentries-validation.test.js
-│   ├── timeentries-status.test.js
-│   ├── generation-actions.test.js
-│   ├── balance-functions.test.js
-│   ├── holiday-service.test.js
-│   ├── reference-data.test.js
-│   └── advanced-queries.test.js
+├── integration/                   # 🔗 Integration Tests (9 Dateien, TypeScript)
+│   ├── basic-setup.test.ts
+│   ├── timeentries-crud.test.ts
+│   ├── timeentries-validation.test.ts
+│   ├── timeentries-status.test.ts
+│   ├── generation-actions.test.ts
+│   ├── balance-functions.test.ts
+│   ├── holiday-service.test.ts
+│   ├── reference-data.test.ts
+│   └── advanced-queries.test.ts
 │
-├── security/                      # 🔒 Security Tests (2 Dateien)
-│   ├── authorization.test.js
-│   └── input-validation.test.js
+├── security/                      # 🔒 Security Tests (2 Dateien, TypeScript)
+│   ├── authorization.test.ts
+│   └── input-validation.test.ts
 │
-└── helpers/                       # 🛠️ Shared Test Utilities
-    ├── test-data-factory.js       # Factory für Testdaten
-    ├── test-users.js              # Mock-User-Konstanten
-    └── index.js                   # Barrel Export
+└── helpers/                       # 🛠️ Shared Test Utilities (TypeScript)
+    ├── test-data-factory.ts       # Factory für Testdaten-Generierung
+    ├── test-users.ts              # Mock-User-Konstanten & Types
+    └── index.ts                   # Barrel Export (inkl. ODataCollection Type)
 ```
 
 #### Test-Befehle (package.json)
@@ -2240,6 +2240,7 @@ tests/
 - ✅ Fokus auf Business-Logik (Commands, Services, Validators, Factories)
 - ✅ Sehr schnell (< 5s für alle Unit Tests)
 - ✅ Testbarkeit durch Dependency Injection (ServiceContainer)
+- ✅ **100% TypeScript** mit strikter Typisierung
 
 **Integration Tests** (`tests/integration/`):
 
@@ -2248,20 +2249,48 @@ tests/
 - ✅ Echte OData V4 HTTP-Calls
 - ✅ End-to-End Flows (CRUD, Generation, Balance)
 - ✅ Mock-User mit verschiedenen Rollen
+- ✅ **100% TypeScript** für typsichere Test-Daten
 
 **Security Tests** (`tests/security/`):
 
 - ✅ Authorization & Access Control (User darf nur eigene Daten sehen)
 - ✅ Input Validation & SQL Injection Prevention
 - ✅ Role-based restrictions (`@restrict` in CDS)
-- ✅ Mock-User: `max.mustermann@test.de`, `erika.musterfrau@test.de`, `frank.genehmiger@test.de`
+- ✅ Mock-User: `max.mustermann@test.de` (Admin/User), `erika.musterfrau@test.de` (User)
+- ✅ **100% TypeScript** für konsistente Security-Policies
+
+#### Test-Utilities & Helpers
+
+Die Test-Suite nutzt gemeinsame Utilities für konsistente Test-Datenbereitstellung:
+
+**`tests/helpers/test-data-factory.ts`:**
+
+- `TimeEntryFactory` Klasse für Draft-basierte TimeEntry-Erstellung
+- `createAndActivate()` - Erstellt und aktiviert Draft in einem Schritt
+- `generateUniqueFutureDate()` - Erzeugt eindeutige Zukunfts-Datumsangaben für Tests
+- `generateTestDate()` - Generiert Testdaten mit flexiblen Optionen
+- Vollständig typisiert mit TypeScript-Interfaces (`TimeEntryData`, `DraftResponse`)
+
+**`tests/helpers/test-users.ts`:**
+
+- `TestUser` Interface für typsichere User-Credentials
+- `TEST_USERS` Konstante mit vorkonfigurierten Mock-Usern:
+  - `max.mustermann@test.de` - Admin & User Rolle
+  - `erika.musterfrau@test.de` - User Rolle
+- Weitere User (z.B. `frank.genehmiger@test.de` für Approver-Tests) können bei Bedarf in spezifischen Tests definiert werden
+
+**`tests/helpers/index.ts`:**
+
+- Barrel Export für saubere Imports: `import { TimeEntryFactory, TEST_USERS } from './helpers'`
+- `ODataCollection<T>` Generic Type für OData V4 Collection Responses
 
 #### Referenzen
 
-- **Test-Framework:** Jest mit `@cap-js/cds-test`
+- **Test-Framework:** Jest mit `@cap-js/cds-test` und TypeScript (`ts-jest`)
 - **ADR:** [ADR-0011: Test-Strategie Jest REST Client](ADR/0011-test-strategie-jest-rest-client.md)
 - **Coverage-Tool:** `jest --coverage` mit Istanbul
 - **CI/CD:** Tests laufen automatisch in GitHub Actions (siehe `.github/workflows/`)
+- **TypeScript Config:** `tsconfig.json` mit strikten Checks, `jest.config.js` mit ts-jest Transform
 
 ---
 
@@ -2355,7 +2384,7 @@ System-Qualität
 **Implementierung:**
 
 ```typescript
-// tests/unit/time-entry-validator.test.js
+// tests/unit/time-entry-validator.test.ts
 describe('TimeEntryValidator - Unit Tests', () => {
   describe('Date Validation Logic', () => {
     it('should validate date is not in the future', () => {
@@ -2381,9 +2410,9 @@ describe('TimeEntryValidator - Unit Tests', () => {
 
 **Ergebnis:**
 
-- ✅ Tests laufen ohne CAP-Server (pure JavaScript/TypeScript Logic)
+- ✅ Tests laufen ohne CAP-Server (pure TypeScript Logic mit Typsicherheit)
 - ✅ Sehr schnell: gesamte Unit-Test-Suite in < 5 Sekunden
-- ✅ Testdateien: `tests/unit/time-entry-validator.test.js`, `tests/unit/time-calculation-service.test.js`, `tests/unit/time-entry-factory.test.js`
+- ✅ Testdateien: `tests/unit/time-entry-validator.test.ts`, `tests/unit/time-calculation-service.test.ts`, `tests/unit/time-entry-factory.test.ts`
 - ✅ Siehe [Abschnitt 10.1: Test-Strategie](#101-test-strategie--coverage)
 
 ---
