@@ -16,14 +16,14 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "@sap-ux/eslint-plugin-fiori-tools": "^0.6.1",
+    "@sap-ux/eslint-plugin-fiori-tools": "^0.6.2",
     "@sap/ux-ui5-tooling": "^1.19.3",
-    "@sapui5/types": "^1.141.3",
-    "@typescript-eslint/eslint-plugin": "^8.46.2",
-    "@typescript-eslint/parser": "^8.46.2",
-    "@ui5/cli": "^4.0.33",
+    "@sapui5/types": "^1.142.0",
+    "@typescript-eslint/eslint-plugin": "^8.46.3",
+    "@typescript-eslint/parser": "^8.46.3",
+    "@ui5/cli": "^4.0.34",
     "typescript": "^5.9.3",
-    "ui5-task-zipper": "^3",
+    "ui5-task-zipper": "^3.4.4",
     "ui5-tooling-transpile": "^3.9.2"
   },
   "ui5": {
