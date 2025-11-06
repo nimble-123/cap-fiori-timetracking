@@ -3,9 +3,21 @@
  *
  * Testet die Integration mit der Feiertags-API
  */
-const cds = require('@sap/cds');
+import cds from '@sap/cds';
+import type { AxiosResponse } from 'axios';
+import { TEST_USERS } from '../helpers';
+import type { TimeEntry } from '#cds-models/io/nimble';
+
 const { GET, POST, expect } = cds.test(__dirname + '/../..', '--in-memory');
-const { TEST_USERS } = require('../helpers');
+
+interface GenerateYearlyResponse {
+  value: TimeEntry[];
+}
+
+interface CustomizingResponse {
+  holidayApiBaseUrl: string;
+  [key: string]: unknown;
+}
 
 describe('TrackService - HolidayService Integration', () => {
   describe('Holiday API Direct Fetch', () => {
@@ -16,14 +28,14 @@ describe('TrackService - HolidayService Integration', () => {
     });
 
     it('should fetch holidays for Bayern 2025', async () => {
-      const { data, status } = await POST(
+      const { data, status } = (await POST(
         '/odata/v4/track/generateYearlyTimeEntries',
         {
           year: 2025,
           stateCode: 'BY',
         },
         TEST_USERS.max,
-      );
+      )) as AxiosResponse<GenerateYearlyResponse>;
 
       expect(status).to.equal(200);
       expect(data).to.have.property('value');
@@ -39,7 +51,7 @@ describe('TrackService - HolidayService Integration', () => {
       // Prüfe Neujahr
       const newYearEntry = entries.find((e) => e.workDate === '2025-01-01');
       expect(newYearEntry).to.exist;
-      expect(newYearEntry.entryType_code).to.equal('H');
+      expect(newYearEntry!.entryType_code).to.equal('H');
     });
 
     it('should cache holiday requests', async () => {
@@ -68,11 +80,11 @@ describe('TrackService - HolidayService Integration', () => {
       const stateCodes = ['BY', 'BW', 'BE', 'HH'];
 
       for (const stateCode of stateCodes) {
-        const { data, status } = await POST(
+        const { data, status } = (await POST(
           '/odata/v4/track/generateYearlyTimeEntries',
           { year: 2023, stateCode },
           TEST_USERS.max,
-        );
+        )) as AxiosResponse<GenerateYearlyResponse>;
 
         expect(status).to.equal(200);
         const entries = data.value;
@@ -87,18 +99,23 @@ describe('TrackService - HolidayService Integration', () => {
       try {
         await POST('/odata/v4/track/generateYearlyTimeEntries', { year: 2025, stateCode: 'INVALID' }, TEST_USERS.max);
       } catch (error) {
-        expect(error.response.status).to.be.oneOf([400, 500]);
+        if (error instanceof Error && 'response' in error) {
+          const axiosError = error as Error & { response: AxiosResponse };
+          expect(axiosError.response.status).to.be.oneOf([400, 500]);
+        } else {
+          throw error;
+        }
       }
     });
   });
 
   describe('Holiday API Error Handling', () => {
     it('should handle network timeouts gracefully', async () => {
-      const { data, status } = await POST(
+      const { data, status } = (await POST(
         '/odata/v4/track/generateYearlyTimeEntries',
         { year: 2026, stateCode: 'BY' },
         TEST_USERS.max,
-      );
+      )) as AxiosResponse<GenerateYearlyResponse>;
 
       expect(status).to.equal(200);
       expect(data.value).to.be.an('array');
@@ -108,7 +125,10 @@ describe('TrackService - HolidayService Integration', () => {
 
   describe('Holiday API Configuration', () => {
     it('should use configured base URL from Customizing', async () => {
-      const { data: customizing } = await GET('/odata/v4/track/Customizing(1)', TEST_USERS.max);
+      const { data: customizing } = (await GET(
+        '/odata/v4/track/Customizing(1)',
+        TEST_USERS.max,
+      )) as AxiosResponse<CustomizingResponse>;
 
       expect(customizing).to.exist;
       expect(customizing.holidayApiBaseUrl).to.equal('https://feiertage-api.de/api/');
@@ -124,11 +144,11 @@ describe('TrackService - HolidayService Integration', () => {
 
   describe('Holiday Detection in Generated Entries', () => {
     it('should correctly identify public holidays', async () => {
-      const { data } = await POST(
+      const { data } = (await POST(
         '/odata/v4/track/generateYearlyTimeEntries',
         { year: 2025, stateCode: 'BY' },
         TEST_USERS.max,
-      );
+      )) as AxiosResponse<GenerateYearlyResponse>;
 
       const entries = data.value;
 
@@ -145,16 +165,16 @@ describe('TrackService - HolidayService Integration', () => {
       for (const holidayDate of knownHolidays) {
         const entry = entries.find((e) => e.workDate === holidayDate);
         expect(entry, `Should have entry for ${holidayDate}`).to.exist;
-        expect(entry.entryType_code, `${holidayDate} should be marked as holiday`).to.equal('H');
+        expect(entry!.entryType_code, `${holidayDate} should be marked as holiday`).to.equal('H');
       }
     });
 
     it('should generate correct entry types for different day types', async () => {
-      const { data } = await POST(
+      const { data } = (await POST(
         '/odata/v4/track/generateYearlyTimeEntries',
         { year: 2029, stateCode: 'BY' }, // 2029 um Konflikte zu vermeiden
         TEST_USERS.max,
-      );
+      )) as AxiosResponse<GenerateYearlyResponse>;
 
       const entries = data.value;
 

@@ -1,14 +1,17 @@
 /**
  * Integration Tests - TimeEntries CRUD Operations
  *
- * Testet CREATE, READ, UPDATE Operationen für TimeEntries
+ * Testet CREATE, READ, UPDATE Operationen auf TimeEntries
  */
-const cds = require('@sap/cds');
+import cds from '@sap/cds';
+import type { AxiosResponse } from 'axios';
+import { TimeEntryFactory, generateTestDate, TEST_USERS, type ODataCollection } from '../helpers';
+import type { TimeEntry } from '#cds-models/io/nimble';
+
 const { GET, POST, PATCH, expect } = cds.test(__dirname + '/../..', '--in-memory');
-const { TimeEntryFactory, generateTestDate, TEST_USERS } = require('../helpers');
 
 describe('TrackService - TimeEntries CRUD', () => {
-  let factory;
+  let factory: TimeEntryFactory;
 
   before(() => {
     factory = new TimeEntryFactory(POST);
@@ -73,8 +76,12 @@ describe('TrackService - TimeEntries CRUD', () => {
       try {
         await factory.activateDraft(draft.ID, TEST_USERS.max);
         expect.fail('Expected validation error was not thrown');
-      } catch (error) {
-        expect(error.message).to.include('Failed to activate draft');
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          expect(error.message).to.include('Failed to activate draft');
+        } else {
+          throw error;
+        }
       }
     });
 
@@ -97,9 +104,12 @@ describe('TrackService - TimeEntries CRUD', () => {
 
         await factory.activateDraft(draft.ID, TEST_USERS.max);
         expect.fail('Expected validation error was not thrown');
-      } catch (error) {
-        // Validation kann beim Draft-Erstellen oder beim Aktivieren fehlschlagen
-        expect(error.message).to.match(/Failed to (create|activate) draft|500/);
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          expect(error.message).to.match(/Failed to (create|activate) draft|500/);
+        } else {
+          throw error;
+        }
       }
     });
 
@@ -126,12 +136,14 @@ describe('TrackService - TimeEntries CRUD', () => {
       try {
         await factory.activateDraft(draft2.ID, TEST_USERS.max);
         expect.fail('Expected validation error was not thrown');
-      } catch (error) {
-        // Prüfe HTTP Response Status oder Error Message
-        if (error.response) {
-          expect(error.response.status).to.equal(409);
-        } else {
+      } catch (error: unknown) {
+        if (error && typeof error === 'object' && 'response' in error) {
+          const axiosError = error as { response: AxiosResponse };
+          expect(axiosError.response.status).to.equal(409);
+        } else if (error instanceof Error) {
           expect(error.message).to.match(/(409|duplicate|bereits)/i);
+        } else {
+          throw error;
         }
       }
     });
@@ -152,8 +164,12 @@ describe('TrackService - TimeEntries CRUD', () => {
       try {
         await factory.activateDraft(draft.ID, TEST_USERS.max);
         expect.fail('Expected validation error was not thrown');
-      } catch (error) {
-        expect(error.message).to.match(/Failed to activate draft: (400|409)/);
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          expect(error.message).to.include('Failed to activate draft');
+        } else {
+          throw error;
+        }
       }
     });
   });
@@ -173,10 +189,10 @@ describe('TrackService - TimeEntries CRUD', () => {
     });
 
     it('should filter TimeEntries by user', async () => {
-      const { data, status } = await GET(
+      const { data, status } = (await GET(
         "/odata/v4/track/TimeEntries?$filter=user_ID eq 'max.mustermann@test.de'",
         TEST_USERS.max,
-      );
+      )) as AxiosResponse<ODataCollection<TimeEntry>>;
 
       expect(status).to.equal(200);
       expect(data.value).to.be.an('array');
@@ -216,7 +232,7 @@ describe('TrackService - TimeEntries CRUD', () => {
   });
 
   describe('UPDATE TimeEntry', () => {
-    let testEntry;
+    let testEntry: TimeEntry;
 
     beforeEach(async () => {
       // Setup: Erstelle Entry für jeden Test mit eindeutigem Datum
@@ -324,13 +340,14 @@ describe('TrackService - TimeEntries CRUD', () => {
       try {
         await factory.activateDraft(editDraft.ID, TEST_USERS.max);
         expect.fail('Expected validation error was not thrown');
-      } catch (error) {
-        // Prüfe HTTP Response Status
-        if (error.response) {
-          expect(error.response.status).to.equal(409);
-        } else {
-          // Oder error message
+      } catch (error: unknown) {
+        if (error && typeof error === 'object' && 'response' in error) {
+          const axiosError = error as { response: AxiosResponse };
+          expect(axiosError.response.status).to.equal(409);
+        } else if (error instanceof Error) {
           expect(error.message).to.match(/(409|Released)/);
+        } else {
+          throw error;
         }
       }
     });

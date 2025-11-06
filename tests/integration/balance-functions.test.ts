@@ -3,12 +3,19 @@
  *
  * Testet Balance-Berechnungen (Monthly, Current, Vacation, Sick Leave)
  */
-const cds = require('@sap/cds');
+import cds from '@sap/cds';
+import type { AxiosResponse } from 'axios';
+import { TimeEntryFactory, TEST_USERS, type ODataCollection } from '../helpers';
+import type { MonthlyBalance, VacationBalance, SickLeaveBalance } from '#cds-models/TrackService';
+
 const { GET, POST, expect } = cds.test(__dirname + '/../..', '--in-memory');
-const { TimeEntryFactory, TEST_USERS } = require('../helpers');
+
+interface CurrentBalanceResponse {
+  value: number;
+}
 
 describe('TrackService - Balance Functions', () => {
-  let factory;
+  let factory: TimeEntryFactory;
   const targetYear = 2025;
   const targetMonth = 11; // November (aktueller Monat)
 
@@ -24,7 +31,7 @@ describe('TrackService - Balance Functions', () => {
       });
     } catch (error) {
       // Entry existiert bereits - das ist OK
-      if (!error.message || !error.message.includes('409')) {
+      if (error instanceof Error && !error.message.includes('409')) {
         throw error;
       }
     }
@@ -32,11 +39,11 @@ describe('TrackService - Balance Functions', () => {
 
   describe('Monthly Balance', () => {
     it('should calculate monthly balance', async () => {
-      const { data, status } = await POST(
+      const { data, status } = (await POST(
         '/odata/v4/track/getMonthlyBalance',
         { year: targetYear, month: targetMonth },
         TEST_USERS.max,
-      );
+      )) as AxiosResponse<MonthlyBalance>;
 
       expect(status).to.equal(200);
       expect(data).to.have.property('month');
@@ -54,7 +61,12 @@ describe('TrackService - Balance Functions', () => {
         await POST('/odata/v4/track/getMonthlyBalance', { year: 1999, month: 1 }, TEST_USERS.max);
         expect.fail('Expected validation error was not thrown');
       } catch (error) {
-        expect(error.response.status).to.be.oneOf([400, 500]);
+        if (error instanceof Error && 'response' in error) {
+          const axiosError = error as Error & { response: AxiosResponse };
+          expect(axiosError.response.status).to.be.oneOf([400, 500]);
+        } else {
+          throw error;
+        }
       }
     });
 
@@ -63,7 +75,12 @@ describe('TrackService - Balance Functions', () => {
         await POST('/odata/v4/track/getMonthlyBalance', { year: 2025, month: 13 }, TEST_USERS.max);
         expect.fail('Expected validation error was not thrown');
       } catch (error) {
-        expect(error.response.status).to.be.oneOf([400, 500]);
+        if (error instanceof Error && 'response' in error) {
+          const axiosError = error as Error & { response: AxiosResponse };
+          expect(axiosError.response.status).to.be.oneOf([400, 500]);
+        } else {
+          throw error;
+        }
       }
     });
 
@@ -72,7 +89,12 @@ describe('TrackService - Balance Functions', () => {
         await POST('/odata/v4/track/getMonthlyBalance', { year: 2010, month: 1 }, TEST_USERS.max);
         expect.fail('Expected validation error was not thrown');
       } catch (error) {
-        expect(error.response.status).to.be.oneOf([400, 500]);
+        if (error instanceof Error && 'response' in error) {
+          const axiosError = error as Error & { response: AxiosResponse };
+          expect(axiosError.response.status).to.be.oneOf([400, 500]);
+        } else {
+          throw error;
+        }
       }
     });
 
@@ -81,14 +103,23 @@ describe('TrackService - Balance Functions', () => {
         await POST('/odata/v4/track/getMonthlyBalance', { year: 2030, month: 1 }, TEST_USERS.max);
         expect.fail('Expected validation error was not thrown');
       } catch (error) {
-        expect(error.response.status).to.be.oneOf([400, 500]);
+        if (error instanceof Error && 'response' in error) {
+          const axiosError = error as Error & { response: AxiosResponse };
+          expect(axiosError.response.status).to.be.oneOf([400, 500]);
+        } else {
+          throw error;
+        }
       }
     });
   });
 
   describe('Current Balance', () => {
     it('should get current balance', async () => {
-      const { data, status } = await POST('/odata/v4/track/getCurrentBalance', {}, TEST_USERS.max);
+      const { data, status } = (await POST(
+        '/odata/v4/track/getCurrentBalance',
+        {},
+        TEST_USERS.max,
+      )) as AxiosResponse<CurrentBalanceResponse>;
 
       expect(status).to.equal(200);
       expect(data).to.have.property('value');
@@ -96,7 +127,11 @@ describe('TrackService - Balance Functions', () => {
     });
 
     it('should handle getCurrentBalance when no entries exist for user', async () => {
-      const { data, status } = await POST('/odata/v4/track/getCurrentBalance', {}, TEST_USERS.erika);
+      const { data, status } = (await POST(
+        '/odata/v4/track/getCurrentBalance',
+        {},
+        TEST_USERS.erika,
+      )) as AxiosResponse<CurrentBalanceResponse>;
 
       expect(status).to.equal(200);
       expect(data).to.have.property('value');
@@ -106,7 +141,9 @@ describe('TrackService - Balance Functions', () => {
 
   describe('Recent Balances', () => {
     it('should get recent balances', async () => {
-      const { data, status } = await GET('/odata/v4/track/MonthlyBalances', TEST_USERS.max);
+      const { data, status } = (await GET('/odata/v4/track/MonthlyBalances', TEST_USERS.max)) as AxiosResponse<
+        ODataCollection<MonthlyBalance>
+      >;
 
       expect(status).to.equal(200);
       expect(data).to.have.property('value');
@@ -124,7 +161,11 @@ describe('TrackService - Balance Functions', () => {
 
   describe('Vacation Balance', () => {
     it('should get vacation balance', async () => {
-      const { data, status } = await POST('/odata/v4/track/getVacationBalance', {}, TEST_USERS.max);
+      const { data, status } = (await POST(
+        '/odata/v4/track/getVacationBalance',
+        {},
+        TEST_USERS.max,
+      )) as AxiosResponse<VacationBalance>;
 
       expect(status).to.equal(200);
       expect(data).to.have.property('year');
@@ -141,7 +182,11 @@ describe('TrackService - Balance Functions', () => {
 
   describe('Sick Leave Balance', () => {
     it('should get sick leave balance', async () => {
-      const { data, status } = await POST('/odata/v4/track/getSickLeaveBalance', {}, TEST_USERS.max);
+      const { data, status } = (await POST(
+        '/odata/v4/track/getSickLeaveBalance',
+        {},
+        TEST_USERS.max,
+      )) as AxiosResponse<SickLeaveBalance>;
 
       expect(status).to.equal(200);
       expect(data).to.have.property('year');

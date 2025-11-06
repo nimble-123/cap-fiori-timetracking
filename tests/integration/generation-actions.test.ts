@@ -3,14 +3,25 @@
  *
  * Testet Monthly/Yearly Generation von TimeEntries
  */
-const cds = require('@sap/cds');
+import cds from '@sap/cds';
+import type { AxiosResponse } from 'axios';
+import { TEST_USERS } from '../helpers';
+import type { TimeEntry } from '#cds-models/io/nimble';
+
 const { GET, POST, expect } = cds.test(__dirname + '/../..', '--in-memory');
-const { TEST_USERS } = require('../helpers');
+
+interface GenerationResponse {
+  value: TimeEntry[];
+}
 
 describe('TrackService - Generation Actions', () => {
   describe('Monthly Generation', () => {
     it('should generate monthly time entries', async () => {
-      const { data, status } = await POST('/odata/v4/track/generateMonthlyTimeEntries', {}, TEST_USERS.max);
+      const { data, status } = (await POST(
+        '/odata/v4/track/generateMonthlyTimeEntries',
+        {},
+        TEST_USERS.max,
+      )) as AxiosResponse<GenerationResponse>;
 
       expect(status).to.equal(200);
       expect(data).to.be.an('object');
@@ -40,14 +51,14 @@ describe('TrackService - Generation Actions', () => {
 
   describe('Yearly Generation', () => {
     it('should generate yearly time entries', async () => {
-      const { data, status } = await POST(
+      const { data, status } = (await POST(
         '/odata/v4/track/generateYearlyTimeEntries',
         {
           year: 2025,
           stateCode: 'BY', // Bayern
         },
         TEST_USERS.max,
-      );
+      )) as AxiosResponse<GenerationResponse>;
 
       expect(status).to.equal(200);
       expect(data).to.be.an('object');
@@ -68,8 +79,13 @@ describe('TrackService - Generation Actions', () => {
       try {
         await POST('/odata/v4/track/generateYearlyTimeEntries', { year: 2025, stateCode: 'INVALID' }, TEST_USERS.max);
         expect.fail('Expected validation error was not thrown');
-      } catch (error) {
-        expect(error.response.status).to.be.oneOf([400, 500]);
+      } catch (error: unknown) {
+        if (error && typeof error === 'object' && 'response' in error) {
+          const axiosError = error as { response: AxiosResponse };
+          expect(axiosError.response.status).to.be.oneOf([400, 500]);
+        } else {
+          throw error;
+        }
       }
     });
   });
@@ -101,8 +117,13 @@ describe('TrackService - Generation Actions', () => {
       try {
         await POST('/odata/v4/track/generateYearlyTimeEntries', { year: 2025, stateCode: 'XX' }, TEST_USERS.max);
         expect.fail('Expected validation error was not thrown');
-      } catch (error) {
-        expect(error.response.status).to.be.oneOf([400, 500]);
+      } catch (error: unknown) {
+        if (error && typeof error === 'object' && 'response' in error) {
+          const axiosError = error as { response: AxiosResponse };
+          expect(axiosError.response.status).to.be.oneOf([400, 500]);
+        } else {
+          throw error;
+        }
       }
     });
   });

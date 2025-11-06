@@ -3,12 +3,14 @@
  *
  * Testet Business-Validierungs-Logik für TimeEntries
  */
-const cds = require('@sap/cds');
+import cds from '@sap/cds';
+import type { AxiosResponse } from 'axios';
+import { TimeEntryFactory, generateTestDate, TEST_USERS } from '../helpers';
+
 const { POST, expect } = cds.test(__dirname + '/../..', '--in-memory');
-const { TimeEntryFactory, generateTestDate, TEST_USERS } = require('../helpers');
 
 describe('TrackService - TimeEntry Validation', () => {
-  let factory;
+  let factory: TimeEntryFactory;
 
   before(() => {
     factory = new TimeEntryFactory(POST);
@@ -17,58 +19,73 @@ describe('TrackService - TimeEntry Validation', () => {
   describe('Required Fields', () => {
     it('should reject CREATE with missing user_ID', async () => {
       try {
-        await POST(
-          '/odata/v4/track/TimeEntries',
+        const draft = await factory.createDraft(
           {
             workDate: generateTestDate(2027, 4, 1),
             entryType_code: 'W',
             startTime: '08:00:00',
             endTime: '16:00:00',
+            // user_ID fehlt absichtlich
           },
           TEST_USERS.max,
         );
+
+        await factory.activateDraft(draft.ID, TEST_USERS.max);
         expect.fail('Expected validation error was not thrown');
-      } catch (error) {
-        const status = error.response?.status || error.code || 400;
-        expect([400, 500, '400', '500']).to.include(status);
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          expect(error.message).to.match(/Failed to (create|activate) draft/);
+        } else {
+          throw error;
+        }
       }
     });
 
     it('should reject CREATE with missing workDate', async () => {
       try {
-        await POST(
-          '/odata/v4/track/TimeEntries',
+        const draft = await factory.createDraft(
           {
             user_ID: 'max.mustermann@test.de',
             entryType_code: 'W',
             startTime: '08:00:00',
             endTime: '16:00:00',
+            // workDate fehlt absichtlich
           },
           TEST_USERS.max,
         );
+
+        await factory.activateDraft(draft.ID, TEST_USERS.max);
         expect.fail('Expected validation error was not thrown');
-      } catch (error) {
-        const status = error.response?.status || error.code || 400;
-        expect([400, 500, '400', '500']).to.include(status);
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          expect(error.message).to.match(/Failed to (create|activate) draft/);
+        } else {
+          throw error;
+        }
       }
     });
 
     it('should reject CREATE with missing entryType_code', async () => {
       try {
-        await POST(
-          '/odata/v4/track/TimeEntries',
+        const draft = await factory.createDraft(
           {
             user_ID: 'max.mustermann@test.de',
             workDate: generateTestDate(2027, 4, 2),
             startTime: '08:00:00',
             endTime: '16:00:00',
+            // entryType_code fehlt absichtlich
           },
           TEST_USERS.max,
         );
+
+        await factory.activateDraft(draft.ID, TEST_USERS.max);
         expect.fail('Expected validation error was not thrown');
-      } catch (error) {
-        const status = error.response?.status || error.code || 400;
-        expect([400, 500, '400', '500']).to.include(status);
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          expect(error.message).to.match(/Failed to (create|activate) draft/);
+        } else {
+          throw error;
+        }
       }
     });
 
@@ -87,8 +104,12 @@ describe('TrackService - TimeEntry Validation', () => {
 
         await factory.activateDraft(draft.ID, TEST_USERS.max);
         expect.fail('Expected validation error was not thrown');
-      } catch (error) {
-        expect(error.message).to.match(/Failed to (create|activate) draft/);
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          expect(error.message).to.match(/Failed to (create|activate) draft/);
+        } else {
+          throw error;
+        }
       }
     });
 
@@ -107,8 +128,12 @@ describe('TrackService - TimeEntry Validation', () => {
 
         await factory.activateDraft(draft.ID, TEST_USERS.max);
         expect.fail('Expected validation error was not thrown');
-      } catch (error) {
-        expect(error.message).to.match(/Failed to (create|activate) draft/);
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          expect(error.message).to.match(/Failed to (create|activate) draft/);
+        } else {
+          throw error;
+        }
       }
     });
   });
@@ -132,8 +157,12 @@ describe('TrackService - TimeEntry Validation', () => {
 
         await factory.activateDraft(draft.ID, TEST_USERS.max);
         expect.fail('Expected validation error was not thrown');
-      } catch (error) {
-        expect(error.message).to.match(/Failed to (create|activate) draft/);
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          expect(error.message).to.match(/Failed to (create|activate) draft/);
+        } else {
+          throw error;
+        }
       }
     });
 
@@ -155,8 +184,12 @@ describe('TrackService - TimeEntry Validation', () => {
 
         await factory.activateDraft(draft.ID, TEST_USERS.max);
         expect.fail('Expected validation error was not thrown');
-      } catch (error) {
-        expect(error.message).to.match(/Failed to (create|activate) draft/);
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          expect(error.message).to.match(/Failed to (create|activate) draft/);
+        } else {
+          throw error;
+        }
       }
     });
 
@@ -176,8 +209,12 @@ describe('TrackService - TimeEntry Validation', () => {
 
         await factory.activateDraft(draft.ID, TEST_USERS.max);
         expect.fail('Expected validation error was not thrown');
-      } catch (error) {
-        expect(error.message).to.match(/Failed to (create|activate) draft/);
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          expect(error.message).to.match(/Failed to (create|activate) draft/);
+        } else {
+          throw error;
+        }
       }
     });
   });
@@ -220,8 +257,12 @@ describe('TrackService - TimeEntry Validation', () => {
 
         await factory.activateDraft(draft.ID, TEST_USERS.max);
         expect.fail('Expected validation error was not thrown');
-      } catch (error) {
-        expect(error.message).to.match(/Failed to (create|activate) draft/);
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          expect(error.message).to.match(/Failed to (create|activate) draft/);
+        } else {
+          throw error;
+        }
       }
     });
   });
@@ -233,8 +274,13 @@ describe('TrackService - TimeEntry Validation', () => {
       try {
         await POST(`/odata/v4/track/TimeEntries(ID=${fakeId},IsActiveEntity=true)/draftEdit`, {}, TEST_USERS.max);
         expect.fail('Expected 404 error was not thrown');
-      } catch (error) {
-        expect(error.response.status).to.be.oneOf([404, 500]);
+      } catch (error: unknown) {
+        if (error && typeof error === 'object' && 'response' in error) {
+          const axiosError = error as { response: AxiosResponse };
+          expect(axiosError.response?.status).to.be.oneOf([404, 500]);
+        } else {
+          throw error;
+        }
       }
     });
   });

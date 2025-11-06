@@ -3,21 +3,24 @@
  *
  * Testet Status-Transitionen und Actions (markDone, release)
  */
-const cds = require('@sap/cds');
+import cds from '@sap/cds';
+import type { AxiosResponse } from 'axios';
+import { TimeEntryFactory, generateTestDate, TEST_USERS } from '../helpers';
+import type { TimeEntry } from '#cds-models/io/nimble';
+
 const { POST, PATCH, DELETE, expect } = cds.test(__dirname + '/../..', '--in-memory');
-const { TimeEntryFactory, generateTestDate, TEST_USERS } = require('../helpers');
 
 describe('TrackService - TimeEntry Status Management', () => {
-  let factory;
+  let factory: TimeEntryFactory;
 
   before(() => {
     factory = new TimeEntryFactory(POST);
   });
 
   describe('Status Actions', () => {
-    let processedEntry;
-    let doneEntry;
-    let releasedEntry;
+    let processedEntry: TimeEntry;
+    let doneEntry: TimeEntry;
+    let releasedEntry: TimeEntry;
 
     before(async () => {
       // Setup: Erstelle Entries in verschiedenen Status
@@ -127,8 +130,13 @@ describe('TrackService - TimeEntry Status Management', () => {
           TEST_USERS.max,
         );
         expect.fail('Expected validation error was not thrown');
-      } catch (error) {
-        expect(error.response.status).to.equal(409);
+      } catch (error: unknown) {
+        if (error && typeof error === 'object' && 'response' in error) {
+          const axiosError = error as { response: AxiosResponse };
+          expect(axiosError.response.status).to.equal(409);
+        } else {
+          throw error;
+        }
       }
     });
 
@@ -152,8 +160,13 @@ describe('TrackService - TimeEntry Status Management', () => {
           TEST_USERS.max,
         );
         expect.fail('Expected validation error was not thrown');
-      } catch (error) {
-        expect(error.response.status).to.equal(409);
+      } catch (error: unknown) {
+        if (error && typeof error === 'object' && 'response' in error) {
+          const axiosError = error as { response: AxiosResponse };
+          expect(axiosError.response.status).to.equal(409);
+        } else {
+          throw error;
+        }
       }
     });
 
@@ -165,14 +178,19 @@ describe('TrackService - TimeEntry Status Management', () => {
           TEST_USERS.max,
         );
         expect.fail('Expected validation error was not thrown');
-      } catch (error) {
-        expect(error.response.status).to.equal(409);
+      } catch (error: unknown) {
+        if (error && typeof error === 'object' && 'response' in error) {
+          const axiosError = error as { response: AxiosResponse };
+          expect(axiosError.response.status).to.equal(409);
+        } else {
+          throw error;
+        }
       }
     });
   });
 
   describe('Bound Actions', () => {
-    let testEntry;
+    let testEntry: TimeEntry;
 
     before(async () => {
       testEntry = await factory.createWorkEntry(generateTestDate(), TEST_USERS.max);
@@ -199,9 +217,16 @@ describe('TrackService - TimeEntry Status Management', () => {
       try {
         await DELETE(`/odata/v4/track/TimeEntries(ID=${entry.ID},IsActiveEntity=true)`, TEST_USERS.max);
         expect.fail('Expected validation error was not thrown');
-      } catch (error) {
-        expect(error.response.status).to.equal(405);
-        expect(error.response.data.error.message).to.include('not deletable');
+      } catch (error: unknown) {
+        if (error && typeof error === 'object' && 'response' in error) {
+          const axiosError = error as {
+            response: AxiosResponse<{ error: { message: string } }>;
+          };
+          expect(axiosError.response.status).to.equal(405);
+          expect(axiosError.response.data.error.message).to.include('not deletable');
+        } else {
+          throw error;
+        }
       }
     });
   });

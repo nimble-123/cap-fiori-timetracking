@@ -5,24 +5,45 @@
  * TimeEntry-Testdaten bereit. Kapselt Draft-Erstellung und -Aktivierung.
  */
 
+import type { AxiosResponse } from 'axios';
+import type { TestUser } from './test-users';
+import type { TimeEntry } from '#cds-models/io/nimble';
+
+// Verwende Partial<TimeEntry> aber erlaube auch flexible String-Types für Testdaten
+type TimeEntryData = Partial<Omit<TimeEntry, 'workDate' | 'startTime' | 'endTime'>> & {
+  workDate?: string;
+  startTime?: string;
+  endTime?: string;
+};
+
+interface DraftResponse {
+  ID: string;
+  IsActiveEntity: boolean;
+  [key: string]: unknown;
+}
+
+interface ODataError {
+  error?: {
+    message?: string;
+  };
+}
+
+type POSTFunction = (url: string, data: unknown, user?: TestUser) => Promise<AxiosResponse>;
+
 /**
  * Factory für konsistente TimeEntry-Erstellung mit Draft-Handling
  */
-class TimeEntryFactory {
-  /**
-   * @param {Object} POST - cds.test POST function
-   */
-  constructor(POST) {
+export class TimeEntryFactory {
+  private POST: POSTFunction;
+
+  constructor(POST: POSTFunction) {
     this.POST = POST;
   }
 
   /**
    * Erstellt einen Draft und aktiviert ihn
-   * @param {Object} entryData - Entry-Daten
-   * @param {Object} user - { auth: { username, password } }
-   * @returns {Promise<Object>} Aktivierter Entry
    */
-  async createAndActivate(entryData, user) {
+  async createAndActivate(entryData: TimeEntryData, user: TestUser): Promise<DraftResponse> {
     // Draft erstellen
     const { data: draft, status } = await this.POST(
       '/odata/v4/track/TimeEntries',
@@ -49,15 +70,18 @@ class TimeEntryFactory {
         throw new Error(`Failed to activate draft: ${activateStatus}`);
       }
 
-      return activated;
+      return activated as DraftResponse;
     } catch (error) {
       // Re-throw mit besserem Error-Handling
-      if (error.response) {
-        const axiosError = new Error(
-          `Failed to activate draft: ${error.response.status} - ${error.response.data?.error?.message || 'Unknown error'}`,
-        );
-        axiosError.response = error.response;
-        throw axiosError;
+      if (error instanceof Error && 'response' in error) {
+        const axiosError = error as Error & { response?: AxiosResponse<ODataError> };
+        const errorMessage =
+          axiosError.response?.data?.error?.message || axiosError.response?.statusText || 'Unknown error';
+        const newError = new Error(
+          `Failed to activate draft: ${axiosError.response?.status} - ${errorMessage}`,
+        ) as Error & { response?: AxiosResponse };
+        newError.response = axiosError.response;
+        throw newError;
       }
       throw error;
     }
@@ -65,12 +89,8 @@ class TimeEntryFactory {
 
   /**
    * Erstellt einen Work-Entry (Typ 'W')
-   * @param {string} workDate - Format 'YYYY-MM-DD'
-   * @param {Object} user - { auth: { username, password } }
-   * @param {Object} overrides - Zusätzliche/Override-Felder
-   * @returns {Promise<Object>}
    */
-  async createWorkEntry(workDate, user, overrides = {}) {
+  async createWorkEntry(workDate: string, user: TestUser, overrides: TimeEntryData = {}): Promise<DraftResponse> {
     return this.createAndActivate(
       {
         user_ID: user.auth.username,
@@ -89,12 +109,8 @@ class TimeEntryFactory {
 
   /**
    * Erstellt einen Vacation-Entry (Typ 'V')
-   * @param {string} workDate - Format 'YYYY-MM-DD'
-   * @param {Object} user - { auth: { username, password } }
-   * @param {Object} overrides - Zusätzliche/Override-Felder
-   * @returns {Promise<Object>}
    */
-  async createVacationEntry(workDate, user, overrides = {}) {
+  async createVacationEntry(workDate: string, user: TestUser, overrides: TimeEntryData = {}): Promise<DraftResponse> {
     return this.createAndActivate(
       {
         user_ID: user.auth.username,
@@ -111,12 +127,8 @@ class TimeEntryFactory {
 
   /**
    * Erstellt einen Sick-Entry (Typ 'S')
-   * @param {string} workDate - Format 'YYYY-MM-DD'
-   * @param {Object} user - { auth: { username, password } }
-   * @param {Object} overrides - Zusätzliche/Override-Felder
-   * @returns {Promise<Object>}
    */
-  async createSickEntry(workDate, user, overrides = {}) {
+  async createSickEntry(workDate: string, user: TestUser, overrides: TimeEntryData = {}): Promise<DraftResponse> {
     return this.createAndActivate(
       {
         user_ID: user.auth.username,
@@ -133,12 +145,12 @@ class TimeEntryFactory {
 
   /**
    * Erstellt einen Business Trip-Entry (Typ 'B')
-   * @param {string} workDate - Format 'YYYY-MM-DD'
-   * @param {Object} user - { auth: { username, password } }
-   * @param {Object} overrides - Zusätzliche/Override-Felder
-   * @returns {Promise<Object>}
    */
-  async createBusinessTripEntry(workDate, user, overrides = {}) {
+  async createBusinessTripEntry(
+    workDate: string,
+    user: TestUser,
+    overrides: TimeEntryData = {},
+  ): Promise<DraftResponse> {
     return this.createAndActivate(
       {
         user_ID: user.auth.username,
@@ -158,11 +170,8 @@ class TimeEntryFactory {
 
   /**
    * Erstellt nur einen Draft (ohne Aktivierung)
-   * @param {Object} entryData - Entry-Daten
-   * @param {Object} user - { auth: { username, password } }
-   * @returns {Promise<Object>} Draft
    */
-  async createDraft(entryData, user) {
+  async createDraft(entryData: TimeEntryData, user: TestUser): Promise<DraftResponse> {
     const { data, status } = await this.POST(
       '/odata/v4/track/TimeEntries',
       {
@@ -176,16 +185,13 @@ class TimeEntryFactory {
       throw new Error(`Failed to create draft: ${status}`);
     }
 
-    return data;
+    return data as DraftResponse;
   }
 
   /**
    * Aktiviert einen bestehenden Draft
-   * @param {string} draftID - ID des Drafts
-   * @param {Object} user - { auth: { username, password } }
-   * @returns {Promise<Object>} Aktivierter Entry
    */
-  async activateDraft(draftID, user) {
+  async activateDraft(draftID: string, user: TestUser): Promise<DraftResponse> {
     try {
       const { data, status } = await this.POST(
         `/odata/v4/track/TimeEntries(ID=${draftID},IsActiveEntity=false)/draftActivate`,
@@ -197,15 +203,18 @@ class TimeEntryFactory {
         throw new Error(`Failed to activate draft: ${status}`);
       }
 
-      return data;
+      return data as DraftResponse;
     } catch (error) {
       // Re-throw mit besserem Error-Handling
-      if (error.response) {
-        const axiosError = new Error(
-          `Failed to activate draft: ${error.response.status} - ${error.response.data?.error?.message || 'Unknown error'}`,
-        );
-        axiosError.response = error.response;
-        throw axiosError;
+      if (error instanceof Error && 'response' in error) {
+        const axiosError = error as Error & { response?: AxiosResponse<ODataError> };
+        const errorMessage =
+          axiosError.response?.data?.error?.message || axiosError.response?.statusText || 'Unknown error';
+        const newError = new Error(
+          `Failed to activate draft: ${axiosError.response?.status} - ${errorMessage}`,
+        ) as Error & { response?: AxiosResponse };
+        newError.response = axiosError.response;
+        throw newError;
       }
       throw error;
     }
@@ -214,10 +223,10 @@ class TimeEntryFactory {
 
 /**
  * Generiert ein eindeutiges zukünftiges Datum für Tests
- * @param {number} daysFromNow - Tage in der Zukunft (default: zufällig 1-365)
- * @returns {string} Format 'YYYY-MM-DD'
+ * @param daysFromNow - Tage in der Zukunft (default: zufällig 1-365)
+ * @returns Format 'YYYY-MM-DD'
  */
-function generateUniqueFutureDate(daysFromNow = null) {
+export function generateUniqueFutureDate(daysFromNow: number | null = null): string {
   const days = daysFromNow || Math.floor(Math.random() * 1000) + 365; // Start bei 365+ für mehr Abstand
   const date = new Date();
   date.setDate(date.getDate() + days);
@@ -227,13 +236,17 @@ function generateUniqueFutureDate(daysFromNow = null) {
 /**
  * Generiert ein Datum im Jahr 2027+ (weit genug in der Zukunft für Tests)
  * WICHTIG: Verwendet automatisch einen Counter um Duplikate zu vermeiden
- * @param {number} year - Jahr (default: 2027)
- * @param {number} month - Monat 1-12
- * @param {number} day - Tag 1-31
- * @returns {string} Format 'YYYY-MM-DD'
+ * @param year - Jahr (default: 2027)
+ * @param month - Monat 1-12
+ * @param day - Tag 1-31
+ * @returns Format 'YYYY-MM-DD'
  */
 let testDateCounter = 0;
-function generateTestDate(year = null, month = null, day = null) {
+export function generateTestDate(
+  year: number | null = null,
+  month: number | null = null,
+  day: number | null = null,
+): string {
   // Wenn keine Parameter gegeben, verwende Counter für Eindeutigkeit
   if (year === null) {
     testDateCounter++;
@@ -246,9 +259,3 @@ function generateTestDate(year = null, month = null, day = null) {
   const paddedDay = String(day).padStart(2, '0');
   return `${year}-${paddedMonth}-${paddedDay}`;
 }
-
-module.exports = {
-  TimeEntryFactory,
-  generateUniqueFutureDate,
-  generateTestDate,
-};

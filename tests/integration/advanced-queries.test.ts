@@ -3,17 +3,20 @@
  *
  * Testet OData Query Features und spezielle Szenarien
  */
-const cds = require('@sap/cds');
+import cds from '@sap/cds';
+import type { AxiosResponse } from 'axios';
+import { TimeEntryFactory, generateTestDate, TEST_USERS, type ODataCollection } from '../helpers';
+import type { TimeEntry, User } from '#cds-models/io/nimble';
+
 const { GET, POST, PATCH, expect } = cds.test(__dirname + '/../..', '--in-memory');
-const { TimeEntryFactory, generateTestDate, TEST_USERS } = require('../helpers');
 
 describe('TrackService - Advanced Queries', () => {
   describe('OData Query Options', () => {
     it('should filter TimeEntries by multiple criteria', async () => {
-      const { data, status } = await GET(
+      const { data, status } = (await GET(
         "/odata/v4/track/TimeEntries?$filter=entryType_code eq 'W' and status_code eq 'O'",
         TEST_USERS.max,
-      );
+      )) as AxiosResponse<ODataCollection<TimeEntry>>;
 
       expect(status).to.equal(200);
       expect(data.value).to.be.an('array');
@@ -81,7 +84,9 @@ describe('TrackService - Advanced Queries', () => {
 
   describe('User Repository', () => {
     it('should read all users with structure', async () => {
-      const { data, status } = await GET('/odata/v4/track/Users', TEST_USERS.max);
+      const { data, status } = (await GET('/odata/v4/track/Users', TEST_USERS.max)) as AxiosResponse<
+        ODataCollection<User>
+      >;
 
       expect(status).to.equal(200);
       expect(data.value).to.be.an('array');
@@ -108,7 +113,7 @@ describe('TrackService - Advanced Queries', () => {
 });
 
 describe('TrackService - Edge Cases', () => {
-  let factory;
+  let factory: TimeEntryFactory;
 
   before(() => {
     factory = new TimeEntryFactory(POST);
@@ -248,8 +253,13 @@ describe('TrackService - Edge Cases', () => {
           TEST_USERS.max,
         );
         expect.fail('Expected error was not thrown');
-      } catch (error) {
-        expect(error.response.status).to.be.oneOf([400, 404, 409, 500]);
+      } catch (error: unknown) {
+        if (error && typeof error === 'object' && 'response' in error) {
+          const axiosError = error as { response: AxiosResponse };
+          expect(axiosError.response.status).to.be.oneOf([400, 404, 409, 500]);
+        } else {
+          throw error;
+        }
       }
     });
 

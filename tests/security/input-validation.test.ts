@@ -3,8 +3,21 @@
  *
  * Testet Schutz gegen XSS, SQL Injection, und ungültige Inputs
  */
-const cds = require('@sap/cds');
+import cds from '@sap/cds';
+import type { AxiosResponse } from 'axios';
+
 const { POST, expect } = cds.test(__dirname + '/../..', '--in-memory');
+
+interface ODataError {
+  error?: {
+    message?: string;
+  };
+}
+
+// Helper function für Error Type Guard
+function isAxiosError(error: unknown): error is { response: AxiosResponse<ODataError> } {
+  return error !== null && typeof error === 'object' && 'response' in error;
+}
 
 describe('Security - Input Validation Tests', () => {
   const TEST_USER = { auth: { username: 'max.mustermann@test.de', password: 'max' } };
@@ -38,9 +51,14 @@ describe('Security - Input Validation Tests', () => {
         // Note sollte nicht den rohen Script-Tag enthalten
         expect(activatedEntry.data.note).to.exist;
         // In Produktion würde CAP/UI5 das sanitizen
-      } catch (error) {
+      } catch (error: unknown) {
         // Alternativ: CAP könnte den Request ablehnen
-        expect(error.response?.status).to.exist;
+        if (error && typeof error === 'object' && 'response' in error) {
+          const axiosError = error as { response: AxiosResponse };
+          expect(axiosError.response.status).to.exist;
+        } else {
+          throw error;
+        }
       }
     });
 
@@ -61,9 +79,14 @@ describe('Security - Input Validation Tests', () => {
           TEST_USER,
         );
         // Könnte durchgehen oder abgelehnt werden - hängt von DB-Limits ab
-      } catch (error) {
+      } catch (error: unknown) {
         // Erwarteter Fehler bei zu langen Strings (400 Bad Request oder 413 Payload Too Large)
-        expect(error.response?.status).to.exist;
+        if (error && typeof error === 'object' && 'response' in error) {
+          const axiosError = error as { response: AxiosResponse };
+          expect(axiosError.response.status).to.exist;
+        } else {
+          throw error;
+        }
       }
     });
   });
@@ -83,9 +106,13 @@ describe('Security - Input Validation Tests', () => {
           TEST_USER,
         );
         expect.fail('Expected validation error');
-      } catch (error) {
+      } catch (error: unknown) {
         // CAP sollte Typen-Validierung durchführen
-        expect(error.response?.status).to.exist;
+        if (isAxiosError(error)) {
+          expect(error.response.status).to.exist;
+        } else {
+          throw error;
+        }
       }
     });
 
@@ -104,8 +131,12 @@ describe('Security - Input Validation Tests', () => {
           TEST_USER,
         );
         expect.fail('Expected validation error');
-      } catch (error) {
-        expect(error.response?.status).to.exist;
+      } catch (error: unknown) {
+        if (isAxiosError(error)) {
+          expect(error.response.status).to.exist;
+        } else {
+          throw error;
+        }
       }
     });
   });
@@ -125,8 +156,12 @@ describe('Security - Input Validation Tests', () => {
           TEST_USER,
         );
         expect.fail('Expected validation error');
-      } catch (error) {
-        expect(error.response?.status).to.exist;
+      } catch (error: unknown) {
+        if (isAxiosError(error)) {
+          expect(error.response.status).to.exist;
+        } else {
+          throw error;
+        }
       }
     });
 
@@ -144,8 +179,12 @@ describe('Security - Input Validation Tests', () => {
           TEST_USER,
         );
         expect.fail('Expected validation error');
-      } catch (error) {
-        expect(error.response?.status).to.exist;
+      } catch (error: unknown) {
+        if (isAxiosError(error)) {
+          expect(error.response.status).to.exist;
+        } else {
+          throw error;
+        }
       }
     });
 
@@ -163,11 +202,15 @@ describe('Security - Input Validation Tests', () => {
           TEST_USER,
         );
         expect.fail('Expected validation error');
-      } catch (error) {
-        expect(error.response?.status).to.exist;
-        // Message könnte leer sein, aber error.response sollte existieren
-        if (error.response?.data?.error?.message) {
-          expect(error.response.data.error.message).to.match(/EntryType|ungültig|invalid/i);
+      } catch (error: unknown) {
+        if (isAxiosError(error)) {
+          expect(error.response.status).to.exist;
+          // Message könnte leer sein, aber error.response sollte existieren
+          if (error.response.data?.error?.message) {
+            expect(error.response.data.error.message).to.match(/EntryType|ungültig|invalid/i);
+          }
+        } else {
+          throw error;
         }
       }
     });
@@ -183,8 +226,12 @@ describe('Security - Input Validation Tests', () => {
           TEST_USER,
         );
         expect.fail('Expected validation error');
-      } catch (error) {
-        expect(error.response?.status).to.exist;
+      } catch (error: unknown) {
+        if (isAxiosError(error)) {
+          expect(error.response.status).to.exist;
+        } else {
+          throw error;
+        }
       }
     });
 
@@ -213,11 +260,15 @@ describe('Security - Input Validation Tests', () => {
           TEST_USER,
         );
         expect.fail('Expected validation error');
-      } catch (error) {
-        expect(error.response?.status).to.exist;
-        // Message könnte leer sein oder bestimmte Schlüsselwörter enthalten
-        if (error.response?.data?.error?.message) {
-          expect(error.response.data.error.message).to.match(/Monat|month|ungültig|invalid/i);
+      } catch (error: unknown) {
+        if (isAxiosError(error)) {
+          expect(error.response.status).to.exist;
+          // Message könnte leer sein oder bestimmte Schlüsselwörter enthalten
+          if (error.response.data?.error?.message) {
+            expect(error.response.data.error.message).to.match(/Monat|month|ungültig|invalid/i);
+          }
+        } else {
+          throw error;
         }
       }
     });
@@ -235,8 +286,12 @@ describe('Security - Input Validation Tests', () => {
           TEST_USER,
         );
         expect.fail('Expected validation error');
-      } catch (error) {
-        expect(error.response?.status).to.exist;
+      } catch (error: unknown) {
+        if (isAxiosError(error)) {
+          expect(error.response.status).to.exist;
+        } else {
+          throw error;
+        }
       }
     });
 
@@ -251,11 +306,15 @@ describe('Security - Input Validation Tests', () => {
           TEST_USER,
         );
         expect.fail('Expected validation error');
-      } catch (error) {
-        expect(error.response?.status).to.exist;
-        // Message könnte leer sein, hauptsache ein Error wurde geworfen
-        if (error.response?.data?.error?.message) {
-          expect(error.response.data.error.message).to.match(/Bundesland|stateCode|ungültig/i);
+      } catch (error: unknown) {
+        if (isAxiosError(error)) {
+          expect(error.response.status).to.exist;
+          // Message könnte leer sein, hauptsache ein Error wurde geworfen
+          if (error.response.data?.error?.message) {
+            expect(error.response.data.error.message).to.match(/Bundesland|stateCode|ungültig/i);
+          }
+        } else {
+          throw error;
         }
       }
     });
@@ -290,9 +349,15 @@ describe('Security - Input Validation Tests', () => {
         // CAP sollte die manuellen Werte ignorieren und neu berechnen
         expect(activated.data.durationHoursNet).not.to.equal(999);
         expect(activated.data.overtimeHours).not.to.equal(999);
-      } catch (error) {
+      } catch (error: unknown) {
         // Alternativ: CAP könnte den Request ablehnen
-        expect(error.response?.status || error.code).to.be.ok;
+        if (isAxiosError(error)) {
+          expect(error.response.status).to.be.ok;
+        } else if (error && typeof error === 'object' && 'code' in error) {
+          expect((error as { code: unknown }).code).to.be.ok;
+        } else {
+          throw error;
+        }
       }
     });
   });

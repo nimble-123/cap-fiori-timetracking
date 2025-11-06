@@ -5,7 +5,19 @@
  * Diese User sind in package.json konfiguriert.
  */
 
-const TEST_USERS = {
+export interface TestUser {
+  auth: {
+    username: string;
+    password: string;
+  };
+}
+
+export interface TestUsers {
+  max: TestUser;
+  erika: TestUser;
+}
+
+export const TEST_USERS: TestUsers = {
   max: {
     auth: {
       username: 'max.mustermann@test.de',
@@ -19,5 +31,3 @@ const TEST_USERS = {
     },
   },
 };
-
-module.exports = { TEST_USERS };

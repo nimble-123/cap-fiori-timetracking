@@ -3,14 +3,28 @@
  *
  * Testet CodeLists und Reference Entities (Users, Projects, ActivityTypes, etc.)
  */
-const cds = require('@sap/cds');
+import cds from '@sap/cds';
+import type { AxiosResponse } from 'axios';
+import { TEST_USERS, type ODataCollection } from '../helpers';
+import type {
+  User,
+  Project,
+  ActivityType,
+  EntryType,
+  WorkLocation,
+  TravelType,
+  TimeEntryStatus,
+  Region,
+} from '#cds-models/io/nimble';
+
 const { GET, expect } = cds.test(__dirname + '/../..', '--in-memory');
-const { TEST_USERS } = require('../helpers');
 
 describe('TrackService - Reference Data', () => {
   describe('Users', () => {
     it('should read users', async () => {
-      const { data, status } = await GET('/odata/v4/track/Users', TEST_USERS.max);
+      const { data, status } = (await GET('/odata/v4/track/Users', TEST_USERS.max)) as AxiosResponse<
+        ODataCollection<User>
+      >;
 
       expect(status).to.equal(200);
       expect(data.value).to.be.an('array');
@@ -23,7 +37,9 @@ describe('TrackService - Reference Data', () => {
     });
 
     it('should read users with their properties', async () => {
-      const { data, status } = await GET('/odata/v4/track/Users?$top=1', TEST_USERS.max);
+      const { data, status } = (await GET('/odata/v4/track/Users?$top=1', TEST_USERS.max)) as AxiosResponse<
+        ODataCollection<User>
+      >;
 
       expect(status).to.equal(200);
       if (data.value.length > 0) {
@@ -35,7 +51,9 @@ describe('TrackService - Reference Data', () => {
 
   describe('Projects', () => {
     it('should read projects', async () => {
-      const { data, status } = await GET('/odata/v4/track/Projects', TEST_USERS.max);
+      const { data, status } = (await GET('/odata/v4/track/Projects', TEST_USERS.max)) as AxiosResponse<
+        ODataCollection<Project>
+      >;
 
       expect(status).to.equal(200);
       expect(data.value).to.be.an('array');
@@ -47,7 +65,10 @@ describe('TrackService - Reference Data', () => {
     });
 
     it('should filter active projects', async () => {
-      const { data, status } = await GET('/odata/v4/track/Projects?$filter=active eq true', TEST_USERS.max);
+      const { data, status } = (await GET(
+        '/odata/v4/track/Projects?$filter=active eq true',
+        TEST_USERS.max,
+      )) as AxiosResponse<ODataCollection<Project>>;
 
       expect(status).to.equal(200);
       expect(data.value).to.be.an('array');
@@ -60,7 +81,9 @@ describe('TrackService - Reference Data', () => {
 
   describe('ActivityTypes', () => {
     it('should read activity types', async () => {
-      const { data, status } = await GET('/odata/v4/track/ActivityTypes', TEST_USERS.max);
+      const { data, status } = (await GET('/odata/v4/track/ActivityTypes', TEST_USERS.max)) as AxiosResponse<
+        ODataCollection<ActivityType>
+      >;
 
       expect(status).to.equal(200);
       expect(data.value).to.be.an('array');
@@ -73,7 +96,10 @@ describe('TrackService - Reference Data', () => {
     });
 
     it('should include localized texts', async () => {
-      const { data, status } = await GET('/odata/v4/track/ActivityTypes?$expand=texts&$top=1', TEST_USERS.max);
+      const { data, status } = (await GET(
+        '/odata/v4/track/ActivityTypes?$expand=texts&$top=1',
+        TEST_USERS.max,
+      )) as AxiosResponse<ODataCollection<ActivityType>>;
 
       expect(status).to.equal(200);
       if (data.value.length > 0 && data.value[0].texts) {
@@ -84,7 +110,9 @@ describe('TrackService - Reference Data', () => {
 
   describe('EntryTypes', () => {
     it('should read entry types', async () => {
-      const { data, status } = await GET('/odata/v4/track/EntryTypes', TEST_USERS.max);
+      const { data, status } = (await GET('/odata/v4/track/EntryTypes', TEST_USERS.max)) as AxiosResponse<
+        ODataCollection<EntryType>
+      >;
 
       expect(status).to.equal(200);
       expect(data.value).to.be.an('array');
@@ -100,7 +128,9 @@ describe('TrackService - Reference Data', () => {
 
   describe('WorkLocations', () => {
     it('should read all work locations', async () => {
-      const { data, status } = await GET('/odata/v4/track/WorkLocations', TEST_USERS.max);
+      const { data, status } = (await GET('/odata/v4/track/WorkLocations', TEST_USERS.max)) as AxiosResponse<
+        ODataCollection<WorkLocation>
+      >;
 
       expect(status).to.equal(200);
       expect(data.value).to.be.an('array');
@@ -118,7 +148,9 @@ describe('TrackService - Reference Data', () => {
 
   describe('TravelTypes', () => {
     it('should read all travel types', async () => {
-      const { data, status } = await GET('/odata/v4/track/TravelTypes', TEST_USERS.max);
+      const { data, status } = (await GET('/odata/v4/track/TravelTypes', TEST_USERS.max)) as AxiosResponse<
+        ODataCollection<TravelType>
+      >;
 
       expect(status).to.equal(200);
       expect(data.value).to.be.an('array');
@@ -133,7 +165,9 @@ describe('TrackService - Reference Data', () => {
 
   describe('TimeEntryStatuses', () => {
     it('should read all time entry statuses', async () => {
-      const { data, status } = await GET('/odata/v4/track/TimeEntryStatuses', TEST_USERS.max);
+      const { data, status } = (await GET('/odata/v4/track/TimeEntryStatuses', TEST_USERS.max)) as AxiosResponse<
+        ODataCollection<TimeEntryStatus>
+      >;
 
       expect(status).to.equal(200);
       expect(data.value).to.be.an('array');
@@ -148,12 +182,15 @@ describe('TrackService - Reference Data', () => {
     });
 
     it('should include localized texts for statuses', async () => {
-      const { data, status } = await GET('/odata/v4/track/TimeEntryStatuses?$expand=texts', TEST_USERS.max);
+      const { data, status } = (await GET(
+        '/odata/v4/track/TimeEntryStatuses?$expand=texts',
+        TEST_USERS.max,
+      )) as AxiosResponse<ODataCollection<TimeEntryStatus>>;
 
       expect(status).to.equal(200);
-      data.value.forEach((status) => {
-        if (status.texts && status.texts.length > 0) {
-          expect(status.texts[0]).to.have.property('name');
+      data.value.forEach((statusItem) => {
+        if (statusItem.texts && statusItem.texts.length > 0) {
+          expect(statusItem.texts[0]).to.have.property('name');
         }
       });
     });
@@ -161,7 +198,9 @@ describe('TrackService - Reference Data', () => {
 
   describe('Region (States)', () => {
     it('should read all regions', async () => {
-      const { data, status } = await GET('/odata/v4/track/Region', TEST_USERS.max);
+      const { data, status } = (await GET('/odata/v4/track/Region', TEST_USERS.max)) as AxiosResponse<
+        ODataCollection<Region>
+      >;
 
       expect(status).to.equal(200);
       expect(data.value).to.be.an('array');
