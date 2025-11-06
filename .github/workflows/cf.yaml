@@ -66,7 +66,7 @@ jobs:
           cf-username: ${{ vars.CF_USERNAME }}
           cf-password: ${{ secrets.CF_PASSWORD }}
       - name: Download MTAR Artifact
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           name: mtar
           path: gen
@@ -123,7 +123,7 @@ jobs:
           cf-username: ${{ vars.CF_USERNAME }}
           cf-password: ${{ secrets.CF_PASSWORD }}
       - name: Download MTAR Artifact
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           name: mtar
           path: gen
