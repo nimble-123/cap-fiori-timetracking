@@ -3,7 +3,7 @@
  *
  * Testet reine Funktionen für Zeitberechnungen ohne DB-Zugriff
  */
-const { TimeCalculationService } = require('../../srv/track-service/handler/services/TimeCalculationService');
+import { TimeCalculationService } from '../../srv/track-service/handler/services/TimeCalculationService';
 
 describe('TimeCalculationService - Unit Tests', () => {
   describe('timeToMinutes', () => {
