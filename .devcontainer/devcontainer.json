@@ -1,7 +1,6 @@
 {
   "name": "CAP Fiori Time Tracking",
   "image": "mcr.microsoft.com/devcontainers/typescript-node:22-bookworm",
-
   // Configure tool-specific properties
   "customizations": {
     "vscode": {
@@ -11,17 +10,63 @@
         "esbenp.prettier-vscode",
         "humao.rest-client",
         "eamodio.gitlens",
-        "ms-azuretools.vscode-docker"
+        "ms-azuretools.vscode-docker",
+        "vivaxy.vscode-conventional-commits",
+        "SAPSE.vscode-wing-cds-editor-vsc",
+        "EditorConfig.EditorConfig",
+        "bierner.github-markdown-preview",
+        "SAPOSS.sap-guided-answers-extension",
+        "MermaidChart.vscode-mermaid-chart",
+        "bierner.markdown-emoji",
+        "bierner.markdown-footnotes",
+        "bierner.markdown-preview-github-styles",
+        "bierner.markdown-mermaid",
+        "bierner.markdown-yaml-preamble",
+        "mechatroner.rainbow-csv",
+        "SAPSE.sap-ux-application-modeler-extension",
+        "SAPSE.sap-ux-fiori-tools-extension-pack",
+        "SAPSE.sap-ux-help-extension",
+        "SAPSE.sap-ux-service-modeler-extension",
+        "SAPSE.sap-ux-annotation-modeler-extension",
+        "SAPOSS.vscode-ui5-language-assistant",
+        "SAPOSS.xml-toolkit",
+        "redhat.vscode-yaml",
+        "rvest.vs-code-prettier-eslint",
+        "mikestead.dotenv",
+        "PKief.material-icon-theme",
+        "GitHub.github-vscode-theme",
+        "GitHub.copilot",
+        "GitHub.copilot-chat",
+        "github.vscode-github-actions"
       ],
       "settings": {
+        "workbench.iconTheme": "material-icon-theme",
+        "workbench.colorTheme": "GitHub Dark",
+        "editor.bracketPairColorization.enabled": true,
+        "editor.cursorBlinking": "smooth",
+        "editor.cursorSmoothCaretAnimation": "on",
+        "editor.cursorStyle": "line",
+        "editor.fontFamily": "FiraCode Nerd Font, FiraCode Nerd Font Mono, Fira Code, 'Courier New', monospace",
+        "editor.fontLigatures": true,
+        "editor.fontSize": 14,
+        "editor.tabSize": 2,
         "editor.formatOnSave": true,
         "editor.defaultFormatter": "esbenp.prettier-vscode",
         "editor.codeActionsOnSave": {
           "source.fixAll.eslint": "explicit"
         },
+        "editor.rulers": [
+          120
+        ],
         "files.eol": "\n",
         "files.trimTrailingWhitespace": true,
         "files.insertFinalNewline": true,
+        "terminal.integrated.suggest.enabled": true,
+        "terminal.integrated.cwd": "${workspaceFolder}",
+        "terminal.integrated.fontFamily": "FiraCode Nerd Font Mono, FiraCode Nerd Font, Fira Code, 'Courier New', monospace",
+        "terminal.integrated.fontSize": 14,
+        "terminal.integrated.fontWeight": "normal",
+        "terminal.integrated.fontWeightBold": "normal",
         "[typescript]": {
           "editor.defaultFormatter": "esbenp.prettier-vscode"
         },
@@ -35,7 +80,6 @@
       }
     }
   },
-
   // Features to add to the dev container
   "features": {
     "ghcr.io/devcontainers/features/java:1": {
@@ -54,10 +98,12 @@
       "version": "latest"
     }
   },
-
   // Use 'forwardPorts' to make a list of ports inside the container available locally.
-  "forwardPorts": [4004, 8080],
-
+  "forwardPorts": [
+    4004,
+    8080,
+    54953
+  ],
   // Port attributes for better UX
   "portsAttributes": {
     "4004": {
@@ -67,24 +113,23 @@
     "8080": {
       "label": "UI Testing",
       "onAutoForward": "silent"
+    },
+    "54953": {
+      "label": "CAP Console Plugin (WebSocket)",
+      "onAutoForward": "silent"
     }
   },
-
   // Use 'postCreateCommand' to run commands after the container is created.
   "postCreateCommand": "bash .devcontainer/setup.sh",
-
   // Use 'postStartCommand' to run commands after the container is started.
   "postStartCommand": "echo '🚀 CAP Fiori Time Tracking Devcontainer is ready!'",
-
   // Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
   "remoteUser": "node",
-
   // Environment variables
   "remoteEnv": {
     "NODE_ENV": "development",
     "CDS_ENV": "development"
   },
-
   // Mount the workspace folder
   "workspaceFolder": "/workspace",
   "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached"

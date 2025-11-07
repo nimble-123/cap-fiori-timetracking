@@ -1,0 +1,96 @@
+# Starship Configuration for CAP Fiori Time Tracking DevContainer
+# Documentation: https://starship.rs/config/
+
+# Timeout for command execution
+command_timeout = 1000
+
+# Format of the prompt
+format = """
+[╭─](bold blue)$username\
+$hostname\
+$directory\
+$git_branch\
+$git_status\
+$nodejs\
+$package\
+$docker_context\
+$line_break\
+[╰─](bold blue)$character"""
+
+# Right-side prompt
+right_format = """$cmd_duration\
+$time"""
+
+[character]
+success_symbol = "[➜](bold green)"
+error_symbol = "[✗](bold red)"
+vicmd_symbol = "[V](bold yellow)"
+
+[username]
+style_user = "bold yellow"
+style_root = "bold red"
+format = "[$user]($style) "
+disabled = false
+show_always = true
+
+[hostname]
+ssh_only = false
+format = "[@$hostname](bold blue) "
+disabled = false
+
+[directory]
+truncation_length = 3
+truncate_to_repo = true
+format = "[$path]($style)[$read_only]($read_only_style) "
+style = "bold cyan"
+read_only = " 🔒"
+
+[git_branch]
+symbol = " "
+format = "on [$symbol$branch]($style) "
+style = "bold purple"
+
+[git_status]
+format = '([\[$all_status$ahead_behind\]]($style) )'
+style = "bold red"
+conflicted = "🏳"
+ahead = "⇡${count}"
+behind = "⇣${count}"
+diverged = "⇕⇡${ahead_count}⇣${behind_count}"
+untracked = "?${count}"
+stashed = "$${count}"
+modified = "!${count}"
+staged = "+${count}"
+renamed = "»${count}"
+deleted = "✘${count}"
+
+[nodejs]
+format = "via [$symbol($version )]($style)"
+symbol = " "
+style = "bold green"
+detect_extensions = ["js", "mjs", "cjs", "ts"]
+detect_files = ["package.json", ".node-version"]
+detect_folders = ["node_modules"]
+
+[package]
+format = "[$symbol$version]($style) "
+symbol = "📦 "
+style = "208"
+display_private = false
+
+[docker_context]
+format = "via [$symbol$context]($style) "
+symbol = "🐳 "
+style = "blue bold"
+only_with_files = true
+
+[cmd_duration]
+min_time = 500
+format = "took [$duration]($style) "
+style = "bold yellow"
+
+[time]
+disabled = false
+format = "[$time]($style)"
+style = "bold white"
+time_format = "%T"

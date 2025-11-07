@@ -30,19 +30,23 @@ This directory contains the configuration for developing the CAP Fiori Time Trac
 - **Node.js**: 22.20.0 (matches `.nvmrc`)
 - **npm**: Latest compatible version
 - **Debian Bookworm**: Stable Linux base
+- **Starship**: Modern, fast prompt with Git info, Node version, and more
 
 ### Development Tools
 
 #### SAP-Specific
+
 - **@sap/cds-dk**: SAP Cloud Application Programming Model Development Kit
 - **mbt**: Multi-Target Application Build Tool
 - **@cap-js/mcp-server**: CAP MCP Server for AI assistance
 
 #### Cloud Foundry
+
 - **cf CLI**: Cloud Foundry Command Line Interface (v8)
 - **MultiApps Plugin**: For deploying Multi-Target Applications
 
 #### Build Tools
+
 - **Java 17** (Temurin): Required for `@sap/ams-dev` builds
 - **TypeScript**: Language tooling
 - **tsx**: TypeScript execution
@@ -80,10 +84,10 @@ The following extensions are automatically installed:
 
 ### Port Forwarding
 
-| Port | Service           | Auto-Forward |
-|------|-------------------|--------------|
-| 4004 | CAP Server        | Notify       |
-| 8080 | UI Testing        | Silent       |
+| Port | Service    | Auto-Forward |
+| ---- | ---------- | ------------ |
+| 4004 | CAP Server | Notify       |
+| 8080 | UI Testing | Silent       |
 
 ### Environment Variables
 
@@ -166,6 +170,7 @@ npm run deploy:cf
 **Issue**: Container fails to build or setup
 
 **Solution**:
+
 1. Check Docker Desktop is running (local dev)
 2. Ensure you have sufficient disk space
 3. Try rebuilding: `F1` → **"Dev Containers: Rebuild Container"**
@@ -175,6 +180,7 @@ npm run deploy:cf
 **Issue**: Port 4004 already in use
 
 **Solution**:
+
 ```bash
 # Use a different port
 PORT=4005 npm run watch
@@ -185,6 +191,7 @@ PORT=4005 npm run watch
 **Issue**: `npm ci` fails during setup
 
 **Solution**:
+
 ```bash
 # Clear npm cache and retry
 npm cache clean --force
@@ -197,6 +204,7 @@ npm install
 **Issue**: `#cds-models/*` imports show errors
 
 **Solution**:
+
 ```bash
 # Regenerate types
 npx cds-typer "*"
@@ -210,6 +218,7 @@ npx cds-typer "*"
 **Issue**: `cf` command not available
 
 **Solution**:
+
 ```bash
 # Re-run the setup script
 bash .devcontainer/setup.sh
@@ -233,6 +242,7 @@ sudo apt-get install -y cf8-cli
 ### Cloud Foundry Credentials
 
 When using Codespaces, store CF credentials as Codespaces secrets:
+
 1. Go to GitHub Settings → Codespaces → Secrets
 2. Add secrets: `CF_API`, `CF_ORG`, `CF_SPACE`, `CF_USERNAME`, `CF_PASSWORD`
 3. Access in terminal: `echo $CF_USERNAME`
@@ -240,17 +250,20 @@ When using Codespaces, store CF credentials as Codespaces secrets:
 ## 📚 Additional Resources
 
 ### Devcontainer Documentation
+
 - [VS Code Dev Containers](https://code.visualstudio.com/docs/devcontainers/containers)
 - [GitHub Codespaces](https://docs.github.com/en/codespaces)
 - [Dev Container Specification](https://containers.dev/)
 
 ### Project Documentation
+
 - [README.md](../README.md) - Project overview
 - [GETTING_STARTED.md](../GETTING_STARTED.md) - Getting started guide
 - [ARCHITECTURE.md](../docs/ARCHITECTURE.md) - Architecture documentation
 - [ADR-0021](../docs/ADR/0021-devcontainer-github-codespaces.md) - Devcontainer decision record
 
 ### SAP Documentation
+
 - [SAP CAP Documentation](https://cap.cloud.sap)
 - [SAP Cloud Foundry](https://help.sap.com/docs/btp/sap-business-technology-platform/cloud-foundry-environment)
 - [MTA Development](https://help.sap.com/docs/btp/sap-business-technology-platform/developing-multitarget-applications)
@@ -284,6 +297,7 @@ When contributing to the devcontainer configuration:
 ### Updating Node.js Version
 
 If `.nvmrc` is updated:
+
 1. Update `devcontainer.json` → `features.node.version`
 2. Test in a fresh container
 3. Update this README
