@@ -1,7 +1,7 @@
 _schema-version: 3.3.0
 ID: cap-fiori-timetracking
-version: 0.0.1
-description: 'SAP CAP-based time tracking solution with Fiori UI and a TypeScript backend.'
+version: 0.1.0
+description: SAP CAP-based time tracking solution with Fiori UI and a TypeScript backend.
 parameters:
   enable-parallel-deployments: true
   deploy_mode: html5-repo
@@ -19,15 +19,15 @@ modules:
       instances: 1
       buildpack: nodejs_buildpack
       routes:
-        - route: '${default-url}'
-        - route: '${default-host}.cert.${default-domain}'
+        - route: ${default-url}
+        - route: ${default-host}.cert.${default-domain}
     build-parameters:
       builder: npm-ci
     provides:
-      - name: srv-api # required by consumers of CAP services (e.g. approuter)
+      - name: srv-api
         properties:
           srv-url: ${default-url}
-          srv-cert-url: '${protocol}://${default-host}.cert.${default-domain}'
+          srv-cert-url: ${protocol}://${default-host}.cert.${default-domain}
     requires:
       - name: cap-fiori-timetracking-attachments
       - name: cap-fiori-timetracking-db
@@ -49,7 +49,6 @@ modules:
       - cap-fiori-timetracking-ams-policies-deployer
     properties:
       AMS_DCL_ROOT: ams/dcl
-
   - name: cap-fiori-timetracking-db-deployer
     type: hdb
     path: gen/db
@@ -57,7 +56,6 @@ modules:
       buildpack: nodejs_buildpack
     requires:
       - name: cap-fiori-timetracking-db
-
   - name: cap-fiori-timetracking-app-deployer
     type: com.sap.application.content
     path: gen
@@ -89,7 +87,6 @@ modules:
             forwardAuthToken: true
           - name: ui5
             url: https://ui5.sap.com
-
   - name: capfioritimetrackingmanageactivitytypes
     type: html5
     path: app/manage-activity-types
@@ -120,7 +117,6 @@ modules:
         - npm ci
         - npm run build
       supported-platforms: []
-
   - name: cap-fiori-timetracking-ams-policies-deployer
     type: javascript.nodejs
     path: gen/policies
@@ -139,7 +135,6 @@ modules:
             credential-type: X509_GENERATED
             app-identifier: ams-policy-deployer
       - name: cap-fiori-timetracking-ams
-
 resources:
   - name: cap-fiori-timetracking-attachments
     type: org.cloudfoundry.managed-service
@@ -199,13 +194,13 @@ resources:
         display-name: cap-fiori-timetracking
         oauth2-configuration:
           token-policy:
-            access-token-format: 'jwt'
+            access-token-format: jwt
         xsuaa-cross-consumption: true
         authorization:
           enabled: true
         provided-apis:
           - name: cap-fiori-timetracking-api
-            description: 'API for CAP Fiori Time Tracking'
+            description: API for CAP Fiori Time Tracking
   - name: cap-fiori-timetracking-ams
     type: org.cloudfoundry.managed-service
     parameters:
