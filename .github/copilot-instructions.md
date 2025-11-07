@@ -215,6 +215,7 @@ Validators are injected via ServiceContainer and used in Commands.
 - **Architektur & Governance:** `architecture-deep-dive`, `adr-drafting-assistant`
 - **Support & Kommunikation:** `bug-triage-investigator`, `release-notes-curator`
 - **MCP-Server:** Via `.vscode/mcp.json` verfügbar – `cds-mcp`, `@sap-ux/fiori-mcp-server`, `@ui5/mcp-server` für CAP-/Fiori-/UI5-Nachschlagewerke. Installiere `cds-mcp` einmalig global (`npm install -g @cap-js/mcp-server`); die anderen laufen über `npx`.
+- **CAP MCP Plugin:** Das Projekt nutzt `@gavdi/cap-mcp` (von gavdilabs), um CAP-Services als MCP Server bereitzustellen. Der MCP-Endpunkt ist unter `http://localhost:4004/mcp` verfügbar, sobald der Development-Server läuft. AI-Agents können damit direkt mit unseren OData-Services, Entities und Business Functions interagieren.
 
 ### Verwendung
 

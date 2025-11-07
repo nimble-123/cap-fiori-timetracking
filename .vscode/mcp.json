@@ -23,6 +23,11 @@
         "@ui5/mcp-server"
       ]
     },
+    "cap-fiori-timetracking-mcp": {
+      "type": "http",
+      "url": "http://localhost:4004/mcp",
+      "description": "CAP Fiori Time Tracking MCP Server - provides access to time tracking entities and business functions via @gavdi/cap-mcp plugin"
+    },
     "inputs": []
   }
 }

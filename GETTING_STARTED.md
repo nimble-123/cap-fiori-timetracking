@@ -226,14 +226,23 @@ Das Repository enthält kuratierte Prompts für GitHub Models & CoPilot (`.githu
 
 ### MCP-Server & Wissensquellen
 
-- `.vscode/mcp.json` konfiguriert drei Server, die in kompatiblen IDEs sofort nutzbar sind:
+- `.vscode/mcp.json` konfiguriert vier Server, die in kompatiblen IDEs sofort nutzbar sind:
   - `cds-mcp` → SAP CAP Referenzen & Best Practices.
   - `@sap-ux/fiori-mcp-server` → Fiori Elements Patterns, UX Guidelines und Annotation-Hilfen.
   - `@ui5/mcp-server` → UI5 Control API, MVC, Routing.
-- **Installation:** Für `cds-mcp` muss die CLI einmal global installiert werden, z. B. `npm install -g @cap-js/mcp-server`. Prüfe die Installation mit `cds-mcp --help`. Die beiden anderen Server werden bei Bedarf über `npx …` gestartet.
-- In Kombination mit den Prompts können MCP-Server als „Knowledge Provider“ dienen, um technische Details während der Anforderungs- oder Review-Phase abzufragen.
+  - `cap-fiori-timetracking-mcp` → **CAP MCP Plugin** - Direkter Zugriff auf unsere Time Tracking Services via MCP.
+- **Installation:** 
+  - Für `cds-mcp` muss die CLI einmal global installiert werden, z. B. `npm install -g @cap-js/mcp-server`. Prüfe die Installation mit `cds-mcp --help`.
+  - Die beiden anderen Server (`@sap-ux/fiori-mcp-server`, `@ui5/mcp-server`) werden bei Bedarf über `npx …` gestartet.
+  - Der `cap-fiori-timetracking-mcp` Server läuft automatisch mit dem Development-Server (`npm run watch`) und ist unter `http://localhost:4004/mcp` verfügbar.
+- **CAP MCP Plugin Integration:**
+  - Das Projekt nutzt `@gavdi/cap-mcp` von [gavdilabs](https://github.com/gavdilabs/cap-mcp-plugin), um unsere CAP-Services als MCP Server bereitzustellen.
+  - AI-Agents können dadurch direkt mit unseren OData-Services, Entities und Business Functions interagieren.
+  - **Test:** `npx @modelcontextprotocol/inspector` starten und zu `http://localhost:4004/mcp` verbinden.
+  - **Health Check:** `curl http://localhost:4004/mcp/health` zeigt den Status des MCP-Servers.
+- In Kombination mit den Prompts können MCP-Server als „Knowledge Provider" dienen, um technische Details während der Anforderungs- oder Review-Phase abzufragen.
 
-> Tipp: Ergänze bei Bedarf projektspezifische Details (z. B. betroffene Entities, Handler, Commands), damit das LLM zielgerichtet antwortet.
+> Tipp: Ergänze bei Bedarf projektspezifische Details (z. B. betroffene Entities, Handler, Commands), damit das LLM zielgerichtet antwortet.
 
 ---
 

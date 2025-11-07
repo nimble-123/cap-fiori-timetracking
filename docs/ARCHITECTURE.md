@@ -65,6 +65,9 @@ Zeiterfassungsanwendung auf Basis von SAP Cloud Application Programming Model mi
 - [8.9 OpenAPI & Swagger UI](#89-openapi--swagger-ui)
 - [8.10 Security & Compliance](#810-security--compliance)
 - [8.11 AI Assistance & Prompt Catalog](#811-ai-assistance--prompt-catalog)
+- [8.12 Developer Experience: SAP CAP Console](#812-developer-experience-sap-cap-console)
+- [8.13 CAP Plugins & Calesi Pattern](#813-cap-plugins--calesi-pattern)
+- [8.14 CAP MCP Plugin - AI-native Service Integration](#814-cap-mcp-plugin---ai-native-service-integration)
 
 ### [9. Architekturentscheidungen](#9-architekturentscheidungen)
 
@@ -2249,6 +2252,117 @@ Die CAP Console ergänzt REST Client, Swagger UI und AI Prompts als zentrales We
 - **Governance:** Evaluierte Plugins dokumentieren wir in ADRs/Docs (z. B. Attachments, Logging). Neue Add-ons folgen denselben Qualitäts-Gates (Tests, DI, Observability) wie unsere Kernkomponenten.
 
 > Motto: „Start small, grow as you go“ – CAP + Calesi erlauben es, Enterprise-Features iterativ nachzurüsten, ohne in technische Schulden zu geraten.
+
+---
+
+### 8.14 CAP MCP Plugin - AI-native Service Integration
+
+Das Projekt nutzt das **CAP MCP Plugin** ([`@gavdi/cap-mcp`](https://github.com/gavdilabs/cap-mcp-plugin)) von gavdilabs, um unsere CAP-Services als **Model Context Protocol (MCP) Server** bereitzustellen. Dies ermöglicht AI-Agents (wie Claude, GitHub Copilot, oder andere MCP-kompatible Tools) den direkten Zugriff auf unsere OData-Services, Entities und Business Functions.
+
+**Was ist das Model Context Protocol (MCP)?**
+
+Das **Model Context Protocol** ist ein von Anthropic entwickelter Standard, der die Lücke zwischen Enterprise-Daten und AI-Agents schließt:
+
+- **AI-Native Datenabfrage**: CAP-Services werden für AI-Agents direkt zugänglich – ermöglicht natürlichsprachliche Abfragen auf Geschäftsdaten
+- **Enterprise-Integration**: Nahtlose Verbindung zwischen AI-Tools, SAP-Systemen, Datenbanken und Business Logic
+- **Intelligente Automatisierung**: AI-Agents können komplexe Business-Operationen durch Kombination mehrerer CAP Service Calls ausführen
+- **Developer Productivity**: AI-Assistenten können Entwickler beim Verstehen, Abfragen und Arbeiten mit CAP-Datenmodellen unterstützen
+
+**Plugin-Architektur & Auto-Generation**
+
+Das Plugin transformiert annotierte CAP-Services automatisch in einen voll funktionsfähigen MCP-Server:
+
+- **📊 Resources**: CAP Entities werden als MCP Resources mit OData v4 Query-Capabilities exponiert (`$filter`, `$orderby`, `$top`, `$skip`, `$select`)
+- **🔧 Tools**: CAP Functions und Actions werden zu ausführbaren MCP Tools für AI-Agents
+- **💡 Prompts**: Wiederverwendbare Prompt-Templates für strukturierte AI-Interaktionen
+- **⚙️ Auto-Generation**: Automatische Erstellung von MCP-Endpunkten basierend auf CDS-Annotationen (`@mcp`)
+
+**Integration & Konfiguration**
+
+Die MCP-Plugin-Konfiguration befindet sich in `package.json` unter `cds.mcp`:
+
+```json
+{
+  "cds": {
+    "mcp": {
+      "name": "cap-fiori-timetracking-mcp",
+      "version": "0.0.1",
+      "auth": "inherit",
+      "instructions": "MCP server for CAP Fiori Time Tracking application...",
+      "capabilities": {
+        "resources": { "listChanged": true, "subscribe": false },
+        "tools": { "listChanged": true },
+        "prompts": { "listChanged": true }
+      }
+    }
+  }
+}
+```
+
+- **`auth: "inherit"`**: MCP Server nutzt die bestehende CAP-Authentifizierung (Mocked Users in Development, IAS in Production)
+- **Keine Code-Änderungen**: Das Plugin folgt der CAP-Standard-Plugin-Architektur und integriert sich automatisch beim Start
+- **Capabilities**: Resources, Tools und Prompts werden aktiviert und ändern sich dynamisch basierend auf dem Service Model
+
+**MCP-Endpunkte**
+
+Sobald der Development-Server läuft (`npm run watch`), sind folgende Endpunkte verfügbar:
+
+- **MCP Server**: `http://localhost:4004/mcp`
+- **Health Check**: `http://localhost:4004/mcp/health`
+- **MCP Inspector**: `npx @modelcontextprotocol/inspector` → Connect zu `http://localhost:4004/mcp`
+
+**Annotationen (Optional)**
+
+Das Plugin kann durch `@mcp`-Annotationen erweitert werden, um spezifische Entities, Functions oder Actions für AI-Agents zu optimieren:
+
+```cds
+// Optional: Spezifische Resource-Konfiguration
+@mcp: {
+  name: 'time-entries',
+  description: 'Time tracking entries with balances',
+  resource: ['filter', 'orderby', 'select', 'top', 'skip']
+}
+entity TimeEntries as projection on db.TimeEntries;
+
+// Optional: Tool-Konfiguration für Functions
+@mcp: {
+  name: 'get-monthly-balance',
+  description: 'Calculate balance for a specific month',
+  tool: true
+}
+action getMonthlyBalance(year: Integer, month: Integer) returns MonthlyBalances;
+```
+
+**Aktueller Stand**: Die Integration erfolgt **ohne explizite Annotationen** – das Plugin erkennt alle exponierten Entities, Functions und Actions automatisch und stellt sie als MCP Resources und Tools bereit. Annotationen können bei Bedarf nachträglich hinzugefügt werden, um Beschreibungen zu verfeinern oder spezifische Capabilities zu steuern.
+
+**Integration mit AI-Workflow**
+
+Der MCP-Server ist in `.vscode/mcp.json` vorkonfiguriert und ergänzt die bestehenden MCP-Server (`cds-mcp`, `@sap-ux/fiori-mcp-server`, `@ui5/mcp-server`):
+
+```json
+{
+  "servers": {
+    "cap-fiori-timetracking-mcp": {
+      "type": "http",
+      "url": "http://localhost:4004/mcp",
+      "description": "CAP Fiori Time Tracking MCP Server - direct access to time tracking services"
+    }
+  }
+}
+```
+
+**Nutzen für das Projekt**
+
+- **Entwickler-Assistenz**: AI kann Code-Fragen mit konkreten Beispielen aus unserem Service Model beantworten
+- **Daten-Exploration**: Natürlichsprachliche Abfragen auf TimeEntries, Balances, Projekte ohne SQL zu schreiben
+- **Test-Automatisierung**: AI-generierte Test-Szenarien basierend auf verfügbaren Actions und Entities
+- **Dokumentations-Generierung**: Automatische API-Dokumentation aus Service-Definitionen
+
+**Weiterführende Links**
+
+- **Plugin-Repository**: [github.com/gavdilabs/cap-mcp-plugin](https://github.com/gavdilabs/cap-mcp-plugin)
+- **MCP Spezifikation**: [modelcontextprotocol.io](https://modelcontextprotocol.io)
+- **CAP Plugins Directory**: [cap.cloud.sap/docs/plugins](https://cap.cloud.sap/docs/plugins)
 
 ---
 
