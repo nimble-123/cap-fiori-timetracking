@@ -1,10 +1,98 @@
 # 🚀 Getting Started - CAP Fiori Time Tracking
 
-Willkommen! Diese Anleitung hilft dir, die Time Tracking App in weniger als **5 Minuten** auf deinem Rechner zum Laufen zu bringen.
+Willkommen! Diese Anleitung hilft dir, die Time Tracking App schnell zum Laufen zu bringen.
 
 ---
 
-## 📋 Prerequisites
+## 🎯 Wähle deine Entwicklungsumgebung
+
+### ⚡ Option 1: GitHub Codespaces (Empfohlen für schnellen Start)
+
+**Zero-Config Development in der Cloud - Perfekt für:**
+- Neue Contributors ohne lokales Setup
+- Quick Prototyping & Testing
+- Teams mit heterogenen Entwicklungsumgebungen
+- Remote Work ohne leistungsstarke Hardware
+
+**Start in 3 Schritten:**
+
+1. **Klicke auf den Badge:**
+   
+   [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://github.com/codespaces/new?hide_repo_select=true&ref=main&repo=nimble-123/cap-fiori-timetracking)
+
+2. **Warte auf Setup** (~3-5 Minuten beim ersten Start)
+   - Container wird automatisch gebaut
+   - Alle Tools werden installiert (Node, Java, SAP Tools)
+   - Dependencies werden installiert
+   - TypeScript-Typen werden generiert
+
+3. **Start Development Server:**
+   ```bash
+   npm run watch
+   ```
+
+4. **Zugriff auf App:**
+   - VS Code zeigt automatisch Port-Forward-Benachrichtigung
+   - Klicke auf "Open in Browser" oder navigiere zur URL
+   - Format: `https://[codespace-name]-4004.app.github.dev`
+
+**Features:**
+- ✅ Alle Tools vorinstalliert (Node 22, Java 17, cds-dk, mbt, cf CLI)
+- ✅ VS Code Extensions automatisch aktiviert
+- ✅ Port-Forwarding mit HTTPS-URLs
+- ✅ 60 Std/Monat gratis (2-core machine)
+- ✅ Secrets-Management für CF-Credentials
+
+**Mehr Infos:**
+- 📖 [Devcontainer README](.devcontainer/README.md)
+- 📋 [ADR-0021: Devcontainer & Codespaces](docs/ADR/0021-devcontainer-github-codespaces.md)
+
+---
+
+### 💻 Option 2: VS Code Dev Containers (Lokal mit Docker)
+
+**Container-basierte Entwicklung auf deinem Rechner - Perfekt für:**
+- Entwickler mit Docker Desktop
+- Offline-Entwicklung
+- Volle Kontrolle über Ressourcen
+- Kein Codespaces-Limit
+
+**Prerequisites:**
+- Docker Desktop installiert und gestartet
+- VS Code mit "Dev Containers" Extension
+
+**Start in 4 Schritten:**
+
+1. **Clone Repository:**
+   ```bash
+   git clone https://github.com/nimble-123/cap-fiori-timetracking.git
+   cd cap-fiori-timetracking
+   ```
+
+2. **Open in Container:**
+   - Öffne Projekt in VS Code
+   - `F1` → "Dev Containers: Reopen in Container"
+   - Warte auf Setup (~3-5 Minuten)
+
+3. **Start Development:**
+   ```bash
+   npm run watch
+   ```
+
+4. **Access App:** `http://localhost:4004`
+
+---
+
+### 🛠️ Option 3: Manuelle Lokale Installation (Klassisch)
+
+**Traditionelle lokale Entwicklung - Perfekt für:**
+- Maximale Flexibilität
+- Keine Docker-Abhängigkeit
+- Entwickler mit bestehender Tool-Landschaft
+
+---
+
+## 📋 Prerequisites (für Option 3: Manuelle Installation)
 
 Stelle sicher, dass folgende Software installiert ist:
 
