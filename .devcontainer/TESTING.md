@@ -56,6 +56,7 @@ tsc --version
 ### 1.3 VS Code Extensions
 
 Check installed extensions (Extensions panel):
+
 - [ ] SAP CDS Language Support (SAPSE.vscode-cds)
 - [ ] ESLint (dbaeumer.vscode-eslint)
 - [ ] Prettier (esbenp.prettier-vscode)
@@ -95,6 +96,7 @@ npm run watch
 ### 1.6 Application Access
 
 In the forwarded browser tab:
+
 - [ ] Navigate to `/io.nimble.timetable/`
 - [ ] Login with `max.mustermann@test.de` / `max`
 - [ ] List Report loads successfully
@@ -186,19 +188,24 @@ bash .devcontainer/setup.sh
 1. Open a `.ts` file
 2. Add extra spaces or formatting issues
 3. Save file (Ctrl+S / Cmd+S)
+
 - [ ] File automatically formats on save
 
 ### 4.2 ESLint Integration
 
 1. Open a `.ts` file
 2. Add an unused variable: `const unused = 123;`
+
 - [ ] ESLint shows warning/error
+
 3. Save file
+
 - [ ] Auto-fix applies if configured
 
 ### 4.3 CDS Language Support
 
 1. Open `db/data-model.cds`
+
 - [ ] Syntax highlighting works
 - [ ] IntelliSense shows CDS keywords
 - [ ] No errors for valid CDS syntax
@@ -262,6 +269,7 @@ echo $TEST_SECRET
 1. Start `npm run watch`
 2. Edit a `.ts` file in `srv/`
 3. Save file
+
 - [ ] Server automatically reloads
 - [ ] Changes reflected immediately
 - [ ] No manual restart needed
@@ -370,7 +378,3 @@ After completing all tests:
 - [ ] Performance is acceptable
 - [ ] Known issues documented
 - [ ] Ready for production use
-
-**Tested by**: ___________________
-**Date**: ___________________
-**Signature**: ___________________

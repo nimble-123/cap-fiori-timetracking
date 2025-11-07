@@ -24,7 +24,7 @@ Pre-builds significantly speed up Codespaces creation by pre-building the contai
    - **Branch**: `main` (and optionally `develop`)
    - **Configuration**: `.devcontainer/devcontainer.json`
    - **Regions**: Select your team's region (e.g., `Europe West`, `US East`)
-   - **Trigger**: 
+   - **Trigger**:
      - ✅ Configuration change
      - ✅ On push (optional: only if you want every push to rebuild)
      - ✅ On schedule (optional: weekly)
@@ -70,12 +70,14 @@ Regions: 2-3 regions (for global teams)
 ## Best Practices
 
 ### Do:
+
 - ✅ Enable for `main` branch at minimum
 - ✅ Choose region closest to your team
 - ✅ Start with "configuration change" trigger only
 - ✅ Add `develop` branch if you have frequent devcontainer changes
 
 ### Don't:
+
 - ❌ Enable "on push" trigger for all branches (wastes Actions minutes)
 - ❌ Select all regions unless you have a global team
 - ❌ Pre-build feature branches (not necessary, wastes resources)
@@ -94,11 +96,13 @@ Regions: 2-3 regions (for global teams)
 ### Pre-build Failed?
 
 Common causes:
+
 - `setup.sh` script error
 - Network timeout during `npm ci`
 - Invalid `devcontainer.json` syntax
 
 **Fix**:
+
 1. Check Actions tab for error logs
 2. Fix the issue in `.devcontainer/*`
 3. Push to trigger new pre-build
@@ -108,11 +112,11 @@ Common causes:
 
 ### GitHub Actions Minutes Usage
 
-| Scenario | Pre-build Time | Frequency | Monthly Minutes |
-|----------|----------------|-----------|-----------------|
-| Config changes only | ~10 min | ~2/month | ~20 min |
-| Config + push (main) | ~10 min | ~20/month | ~200 min |
-| Config + push (main + develop) | ~10 min | ~40/month | ~400 min |
+| Scenario                       | Pre-build Time | Frequency | Monthly Minutes |
+| ------------------------------ | -------------- | --------- | --------------- |
+| Config changes only            | ~10 min        | ~2/month  | ~20 min         |
+| Config + push (main)           | ~10 min        | ~20/month | ~200 min        |
+| Config + push (main + develop) | ~10 min        | ~40/month | ~400 min        |
 
 **Reference**: GitHub Free includes 2,000 Actions minutes/month
 
@@ -129,11 +133,13 @@ Common causes:
 **Symptoms**: Codespace still takes 3-5 minutes to create
 
 **Possible causes**:
+
 1. Pre-build not completed yet (check Actions tab)
 2. Created Codespace from branch without pre-build
 3. Pre-build failed (check Settings → Codespaces)
 
 **Solution**:
+
 1. Ensure pre-build completed successfully
 2. Create Codespace from `main` branch
 3. Clear browser cache and retry
@@ -145,6 +151,7 @@ Common causes:
 **Cause**: Pre-build is stale (> 2 weeks old or configuration changed)
 
 **Solution**:
+
 - Pre-builds auto-refresh on configuration changes
 - Manually trigger: Push a trivial change to `.devcontainer/devcontainer.json` (e.g., add a comment)
 
@@ -162,13 +169,14 @@ If you don't have admin access or want to test pre-builds:
 ### Push Pre-built Image to Registry
 
 Advanced option for teams:
+
 1. Build devcontainer locally
 2. Tag and push to GitHub Container Registry
 3. Reference pre-built image in `devcontainer.json`:
 
 ```json
 {
-  "image": "ghcr.io/nimble-123/cap-fiori-timetracking-devcontainer:latest",
+  "image": "ghcr.io/nimble-123/cap-fiori-timetracking-devcontainer:latest"
   // ... rest of config
 }
 ```

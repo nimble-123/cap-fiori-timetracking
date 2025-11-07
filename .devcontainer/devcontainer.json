@@ -55,9 +55,7 @@
         "editor.codeActionsOnSave": {
           "source.fixAll.eslint": "explicit"
         },
-        "editor.rulers": [
-          120
-        ],
+        "editor.rulers": [120],
         "files.eol": "\n",
         "files.trimTrailingWhitespace": true,
         "files.insertFinalNewline": true,
@@ -99,11 +97,7 @@
     }
   },
   // Use 'forwardPorts' to make a list of ports inside the container available locally.
-  "forwardPorts": [
-    4004,
-    8080,
-    54953
-  ],
+  "forwardPorts": [4004, 8080, 54953],
   // Port attributes for better UX
   "portsAttributes": {
     "4004": {

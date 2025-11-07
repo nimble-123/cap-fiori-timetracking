@@ -46,21 +46,23 @@ npm run build:mta && npm run deploy:cf
 
 ## 🔐 Test Users
 
-| Email                        | Password | Role  |
-|------------------------------|----------|-------|
-| max.mustermann@test.de       | max      | Admin |
-| erika.musterfrau@test.de     | erika    | User  |
-| frank.genehmiger@test.de     | frank    | Approver |
+| Email                    | Password | Role     |
+| ------------------------ | -------- | -------- |
+| max.mustermann@test.de   | max      | Admin    |
+| erika.musterfrau@test.de | erika    | User     |
+| frank.genehmiger@test.de | frank    | Approver |
 
 ---
 
 ## 🌐 Access Points
 
 **Local Dev Container:**
+
 - CAP Server: http://localhost:4004
 - Swagger UI: http://localhost:4004/$api-docs/odata/v4/track/
 
 **GitHub Codespaces:**
+
 - CAP Server: https://[codespace-name]-4004.app.github.dev
 - (Swagger UI uses same host)
 
@@ -69,23 +71,27 @@ npm run build:mta && npm run deploy:cf
 ## 🐛 Quick Fixes
 
 ### Port already in use
+
 ```bash
 PORT=4005 npm run watch
 ```
 
 ### TypeScript errors
+
 ```bash
 npx cds-typer "*"
 # Then: F1 → "TypeScript: Restart TS Server"
 ```
 
 ### Dependencies out of sync
+
 ```bash
 rm -rf node_modules package-lock.json
 npm ci
 ```
 
 ### Container rebuild
+
 ```bash
 # Press F1 → "Dev Containers: Rebuild Container"
 ```
