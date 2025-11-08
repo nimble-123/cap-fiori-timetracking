@@ -10,83 +10,85 @@ Zeiterfassungsanwendung auf Basis von SAP Cloud Application Programming Model mi
 
 ## 📑 Inhaltsverzeichnis
 
-### [1. Einführung und Ziele](#1-einführung-und-ziele)
+### [1. Einführung und Ziele](#1-einführung-und-ziele-1)
 
 - [1.1 Aufgabenstellung](#11-aufgabenstellung)
 - [1.2 Qualitätsziele](#12-qualitätsziele)
 - [1.3 Stakeholder](#13-stakeholder)
 
-### [2. Randbedingungen](#2-randbedingungen)
+### [2. Randbedingungen](#2-randbedingungen-1)
 
 - [2.1 Technische Randbedingungen](#21-technische-randbedingungen)
 - [2.2 Organisatorische Randbedingungen](#22-organisatorische-randbedingungen)
 - [2.3 Konventionen](#23-konventionen)
 
-### [3. Kontextabgrenzung](#3-kontextabgrenzung)
+### [3. Kontextabgrenzung](#3-kontextabgrenzung-1)
 
 - [3.1 Fachlicher Kontext](#31-fachlicher-kontext)
 - [3.2 Technischer Kontext](#32-technischer-kontext)
 
-### [4. Lösungsstrategie](#4-lösungsstrategie)
+### [4. Lösungsstrategie](#4-lösungsstrategie-1)
 
-- [4.1 Architektur-Treiber](#41-architektur-treiber)
-- [4.2 Zentrale Lösungsansätze](#42-zentrale-lösungsansätze)
+- [4.1 Zentrale Architektur-Ansätze](#41-zentrale-architektur-ansätze)
+- [4.2 Wichtigste Design-Entscheidungen](#42-wichtigste-design-entscheidungen)
+- [4.3 Qualitätssicherung](#43-qualitätssicherung)
+- [4.4 Inner Loop Development & Airplane Mode](#44-inner-loop-development--airplane-mode)
 
-### [5. Bausteinsicht](#5-bausteinsicht)
+### [5. Bausteinsicht](#5-bausteinsicht-1)
 
-- [5.1 Whitebox Gesamtsystem](#51-whitebox-gesamtsystem)
-- [5.2 Ebene 2: Application Layer](#52-ebene-2-application-layer)
-- [5.3 Ebene 3: Business Logic Layer](#53-ebene-3-business-logic-layer)
-- [5.4 Ebene 4: Data Model](#54-ebene-4-data-model)
-- [5.5 Ebene 5: Infrastructure Layer](#55-ebene-5-infrastructure-layer)
-- [5.6 Ebene 6: User Interface Layer](#56-ebene-6-user-interface-layer)
+- [5.1 Ebene 1: Gesamtsystem (Whitebox)](#51-ebene-1-gesamtsystem-whitebox)
+- [5.2 Ebene 2: Application Layer (Whitebox TrackService)](#52-ebene-2-application-layer-whitebox-trackservice)
+- [5.2a Application Layer: AdminService (Generic Provider)](#52a-application-layer-adminservice-generic-provider)
+- [5.3 Ebene 3: Business Logic Layer (Whitebox Commands)](#53-ebene-3-business-logic-layer-whitebox-commands)
+- [5.4 Ebene 4: Datenmodell (Domain Model)](#54-ebene-4-datenmodell-domain-model)
+- [5.5 Ebene 5: Infrastruktur Layer (ServiceContainer & HandlerRegistry)](#55-ebene-5-infrastruktur-layer-servicecontainer--handlerregistry)
+- [5.6 Ebene 6: User Interface Layer (Fiori Elements & Freestyle Apps)](#56-ebene-6-user-interface-layer-fiori-elements--freestyle-apps)
 
-### [6. Laufzeitsicht](#6-laufzeitsicht)
+### [6. Laufzeitsicht](#6-laufzeitsicht-1)
 
-- [6.1 TimeEntry CREATE - Vollständiger Flow](#61-timeentry-create---vollständiger-flow)
-- [6.2 Yearly Generation - Kompletter Ablauf](#62-yearly-generation---kompletter-ablauf)
+- [6.1 Szenario 1: TimeEntry erstellen (CREATE)](#61-szenario-1-timeentry-erstellen-create)
+- [6.2 Szenario 2: Jahresgenerierung (Yearly Generation)](#62-szenario-2-jahresgenerierung-yearly-generation)
 
-### [7. Verteilungssicht](#7-verteilungssicht)
+### [7. Verteilungssicht](#7-verteilungssicht-1)
 
-- [7.1 Infrastruktur Ebene 1: Entwicklungsumgebung](#71-infrastruktur-ebene-1-entwicklungsumgebung)
-- [7.2 Infrastruktur Ebene 2: Cloud Foundry Production](#72-infrastruktur-ebene-2-cloud-foundry-production)
-- [7.3 Infrastruktur Ebene 3: Docker Deployment](#73-infrastruktur-ebene-3-docker-deployment)
+- [7.1 Infrastruktur Level 1: Entwicklungsumgebung](#71-infrastruktur-level-1-entwicklungsumgebung)
+- [7.2 Infrastruktur Level 2: Produktionsumgebung (SAP BTP)](#72-infrastruktur-level-2-produktionsumgebung-sap-btp)
+- [7.3 Deployment-Szenarien](#73-deployment-szenarien)
+- [7.4 Secret Management & Transport](#74-secret-management--transport)
+- [7.5 CI/CD Workflow-Übersicht](#75-cicd-workflow-übersicht)
 
-### [8. Querschnittliche Konzepte](#8-querschnittliche-konzepte)
+### [8. Querschnittliche Konzepte](#8-querschnittliche-konzepte-1)
 
-- [8.1 Dependency Injection (ServiceContainer)](#81-dependency-injection-servicecontainer)
-- [8.2 Validierung](#82-validierung)
+- [8.1 Dependency Injection (ServiceContainer Pattern)](#81-dependency-injection-servicecontainer-pattern)
+- [8.2 Validierung (7 Validators)](#82-validierung-7-validators)
 - [8.3 Zeitberechnungen](#83-zeitberechnungen)
-- [8.4 Error Handling](#84-error-handling)
+- [8.4 Error Handling & Logging](#84-error-handling--logging)
 - [8.5 Internationalisierung (i18n)](#85-internationalisierung-i18n)
 - [8.6 Caching](#86-caching)
-- [8.7 Performance](#87-performance)
+- [8.7 Performance-Optimierungen](#87-performance-optimierungen)
 - [8.8 Dokumentanhänge (Attachments Plugin)](#88-dokumentanhänge-attachments-plugin)
 - [8.9 OpenAPI & Swagger UI](#89-openapi--swagger-ui)
 - [8.10 Security & Compliance](#810-security--compliance)
 - [8.11 AI Assistance & Prompt Catalog](#811-ai-assistance--prompt-catalog)
+- [8.12 Developer Experience: SAP CAP Console](#812-developer-experience-sap-cap-console)
+- [8.13 CAP Plugins & Calesi Pattern](#813-cap-plugins--calesi-pattern)
 
-### [9. Architekturentscheidungen](#9-architekturentscheidungen)
+### [9. Architekturentscheidungen](#9-architekturentscheidungen-1)
 
-- [ADR-Übersicht](#adr-übersicht)
-- [11 Architecture Decision Records](#11-architecture-decision-records)
+### [10. Qualitätsanforderungen](#10-qualitätsanforderungen-1)
 
-### [10. Qualitätsanforderungen](#10-qualitätsanforderungen)
+- [10.1 Test-Strategie & Coverage](#101-test-strategie--coverage)
+- [10.2 Qualitätsbaum](#102-qualitätsbaum)
+- [10.3 Qualitätsszenarien](#103-qualitätsszenarien)
+- [10.4 Qualitätsattribute: Trade-Offs](#104-qualitätsattribute-trade-offs)
 
-- [10.1 Qualitätsbaum](#101-qualitätsbaum)
-- [10.2 Qualitätsszenarien](#102-qualitätsszenarien)
-
-### [11. Risiken und technische Schulden](#11-risiken-und-technische-schulden)
+### [11. Risiken und technische Schulden](#11-risiken-und-technische-schulden-1)
 
 - [11.1 Risiken](#111-risiken)
 - [11.2 Technische Schulden](#112-technische-schulden)
-- [11.3 Bekannte Probleme](#113-bekannte-probleme)
+- [11.3 Known Issues](#113-known-issues)
 
-### [12. Glossar](#12-glossar)
-
-- [Fachbegriffe A-Z](#glossar-von-a-z)
-- [Design Patterns](#design-patterns-1)
-- [Technische Begriffe](#technische-begriffe)
+### [12. Glossar](#12-glossar-1)
 
 ---
 
