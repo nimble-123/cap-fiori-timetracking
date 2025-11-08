@@ -1,4 +1,4 @@
-# 🚀 Getting Started - CAP Fiori Time Tracking
+# 🚀 Getting Started - CAPture Time
 
 Willkommen! Diese Anleitung hilft dir, die Time Tracking App schnell zum Laufen zu bringen.
 

@@ -1,5 +1,5 @@
 {
-  "name": "CAP Fiori Time Tracking",
+  "name": "CAPture Time",
   "image": "mcr.microsoft.com/devcontainers/typescript-node:22-bookworm",
   // Configure tool-specific properties
   "customizations": {
@@ -116,7 +116,7 @@
   // Use 'postCreateCommand' to run commands after the container is created.
   "postCreateCommand": "bash .devcontainer/setup.sh",
   // Use 'postStartCommand' to run commands after the container is started.
-  "postStartCommand": "echo '🚀 CAP Fiori Time Tracking Devcontainer is ready!'",
+  "postStartCommand": "echo '🚀 CAPture Time Devcontainer is ready!'",
   // Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
   "remoteUser": "node",
   // Environment variables

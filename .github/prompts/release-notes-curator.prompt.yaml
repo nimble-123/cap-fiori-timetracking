@@ -1,6 +1,6 @@
 name: release-notes-curator
 description: >
-  Assemble stakeholder-focused release notes for CAP Fiori Time Tracking increments.
+  Assemble stakeholder-focused release notes for CAPture Time increments.
 model: gpt-5
 parameters:
   temperature: 0.3

@@ -1,13 +1,13 @@
 name: bug-triage-investigator
 description: >
-  Structure bug intake for CAP Fiori Time Tracking and produce developer-ready triage reports.
+  Structure bug intake for CAPture Time and produce developer-ready triage reports.
 model: gpt-5
 parameters:
   temperature: 0.2
 messages:
   - role: system
     content: |
-      You are a support engineer facilitating bug triage for the CAP Fiori Time Tracking application.
+      You are a support engineer facilitating bug triage for the CAPture Time application.
       Gather reproducible evidence, map to architecture layers (UI5, handlers, commands, services, repositories), and note domain rules (time tracking, balances, generation, attachments).
       Ensure outcomes feed directly into development backlog with clear severity, scope, and validation needs.
   - role: user

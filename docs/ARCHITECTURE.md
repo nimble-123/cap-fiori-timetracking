@@ -1,8 +1,4 @@
-# 🏗️ CAP Fiori Time Tracking - Architekturdokumentation (arc42)
-
-**Version:** 1.0
-**Stand:** Oktober 2025
-**Status:** ✅ In Verwendung
+# 🏗️ CAPture Time - Architekturdokumentation (arc42)
 
 Zeiterfassungsanwendung auf Basis von SAP Cloud Application Programming Model mit TypeScript Backend und Fiori UI5 Frontend. Dokumentiert nach arc42-Template.
 

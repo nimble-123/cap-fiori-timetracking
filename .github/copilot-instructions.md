@@ -1,4 +1,4 @@
-# CAP Fiori Time Tracking - AI Development Guide
+# CAPture Time - AI Development Guide
 
 ## Architecture Overview
 

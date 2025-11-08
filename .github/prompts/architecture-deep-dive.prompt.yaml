@@ -1,6 +1,6 @@
 name: architecture-deep-dive
 description: >
-  Explain CAP Fiori Time Tracking modules or flows in depth for onboarding or knowledge sharing.
+  Explain CAPture Time modules or flows in depth for onboarding or knowledge sharing.
 model: gpt-5
 parameters:
   temperature: 0.25

@@ -200,7 +200,7 @@ resources:
           enabled: true
         provided-apis:
           - name: cap-fiori-timetracking-api
-            description: API for CAP Fiori Time Tracking
+            description: API for CAPture Time
   - name: cap-fiori-timetracking-ams
     type: org.cloudfoundry.managed-service
     parameters:

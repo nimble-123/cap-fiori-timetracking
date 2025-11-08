@@ -1,6 +1,6 @@
-# 🕐 CAP Fiori Time Tracking
+![CAPtureTime Logo](./docs/assets/CAPtureTime-logo.png)
 
-> **Eine Enterprise-Grade Zeiterfassungsanwendung mit SAP CAP, TypeScript und Fiori UI5**</br>
+> **Eine Enterprise-Grade Zeiterfassungsanwendung mit SAP CAP, TypeScript und Fiori UI5 unter dem Namen CAPture Time**</br>
 > Showcase für Clean Architecture, Design Patterns und Best Practices – von Entwickler für Entwickler dokumentiert! 🚀
 
 ![GitHub License](https://img.shields.io/github/license/nimble-123/cap-fiori-timetracking?logo=github&color=blue)
