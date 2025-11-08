@@ -17,7 +17,7 @@ Willkommen! Diese Anleitung hilft dir, die Time Tracking App schnell zum Laufen 
 **Start in 3 Schritten:**
 
 1. **Klicke auf den Badge:**
-   
+
    [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://github.com/codespaces/new?hide_repo_select=true&ref=main&repo=nimble-123/cap-fiori-timetracking)
 
 2. **Warte auf Setup** (~3-5 Minuten beim ersten Start)
@@ -226,12 +226,13 @@ Das Repository enthält kuratierte Prompts für GitHub Models & CoPilot (`.githu
 
 ### MCP-Server & Wissensquellen
 
-- `.vscode/mcp.json` konfiguriert drei Server, die in kompatiblen IDEs sofort nutzbar sind:
+- `.vscode/mcp.json` konfiguriert vier Server, die in kompatiblen IDEs sofort nutzbar sind:
+  - `sap-docs` → Aggregierte SAP-Dokumentation (ABAP, CAP, UI5, Community) via HTTP-Server.
   - `cds-mcp` → SAP CAP Referenzen & Best Practices.
   - `@sap-ux/fiori-mcp-server` → Fiori Elements Patterns, UX Guidelines und Annotation-Hilfen.
   - `@ui5/mcp-server` → UI5 Control API, MVC, Routing.
-- **Installation:** Für `cds-mcp` muss die CLI einmal global installiert werden, z. B. `npm install -g @cap-js/mcp-server`. Prüfe die Installation mit `cds-mcp --help`. Die beiden anderen Server werden bei Bedarf über `npx …` gestartet.
-- In Kombination mit den Prompts können MCP-Server als „Knowledge Provider“ dienen, um technische Details während der Anforderungs- oder Review-Phase abzufragen.
+- **Installation:** Für `cds-mcp` muss die CLI einmal global installiert werden, z. B. `npm install -g @cap-js/mcp-server`. Prüfe die Installation mit `cds-mcp --help`. Die anderen drei Server (inkl. `sap-docs`) werden bei Bedarf automatisch verbunden bzw. über `npx …` gestartet.
+- In Kombination mit den Prompts können MCP-Server als „Knowledge Provider" dienen, um technische Details während der Anforderungs- oder Review-Phase abzufragen.
 
 > Tipp: Ergänze bei Bedarf projektspezifische Details (z. B. betroffene Entities, Handler, Commands), damit das LLM zielgerichtet antwortet.
 

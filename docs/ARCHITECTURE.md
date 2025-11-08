@@ -2201,7 +2201,7 @@ Der Einsatz von LLMs wird bewusst orchestriert, um **Requirements Engineering**,
 - **Architektur-Alignment:** Antworten verankern Maßnahmen in den Layern (Handlers, Commands, Services, Repositories, Infrastructure) und prüfen Auswirkungen auf DI-Container, Annotations und CDS-Modelle.
 - **Qualitätsziele spiegeln:** Maintainability, Testability, Performance und Usability werden explizit in den Dialog eingebunden.
 - **Dokumentations-Pflege:** Prompts erinnern daran, Änderungen in README, ARCHITECTURE, ADRs oder i18n/Annotationen nachzuführen.
-- **Knowledge Provider:** `.vscode/mcp.json` bindet `cds-mcp`, `@sap-ux/fiori-mcp-server` und `@ui5/mcp-server` ein, um CAP-/Fiori-/UI5-spezifische Referenzen direkt am Prompt verfügbar zu machen (Hinweis: `cds-mcp` muss global installiert werden, z. B. `npm install -g @cap-js/mcp-server`).
+- **Knowledge Provider:** `.vscode/mcp.json` bindet vier MCP-Server ein – `sap-docs` (aggregierte SAP-Dokumentation via HTTP), `cds-mcp`, `@sap-ux/fiori-mcp-server` und `@ui5/mcp-server` –, um CAP-/Fiori-/UI5-spezifische Referenzen direkt am Prompt verfügbar zu machen (Hinweis: `cds-mcp` muss global installiert werden, z. B. `npm install -g @cap-js/mcp-server`).
 
 **Prompt-Verzeichnis**: `.github/prompts/` (YAML nach [GitHub Models Standard](https://docs.github.com/en/github-models/use-github-models/storing-prompts-in-github-repositories))
 

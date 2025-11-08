@@ -1,5 +1,10 @@
 {
+  "inputs": [],
   "servers": {
+    "sap-docs": {
+      "type": "http",
+      "url": "https://mcp-sap-docs.marianzeis.de/mcp"
+    },
     "cds-mcp": {
       "type": "stdio",
       "command": "cds-mcp",
@@ -8,7 +13,6 @@
     },
     "fiori-mcp": {
       "type": "stdio",
-      "timeout": 600,
       "command": "npx",
       "args": [
         "--yes",
@@ -16,13 +20,12 @@
         "fiori-mcp"
       ]
     },
-    "@ui5/mcp-server": {
+    "ui5-mcp": {
       "type": "stdio",
       "command": "npx",
       "args": [
         "@ui5/mcp-server"
       ]
-    },
-    "inputs": []
+    }
   }
 }

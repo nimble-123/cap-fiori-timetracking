@@ -283,7 +283,7 @@ cap-fiori-timetracking/
   - Reviewer & QA: `review-coach`, `test-strategy-designer`
   - Architektur & Wissensaufbau: `architecture-deep-dive`, `adr-drafting-assistant`
   - Betrieb & Support: `bug-triage-investigator`, `release-notes-curator`
-- **MCP-Server:** In `.vscode/mcp.json` vorkonfiguriert – `cds-mcp` (CAP Docs), `@sap-ux/fiori-mcp-server` (Fiori UX Guidance), `@ui5/mcp-server` (UI5 SDK). Installiere `cds-mcp` global (`npm install -g @cap-js/mcp-server`), die anderen starten via `npx`.
+- **MCP-Server:** In `.vscode/mcp.json` vorkonfiguriert – `sap-docs` (aggregierte SAP Docs via HTTP), `cds-mcp` (CAP Docs), `@sap-ux/fiori-mcp-server` (Fiori UX Guidance), `@ui5/mcp-server` (UI5 SDK). Installiere `cds-mcp` global (`npm install -g @cap-js/mcp-server`), die anderen starten automatisch bzw. via `npx`.
 - **Workflow-Tipps:** Siehe [GETTING_STARTED.md](GETTING_STARTED.md#-ai-prompts--llm-workflows) für Beispiele, wie die Prompts in Discovery, Delivery und Review eingesetzt werden.
 
 ### 🎯 arc42-Kapitel Schnellzugriff
