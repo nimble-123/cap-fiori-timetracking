@@ -1448,30 +1448,30 @@ Das Projekt unterstützt **drei Entwicklungsszenarien** mit unterschiedlichen Tr
 **Zero-Config Cloud Development Environment:**
 
 ```
-┌────────────────────────────────────────────────────────────────┐
-│  GitHub Codespaces (Cloud Container)                           │
-│                                                                │
-│  ┌──────────────────────────────────────────────────────┐     │
-│  │  VS Code (Browser/Desktop)                           │     │
-│  │  + Pre-installed Extensions:                         │     │
-│  │    - SAP CDS Language Support                        │     │
-│  │    - ESLint, Prettier, REST Client                   │     │
-│  └──────────────────────────────────────────────────────┘     │
-│                                                                │
-│  ┌──────────────────────────────────────────────────────┐     │
-│  │  Devcontainer (Debian Bookworm)                      │     │
-│  │  - Node.js 22.20.0 (matches .nvmrc)                  │     │
-│  │  - Java 17 (Temurin) for @sap/ams-dev                │     │
-│  │  - SAP Tools: cds-dk, mbt, cf CLI, cds-mcp           │     │
-│  │  - Port Forwarding: 4004 (HTTPS), 8080               │     │
-│  └──────────────────────────────────────────────────────┘     │
-│                                                                │
-│  ┌──────────────────────────────────────────────────────┐     │
-│  │  SQLite (In-Memory)                                  │     │
-│  │  - Auto-deployed from db/data/*.csv                  │     │
-│  └──────────────────────────────────────────────────────┘     │
-│                                                                │
-└────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────┐
+│  GitHub Codespaces (Cloud Container)                │
+│                                                     │
+│  ┌────────────────────────────────────────────┐     │
+│  │  VS Code (Browser/Desktop)                 │     │
+│  │  + Pre-installed Extensions:               │     │
+│  │    - SAP CDS Language Support              │     │
+│  │    - ESLint, Prettier, REST Client         │     │
+│  └────────────────────────────────────────────┘     │
+│                                                     │
+│  ┌────────────────────────────────────────────┐     │
+│  │  Devcontainer (Debian Bookworm)            │     │
+│  │  - Node.js 22.20.0 (matches .nvmrc)        │     │
+│  │  - Java 17 (Temurin) for @sap/ams-dev      │     │
+│  │  - SAP Tools: cds-dk, mbt, cf CLI, cds-mcp │     │
+│  │  - Port Forwarding: 4004 (HTTPS), 8080     │     │
+│  └────────────────────────────────────────────┘     │
+│                                                     │
+│  ┌────────────────────────────────────────────┐     │
+│  │  SQLite (In-Memory)                        │     │
+│  │  - Auto-deployed from db/data/*.csv        │     │
+│  └────────────────────────────────────────────┘     │
+│                                                     │
+└─────────────────────────────────────────────────────┘
            │
            ▼ (HTTPS Port Forward)
     https://[codespace-name]-4004.app.github.dev
