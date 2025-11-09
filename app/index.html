@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Project Preview</title>
+    <script
+      src="https://ui5.sap.com/1.136.9/resources/sap-ui-core.js"
+      id="sap-ui-bootstrap"
+      data-sap-ui-theme="sap_horizon"
+      data-sap-ui-bindingSyntax="complex"
+      data-sap-ui-xx-bindingSyntax="complex"
+      data-sap-ui-resourceroots='{"assets": "assets"}'
+      data-sap-ui-libs="sap.m,sap.uxap,sap.ui.layout,sap.f"
+    ></script>
+    <link rel="stylesheet" href="assets/preview.css" />
+  </head>
+
+  <body id="body" class="sapUiBody">
+    <script>
+      'use strict';
+      sap.ui.localResources('assets');
+      (function (jQuery, App, Page) {
+        sap.ui.getCore().attachInit(function () {
+          sap.ui.define(
+            ['sap/ui/core/mvc/Controller', 'sap/ui/model/json/JSONModel'],
+            function (Controller, JSONModel) {
+              return Controller.extend('PreviewController', {
+                onInit: function () {
+                  const data = {
+                    Services: [
+                      {
+                        ServiceName: 'AdminService',
+                        DetailsURL: './odata/v4/admin/',
+                        Metadata: './odata/v4/admin/$metadata',
+                        Entities: [
+                          {
+                            Name: 'Users',
+                            URL: './odata/v4/admin/Users',
+                            FioriURL: '$fiori-preview/AdminService/Users#preview-app',
+                          },
+                          {
+                            Name: 'Projects',
+                            URL: './odata/v4/admin/Projects',
+                            FioriURL: '$fiori-preview/AdminService/Projects#preview-app',
+                          },
+                          {
+                            Name: 'ActivityTypes',
+                            URL: './odata/v4/admin/ActivityTypes',
+                            FioriURL: '$fiori-preview/AdminService/ActivityTypes#preview-app',
+                          },
+                          {
+                            Name: 'EntryTypes',
+                            URL: './odata/v4/admin/EntryTypes',
+                            FioriURL: '$fiori-preview/AdminService/EntryTypes#preview-app',
+                          },
+                          {
+                            Name: 'Region',
+                            URL: './odata/v4/admin/Region',
+                            FioriURL: '$fiori-preview/AdminService/Region#preview-app',
+                          },
+                          {
+                            Name: 'WorkLocations',
+                            URL: './odata/v4/admin/WorkLocations',
+                            FioriURL: '$fiori-preview/AdminService/WorkLocations#preview-app',
+                          },
+                          {
+                            Name: 'TravelTypes',
+                            URL: './odata/v4/admin/TravelTypes',
+                            FioriURL: '$fiori-preview/AdminService/TravelTypes#preview-app',
+                          },
+                          {
+                            Name: 'TimeEntryStatuses',
+                            URL: './odata/v4/admin/TimeEntryStatuses',
+                            FioriURL: '$fiori-preview/AdminService/TimeEntryStatuses#preview-app',
+                          },
+                          {
+                            Name: 'Customizing',
+                            URL: './odata/v4/admin/Customizing',
+                            FioriURL: '$fiori-preview/AdminService/Customizing#preview-app',
+                          },
+                        ],
+                        EntitiesCount: 9,
+                      },
+                      {
+                        ServiceName: 'TrackService',
+                        DetailsURL: './odata/v4/track/',
+                        Metadata: './odata/v4/track/$metadata',
+                        Entities: [
+                          {
+                            Name: 'Users',
+                            URL: './odata/v4/track/Users',
+                            FioriURL: '$fiori-preview/TrackService/Users#preview-app',
+                          },
+                          {
+                            Name: 'Projects',
+                            URL: './odata/v4/track/Projects',
+                            FioriURL: '$fiori-preview/TrackService/Projects#preview-app',
+                          },
+                          {
+                            Name: 'ActivityTypes',
+                            URL: './odata/v4/track/ActivityTypes',
+                            FioriURL: '$fiori-preview/TrackService/ActivityTypes#preview-app',
+                          },
+                          {
+                            Name: 'EntryTypes',
+                            URL: './odata/v4/track/EntryTypes',
+                            FioriURL: '$fiori-preview/TrackService/EntryTypes#preview-app',
+                          },
+                          {
+                            Name: 'Region',
+                            URL: './odata/v4/track/Region',
+                            FioriURL: '$fiori-preview/TrackService/Region#preview-app',
+                          },
+                          {
+                            Name: 'WorkLocations',
+                            URL: './odata/v4/track/WorkLocations',
+                            FioriURL: '$fiori-preview/TrackService/WorkLocations#preview-app',
+                          },
+                          {
+                            Name: 'TravelTypes',
+                            URL: './odata/v4/track/TravelTypes',
+                            FioriURL: '$fiori-preview/TrackService/TravelTypes#preview-app',
+                          },
+                          {
+                            Name: 'TimeEntryStatuses',
+                            URL: './odata/v4/track/TimeEntryStatuses',
+                            FioriURL: '$fiori-preview/TrackService/TimeEntryStatuses#preview-app',
+                          },
+                          {
+                            Name: 'Customizing',
+                            URL: './odata/v4/track/Customizing',
+                            FioriURL: '$fiori-preview/TrackService/Customizing#preview-app',
+                          },
+                          {
+                            Name: 'TimeEntries',
+                            URL: './odata/v4/track/TimeEntries',
+                            FioriURL: '$fiori-preview/TrackService/TimeEntries#preview-app',
+                          },
+                          {
+                            Name: 'MonthlyBalances',
+                            URL: './odata/v4/track/MonthlyBalances',
+                            FioriURL: '$fiori-preview/TrackService/MonthlyBalances#preview-app',
+                          },
+                          {
+                            Name: 'VacationBalances',
+                            URL: './odata/v4/track/VacationBalances',
+                            FioriURL: '$fiori-preview/TrackService/VacationBalances#preview-app',
+                          },
+                          {
+                            Name: 'SickLeaveBalances',
+                            URL: './odata/v4/track/SickLeaveBalances',
+                            FioriURL: '$fiori-preview/TrackService/SickLeaveBalances#preview-app',
+                          },
+                        ],
+                        EntitiesCount: 13,
+                      },
+                    ],
+                  };
+                  this.getView().setModel(new JSONModel(data));
+                },
+              });
+            },
+          );
+          var oApp = new App();
+          var previewView = sap.ui.view({
+            viewName: 'assets.Preview',
+            type: sap.ui.core.mvc.ViewType.XML,
+          });
+          oApp
+            .addPage(
+              new Page({
+                content: [previewView],
+                showHeader: false,
+              }),
+            )
+            .placeAt('content');
+        });
+      })(jQuery, sap.m.App, sap.m.Page);
+    </script>
+    <div id="content"></div>
+  </body>
+</html>

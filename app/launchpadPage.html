@@ -1,0 +1,69 @@
+<!doctype html>
+<html>
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{appTitle}}</title>
+
+    <script>
+      window['sap-ushell-config'] = {
+        defaultRenderer: 'fiori2',
+        renderers: {
+          fiori2: {
+            componentData: {
+              config: {
+                enableSearch: false,
+              },
+            },
+          },
+        },
+        applications: {
+          'ActivityType-manage': {
+            title: 'Manage Actitivity Types',
+            description: 'An SAP Fiori application.',
+            applicationType: 'URL',
+            navigationMode: 'newWindowThenEmbedded',
+            url: './manage-activity-types/dist',
+            additionalInformation: 'SAPUI5.Component=io.nimble.manageactivitytypes',
+          },
+          'TimeTable-manage': {
+            title: 'Time Table',
+            description: 'An SAP Fiori application.',
+            applicationType: 'URL',
+            navigationMode: 'newWindowThenEmbedded',
+            url: './timetable/dist',
+            additionalInformation: 'SAPUI5.Component=io.nimble.timetable',
+          },
+          'TimeTracking-manage': {
+            title: 'Time Tracking',
+            description: 'An SAP Fiori application.',
+            applicationType: 'URL',
+            navigationMode: 'newWindowThenEmbedded',
+            url: './timetracking/dist',
+            additionalInformation: 'SAPUI5.Component=io.nimble.timetracking',
+          },
+        },
+      };
+    </script>
+    <link rel="stylesheet" href="assets/launchpad.css" />
+    <script src="https://ui5.sap.com/1.136.9/test-resources/sap/ushell/bootstrap/sandbox.js"></script>
+    <script
+      src="https://ui5.sap.com/1.136.9/resources/sap-ui-core.js"
+      data-sap-ui-libs="sap.m, sap.ushell, sap.fe.templates"
+      data-sap-ui-compatVersion="edge"
+      data-sap-ui-theme="sap_horizon"
+      data-sap-ui-frameOptions="allow"
+      data-sap-ui-bindingSyntax="complex"
+      data-sap-ui-xx-viewCache="false"
+    ></script>
+    <script>
+      sap.ui.getCore().attachInit(function () {
+        sap.ushell.Container.createRenderer('fiori2', true).then(function (oRenderer) {
+          oRenderer.placeAt('content');
+        });
+      });
+    </script>
+  </head>
+  <body class="sapUiBody" id="content"></body>
+</html>
