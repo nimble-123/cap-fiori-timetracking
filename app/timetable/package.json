@@ -1,6 +1,6 @@
 {
   "name": "timetable",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Fiori Elements List Report for capturing and reviewing project time entries via annotations.",
   "keywords": [
     "ui5",
