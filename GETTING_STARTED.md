@@ -1,4 +1,4 @@
-# 🚀 Getting Started - CAP Fiori Time Tracking
+# 🚀 Getting Started - CAPture Time
 
 Willkommen! Diese Anleitung hilft dir, die Time Tracking App schnell zum Laufen zu bringen.
 
@@ -17,7 +17,7 @@ Willkommen! Diese Anleitung hilft dir, die Time Tracking App schnell zum Laufen 
 **Start in 3 Schritten:**
 
 1. **Klicke auf den Badge:**
-   
+
    [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://github.com/codespaces/new?hide_repo_select=true&ref=main&repo=nimble-123/cap-fiori-timetracking)
 
 2. **Warte auf Setup** (~3-5 Minuten beim ersten Start)
@@ -227,13 +227,14 @@ Das Repository enthält kuratierte Prompts für GitHub Models & CoPilot (`.githu
 ### MCP-Server & Wissensquellen
 
 - `.vscode/mcp.json` konfiguriert vier Server, die in kompatiblen IDEs sofort nutzbar sind:
+  - `sap-docs` → Aggregierte SAP-Dokumentation (ABAP, CAP, UI5, Community) via HTTP-Server.
   - `cds-mcp` → SAP CAP Referenzen & Best Practices.
   - `@sap-ux/fiori-mcp-server` → Fiori Elements Patterns, UX Guidelines und Annotation-Hilfen.
   - `@ui5/mcp-server` → UI5 Control API, MVC, Routing.
   - `cap-fiori-timetracking-mcp` → **CAP MCP Plugin** - Direkter Zugriff auf unsere Time Tracking Services via MCP.
 - **Installation:** 
   - Für `cds-mcp` muss die CLI einmal global installiert werden, z. B. `npm install -g @cap-js/mcp-server`. Prüfe die Installation mit `cds-mcp --help`.
-  - Die beiden anderen Server (`@sap-ux/fiori-mcp-server`, `@ui5/mcp-server`) werden bei Bedarf über `npx …` gestartet.
+  - Die anderen Server (`sap-docs`, `@sap-ux/fiori-mcp-server`, `@ui5/mcp-server`) werden bei Bedarf automatisch verbunden bzw. über `npx …` gestartet.
   - Der `cap-fiori-timetracking-mcp` Server läuft automatisch mit dem Development-Server (`npm run watch`) und ist unter `http://localhost:4004/mcp` verfügbar.
 - **CAP MCP Plugin Integration:**
   - Das Projekt nutzt `@gavdi/cap-mcp` von [gavdilabs](https://github.com/gavdilabs/cap-mcp-plugin), um unsere CAP-Services als MCP Server bereitzustellen.

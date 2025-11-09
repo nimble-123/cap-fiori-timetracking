@@ -1,6 +1,6 @@
 {
   "name": "timetracking",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Custom UI5 dashboard surfacing balances, KPIs, and time tracking actions.",
   "keywords": [
     "ui5",

@@ -1,6 +1,6 @@
 # 🐳 Devcontainer Configuration
 
-This directory contains the configuration for developing the CAP Fiori Time Tracking application in a **GitHub Codespaces** or **VS Code Dev Container** environment.
+This directory contains the configuration for developing the CAPture Time application in a **GitHub Codespaces** or **VS Code Dev Container** environment.
 
 ## 🚀 Quick Start
 

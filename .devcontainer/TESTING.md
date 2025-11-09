@@ -17,7 +17,7 @@ This checklist ensures the devcontainer configuration works correctly in both Gi
 - [ ] Click "Open in GitHub Codespaces" badge from README
 - [ ] Codespace creation starts (~3-5 minutes)
 - [ ] Container builds without errors
-- [ ] Terminal shows completion message: "🚀 CAP Fiori Time Tracking Devcontainer is ready!"
+- [ ] Terminal shows completion message: "🚀 CAPture Time Devcontainer is ready!"
 
 ### 1.2 Environment Verification
 
@@ -147,7 +147,7 @@ code .
 - [ ] Notification appears: "Folder contains a Dev Container configuration file"
 - [ ] Click "Reopen in Container"
 - [ ] Container builds (~3-5 minutes first time)
-- [ ] Terminal shows: "🚀 CAP Fiori Time Tracking Devcontainer is ready!"
+- [ ] Terminal shows: "🚀 CAPture Time Devcontainer is ready!"
 
 ### 2.2 Environment Verification
 

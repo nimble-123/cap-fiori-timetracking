@@ -1,4 +1,4 @@
-# CAP Fiori Time Tracking - AI Development Guide
+# CAPture Time - AI Development Guide
 
 ## Architecture Overview
 
@@ -207,21 +207,28 @@ Validators are injected via ServiceContainer and used in Commands.
 ✅ **DO** leverage Factories for object creation
 ✅ **DO** follow the established patterns (no shortcuts!)
 
-## Prompt Catalog & AI Workflows
+## Documentation & Knowledge Sources
+## Documentation & Knowledge Sources
 
-- Prompt-Dateien liegen in `.github/prompts/` (YAML nach GitHub Models Spezifikation) und setzen auf `gpt-5`.
-- **Discovery & Story Refinement:** `product-owner-feature-brief`, `product-owner-story-outline`
-- **Reviews & QA:** `review-coach`, `test-strategy-designer`
-- **Architektur & Governance:** `architecture-deep-dive`, `adr-drafting-assistant`
-- **Support & Kommunikation:** `bug-triage-investigator`, `release-notes-curator`
-- **MCP-Server:** Via `.vscode/mcp.json` verfügbar – `cds-mcp`, `@sap-ux/fiori-mcp-server`, `@ui5/mcp-server` für CAP-/Fiori-/UI5-Nachschlagewerke. Installiere `cds-mcp` einmalig global (`npm install -g @cap-js/mcp-server`); die anderen laufen über `npx`.
-- **CAP MCP Plugin:** Das Projekt nutzt `@gavdi/cap-mcp` (von gavdilabs), um CAP-Services als MCP Server bereitzustellen. Der MCP-Endpunkt ist unter `http://localhost:4004/mcp` verfügbar, sobald der Development-Server läuft. AI-Agents können damit direkt mit unseren OData-Services, Entities und Business Functions interagieren.
+**MCP Servers** (configured in `.vscode/mcp.json`):
 
-### Verwendung
+- `sap-docs` - Aggregated SAP documentation via HTTP (ABAP, CAP, UI5, Community)
+- `cds-mcp` - CAP documentation and API references
+- `@sap-ux/fiori-mcp-server` - Fiori Elements patterns and UX guidelines
+- `@ui5/mcp-server` - UI5 control APIs and framework references
+- `cap-fiori-timetracking-mcp` - CAP Fiori Time Tracking MCP Server - direct access to time tracking services via `@gavdi/cap-mcp` plugin. Available at `http://localhost:4004/mcp` when dev server is running.
 
-1. Prompt-Datei öffnen, Platzhalter (`{{...}}`) mit aktuellem Kontext füllen.
-2. Prompt in GitHub Models UI/CLI oder kompatible IDE einfügen.
-3. Ergebnis kritisch prüfen, offene Fragen klären.
-4. Code, Tests, Dokumentation (README, ARCHITECTURE, ADRs) entsprechend aktualisieren.
+**Prompts** (in `.github/prompts/`, YAML format for GitHub Models):
 
-> LLMs ergänzen den Entwicklungsprozess – fachliche Verantwortung verbleibt beim Team. Keine vertraulichen Daten an externe Model-Provider senden.
+- Discovery: `product-owner-feature-brief`, `product-owner-story-outline`
+- Reviews: `review-coach`, `test-strategy-designer`
+- Architecture: `architecture-deep-dive`, `adr-drafting-assistant`
+- Support: `bug-triage-investigator`, `release-notes-curator`
+
+❌ **DON'T** guess or assume API signatures - query MCP servers first
+❌ **DON'T** modify code without checking relevant documentation
+❌ **DON'T** skip ADR updates when making architectural decisions
+
+✅ **DO** use MCP servers to verify CAP/Fiori/UI5 APIs before coding
+✅ **DO** consult ARCHITECTURE.md for design patterns and layer structure
+✅ **DO** update README, ARCHITECTURE, ADRs when changing behavior or structure

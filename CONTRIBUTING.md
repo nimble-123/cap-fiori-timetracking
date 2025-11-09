@@ -1,6 +1,6 @@
 # 🤝 Contributing Guide
 
-Vielen Dank, dass du zum **CAP Fiori Time Tracking** Projekt beitragen möchtest! 🎉
+Vielen Dank, dass du zum **CAPture Time** Projekt beitragen möchtest! 🎉
 
 Diese Guidelines helfen dir, effektiv zum Projekt beizutragen und sicherzustellen, dass deine Änderungen schnell gemerged werden können.
 
@@ -715,11 +715,11 @@ Wenn du eine wichtige Design-Entscheidung triffst, erstelle ein **ADR (Architect
 
 # ADR-0012: Entscheidungstitel
 
-**Datum:** 16.10.2025  
-**Status:** Accepted  
-**Kontext:** Warum war diese Entscheidung nötig?  
-**Entscheidung:** Was wurde entschieden?  
-**Konsequenzen:** Was sind die Auswirkungen?  
+**Datum:** 16.10.2025
+**Status:** Accepted
+**Kontext:** Warum war diese Entscheidung nötig?
+**Entscheidung:** Was wurde entschieden?
+**Konsequenzen:** Was sind die Auswirkungen?
 **Alternativen:** Was wurde nicht gewählt und warum?
 ```
 

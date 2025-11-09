@@ -1,6 +1,6 @@
 {
-  "name": "cap-fiori-timetracking",
-  "version": "0.1.0",
+  "name": "capture-time",
+  "version": "0.2.0",
   "private": true,
   "description": "SAP CAP-based time tracking solution with Fiori UI and a TypeScript backend.",
   "keywords": [

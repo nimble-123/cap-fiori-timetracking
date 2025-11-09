@@ -23,6 +23,7 @@
 
 ## MCP-Server und Tools
 
+- **sap-docs**: Aggregierte SAP-Dokumentation über HTTP-Server (ABAP, CAP, UI5, OpenUI5, SAP Community).
 - **cap-js/mcp-server**: Zugriff auf CAP-Dokumentation, API-Referenzen und Best Practices für CAP Node.js/TypeScript.
 - **@sap-ux/fiori-mcp-server**: Informationen zu Fiori Elements, UI5 Templates, Annotationen und SAP Fiori Guidelines.
 - **@ui5/mcp-server**: Tiefere UI5-API-Referenzen (Controls, MVC, i18n, Routing).

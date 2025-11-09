@@ -1,6 +1,6 @@
-# 🕐 CAP Fiori Time Tracking
+![CAPtureTime Logo](./docs/assets/CAPtureTime-logo.png)
 
-> **Eine Enterprise-Grade Zeiterfassungsanwendung mit SAP CAP, TypeScript und Fiori UI5**</br>
+> **Eine Enterprise-Grade Zeiterfassungsanwendung mit SAP CAP, TypeScript und Fiori UI5 unter dem Namen CAPture Time**</br>
 > Showcase für Clean Architecture, Design Patterns und Best Practices – von Entwickler für Entwickler dokumentiert! 🚀
 
 ![GitHub License](https://img.shields.io/github/license/nimble-123/cap-fiori-timetracking?logo=github&color=blue)
@@ -283,7 +283,8 @@ cap-fiori-timetracking/
   - Reviewer & QA: `review-coach`, `test-strategy-designer`
   - Architektur & Wissensaufbau: `architecture-deep-dive`, `adr-drafting-assistant`
   - Betrieb & Support: `bug-triage-investigator`, `release-notes-curator`
-- **MCP-Server:** In `.vscode/mcp.json` vorkonfiguriert – `cds-mcp` (CAP Docs), `@sap-ux/fiori-mcp-server` (Fiori UX Guidance), `@ui5/mcp-server` (UI5 SDK). Installiere `cds-mcp` global (`npm install -g @cap-js/mcp-server`), die anderen starten via `npx`.
+<<<<<<< HEAD
+- **MCP-Server:** In `.vscode/mcp.json` vorkonfiguriert – `sap-docs` (aggregierte SAP Docs via HTTP), `cds-mcp` (CAP Docs), `@sap-ux/fiori-mcp-server` (Fiori UX Guidance), `@ui5/mcp-server` (UI5 SDK). Installiere `cds-mcp` global (`npm install -g @cap-js/mcp-server`), die anderen starten automatisch bzw. via `npx`.
 - **CAP MCP Plugin:** Das Projekt nutzt `@gavdi/cap-mcp` (von [gavdilabs](https://github.com/gavdilabs/cap-mcp-plugin)), um die CAP-Services als MCP-Server bereitzustellen. Damit können AI-Agents direkt mit den OData-Services interagieren. Der MCP-Endpunkt ist unter `http://localhost:4004/mcp` verfügbar, sobald der Development-Server läuft (`npm run watch`).
 - **Workflow-Tipps:** Siehe [GETTING_STARTED.md](GETTING_STARTED.md#-ai-prompts--llm-workflows) für Beispiele, wie die Prompts in Discovery, Delivery und Review eingesetzt werden.
 
