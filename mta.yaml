@@ -1,6 +1,6 @@
 _schema-version: 3.3.0
 ID: cap-fiori-timetracking
-version: 0.1.0
+version: 0.2.0
 description: SAP CAP-based time tracking solution with Fiori UI and a TypeScript backend.
 parameters:
   enable-parallel-deployments: true
