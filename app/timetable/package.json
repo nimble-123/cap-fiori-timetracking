@@ -32,7 +32,7 @@
     "typescript": "^5.9.3",
     "ui5-task-zipper": "^3.4.4",
     "ui5-tooling-transpile": "^3.9.2",
-    "wdio-ui5-service": "^3.0.0"
+    "wdio-ui5-service": "^3.0.2"
   },
   "ui5": {
     "dependencies": [
