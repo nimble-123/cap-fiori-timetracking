@@ -1,0 +1,41 @@
+═══════════════════════════════════════════════════════════════
+  CAPture Time - TODO Liste
+  'Alt+Enter'        // Triggers `Todo: Toggle Box`
+  'Alt+D'            // Triggers `Todo: Toggle Done`
+  'Alt+C'            // Triggers `Todo: Toggle Cancelled`
+  'Alt+S'            // Triggers `Todo: Toggle Start`
+  'Cmd/Ctrl+Shift+A' // Triggers `Todo: Archive`
+═══════════════════════════════════════════════════════════════
+
+━━━ Frontend & UI-Entwicklung ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CAPTure Time - TODO Liste:
+  ━━━ Frontend & UI-Entwicklung ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Frontend & UI-Entwicklung:
+    ☐ Fiori Elements Mockserver für reine UI-Entwicklung ohne Backend-Verbindung integrieren @4h @high
+    ☐ List Report Table Lazy Loading Threshold über Customizing-Tabelle konfigurierbar machen @2h @medium
+    ☐ Mini-Report über Custom Flexible Programming Model (FPM) Dialog implementieren @8h @high
+
+  ━━━ Backend & CAP-Funktionen ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Backend & CAP-Funktionen:
+    ☐ CAP Audit Log Plugin (@cap-js/audit-logging) für Compliance und Änderungsverfolgung integrieren @6h @high
+    ☐ CAP Change Tracking Plugin (@cap-js/change-tracking) für automatische Versionierung integrieren @5h @high
+    ☐ CAP Status Flow Feature für Workflow-Management und Statusübergänge integrieren @10h @medium
+
+  ━━━ Reporting & Analysen ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Reporting & Analysen:
+    ☐ PDF-Export-Funktionalität für Zeiteinträge, Salden und Monatsberichte implementieren @12h @high
+    ☐ KPI Dashboard mit Statistiken und Kennzahlen zur Zeiterfassung implementieren @16h @critical
+      ☐ Anzahl Tage seit letztem Urlaub oder Feiertag anzeigen @2h @low
+      ☐ Anzahl Arbeitstage mit aufgelaufenen Überstunden im aktuellen Monat/Jahr berechnen @3h @medium
+      ☐ Anzahl Arbeitstage ohne Überstunden/Unterstunden (pünktliches Arbeitsende) im Zeitraum anzeigen @2h @low
+      ☐ Anzahl Arbeitstage mit Unterstunden (zu wenig gearbeitete Stunden) im Zeitraum berechnen @3h @medium
+
+  ━━━ Infrastruktur & Deployment ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Infrastruktur & Deployment:
+    ☐ Autoscaler für Cloud Foundry integrieren zur automatischen Skalierung basierend auf Last @4h @medium
+
+━━━ Erledigt / Archiv ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  (Abgeschlossene Aufgaben werden hier archiviert)
+
+═══════════════════════════════════════════════════════════════
+
